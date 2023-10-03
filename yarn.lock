@@ -601,6 +601,21 @@
   dependencies:
     "@iconify/types" "*"
 
+"@iconify-json/mdi@^1.1.54":
+  version "1.1.54"
+  resolved "https://registry.yarnpkg.com/@iconify-json/mdi/-/mdi-1.1.54.tgz#343477417c15fceeaf0f32012d58a4a8d9791786"
+  integrity sha512-3QAsxte90EalbN2e8J30OqSSZz9qN2x+kmykQwsPahoW2dOtSvj+BR9YdiUd9A5XKk2nuU4UH5Gj/cq6WZ6CzQ==
+  dependencies:
+    "@iconify/types" "*"
+
+"@iconify/json@^2.2.123":
+  version "2.2.123"
+  resolved "https://registry.yarnpkg.com/@iconify/json/-/json-2.2.123.tgz#684cd426d3f9738bba7867771344b7f63a0b5a5a"
+  integrity sha512-g06E+LCzEeMjbF5XaGr4MZTpnl+gOwx+xq1J5XWvLJ3l7IxuDNcZu8OqfW9vaHed8PTlGzY0g/lMExllk91uDA==
+  dependencies:
+    "@iconify/types" "*"
+    pathe "^1.1.0"
+
 "@iconify/types@*", "@iconify/types@^2.0.0":
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/@iconify/types/-/types-2.0.0.tgz#ab0e9ea681d6c8a1214f30cd741fe3a20cc57f57"

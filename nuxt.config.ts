@@ -5,5 +5,9 @@ export default defineNuxtConfig({
     'class-validator': 'class-validator/cjs/index.js',
   },
   modules: ['@nuxt/ui'],
+  ui: {
+    global: true,
+    icons: ['mdi', 'simple-icons', 'heroicons', 'material-icons']
+  },
   pages: true
 })
