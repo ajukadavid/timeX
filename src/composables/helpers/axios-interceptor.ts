@@ -5,6 +5,7 @@ import {
     InternalAxiosRequestConfig,
     AxiosResponse,
   } from "axios";
+  import axios from 'axios'
   
   const BASE_URL = 'https://timex-vzwo.onrender.com/api/v1'
   // For Make Log on Develop Mode
@@ -30,19 +31,18 @@ export const onRequest = (config: InternalAxiosRequestConfig): InternalAxiosRequ
   const onResponse = (response: AxiosResponse): AxiosResponse => {
     const { method, url } = response.config;
     const { status } = response;
-    // Set Loading End Here
-    // Handle Response Data Here
-    // Error Handling When Return Success with Error Code Here
-    logOnDev(`🚀 [API] ${method?.toUpperCase()} ${url} | Response ${status}`);
-    console.log(response)
+      if(url?.includes('token')){
+        localStorage.setItem('token', response.data.token)
+      }
+   
     return response;
   };
   
 
-  export  const onErrorResponse = (error: AxiosError | Error): Promise<AxiosError> => {
+  export  const onErrorResponse = (error: AxiosError | Error | any): Promise<AxiosError> => {
     if (axios.isAxiosError(error)) {
       const { message } = error;
-      const { method, url } = error.config as AxiosRequestConfig;
+      const { method, url } = error.config as InternalAxiosRequestConfig;
       const { statusText, status } = error.response as AxiosResponse ?? {};
   
       logOnDev(
