@@ -1,14 +1,12 @@
 import {
     AxiosError,
     AxiosInstance,
-    // AxiosRequestConfig, // Change to InternalAxiosRequestConfig
     InternalAxiosRequestConfig,
     AxiosResponse,
   } from "axios";
   import axios from 'axios'
   
   const BASE_URL = 'https://timex-vzwo.onrender.com/api/v1'
-  // For Make Log on Develop Mode
   const logOnDev = (message: string) => {
     if (import.meta.env.MODE === "development") {
       console.log(message);
@@ -16,12 +14,16 @@ import {
   };
 
 
-  // Request Interceptor
 export const onRequest = (config: InternalAxiosRequestConfig): InternalAxiosRequestConfig => {
     const { method, url } = config;
     config.url = BASE_URL + url
     logOnDev(`🚀 [API] ${method?.toUpperCase()} ${url} | Request`);
-  
+    if(url?.includes('staffs')){
+      let token = localStorage.getItem('token')
+      if(!!token){
+        config.headers.Authorization = `Bearer ${token}`
+      }
+    }
     if (method === "get") {
       config.timeout = 15000;
     }
