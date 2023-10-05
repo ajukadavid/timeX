@@ -1,24 +1,24 @@
 <script setup lang="ts">
 definePageMeta({
-    layout: "auth",
+  layout: "auth",
 });
 
 useHead({
-    title: "Login | TimeX",
-    meta: [
-        {
-            hid: "description",
-            name: "description",
-            content: "Login to TimeX",
-        },
-    ],
+  title: "Login | TimeX",
+  meta: [
+    {
+      hid: "description",
+      name: "description",
+      content: "Login to TimeX",
+    },
+  ],
 });
 </script>
 
 <template>
-    <div>
-        <!-- component for the login form -->
-        <!-- image on the side -->
-        Login
-    </div>
+  <div>
+    <!-- component for the login form -->
+    <!-- image on the side -->
+    Login
+  </div>
 </template>
