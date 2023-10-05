@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import type { FormError, FormSubmitEvent } from "@nuxt/ui/dist/runtime/types";
+
 definePageMeta({
   layout: "auth",
 });
@@ -22,6 +24,18 @@ const state = ref({
   email: "",
   password: "",
 });
+
+const validate = (state: any): FormError[] => {
+  const errors = [];
+  if (!state.email) errors.push({ path: "email", message: "Required" });
+  if (!state.password) errors.push({ path: "password", message: "Required" });
+  return errors;
+};
+
+const submit = (event: FormSubmitEvent<any>) => {
+  // Do something with data
+  console.log(event.data);
+};
 
 const showPassword = ref(false);
 </script>
@@ -50,7 +64,12 @@ const showPassword = ref(false);
         </p>
       </div>
 
-      <UForm :state="state" class="space-y-4">
+      <UForm
+        :validate="validate"
+        :state="state"
+        class="space-y-4"
+        @submit="submit"
+      >
         <div class="space-y-5">
           <UFormGroup
             label="First Name"

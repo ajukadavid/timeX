@@ -1,7 +1,7 @@
 <script setup>
-const colorMode = useColorMode();
 import axios from "axios";
 import { setupInterceptors } from "../composables/helpers/axios-interceptor";
+const colorMode = useColorMode();
 
 const axiosInstance = setupInterceptors(axios.create());
 
