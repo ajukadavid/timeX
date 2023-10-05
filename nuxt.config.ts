@@ -8,6 +8,7 @@ export default defineNuxtConfig({
     ui: {
         global: true,
         icons: ["mdi", "simple-icons", "heroicons", "material-icons"],
+        
     },
     pages: true,
 });

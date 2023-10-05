@@ -72,14 +72,14 @@ const showPassword = ref(false);
                             size="xl" :ui="{ icon: { trailing: { pointer: '' } } }">
                             <template #trailing>
                                 <UButton color="primary" variant="link" :icon="showPassword
-                                        ? 'i-heroicons-eye-slash'
-                                        : 'i-heroicons-eye'
+                                    ? 'i-heroicons-eye-slash'
+                                    : 'i-heroicons-eye'
                                     " :padded="false" @click="showPassword = !showPassword" />
                             </template>
                         </UInput>
                     </UFormGroup>
                 </div>
-                <UButton type="submit" class="lg:max-w-[150px] w-full justify-center" color="white" variant="outline">
+                <UButton type="submit" class="lg:max-w-[150px] w-full justify-center" color="white" variant="solid">
                     Submit
                 </UButton>
             </UForm>
