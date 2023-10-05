@@ -1,3 +1,9 @@
+<script setup lang="ts"></script>
+
 <template>
-    <h1>Index page</h1>
+    <div>
+        <!-- component for the login form -->
+        <!-- image on the side -->
+        Login
+    </div>
 </template>
