@@ -1,14 +1,13 @@
 <script setup lang="ts">
-import { ref } from "vue";
 import type { FormError, FormSubmitEvent } from "@nuxt/ui/dist/runtime/types";
 
 const state = ref({
-    firstName: undefined,
-    lastName: undefined,
-    companyName: undefined,
-    phone: undefined,
-    email: undefined,
-    password: undefined,
+    firstName: "",
+    lastName: "",
+    companyName: "",
+    phone: "",
+    email: "",
+    password: "",
 });
 
 // const validate = (state: any): FormError[] => {
@@ -32,6 +31,21 @@ async function submit(event: FormSubmitEvent<any>) {
 }
 
 const showPassword = ref(false);
+
+definePageMeta({
+    layout: "auth",
+});
+
+useHead({
+    title: "Register | TimeX",
+    meta: [
+        {
+            hid: "description",
+            name: "description",
+            content: "Register to TimeX",
+        },
+    ],
+});
 </script>
 
 <template>
@@ -39,8 +53,8 @@ const showPassword = ref(false);
         <div
             class="container mx-auto px-6 pb-6 max-w-lg w-full bg-white overflow-auto dark:bg-slate-800"
         >
-            <div class="dark:text-white">
-                <h2 class="my-6 text-2xl font-bold text-indigo-700">
+            <div>
+                <h2 class="my-6 text-2xl font-bold text-carnation">
                     <nuxt-link to="/">TimeX</nuxt-link>
                 </h2>
                 <p
@@ -53,12 +67,7 @@ const showPassword = ref(false);
                 </p>
             </div>
 
-            <UForm
-                :state="state"
-                @submit="submit"
-                validateOn="input"
-                class="space-y-4"
-            >
+            <UForm :state="state" @submit="submit" class="space-y-4">
                 <div class="space-y-5">
                     <UFormGroup
                         label="First Name"
@@ -140,8 +149,9 @@ const showPassword = ref(false);
                 </div>
                 <UButton
                     type="submit"
-                    size="xl"
                     class="lg:max-w-[150px] w-full justify-center"
+                    color="white"
+                    variant="outline"
                 >
                     Submit
                 </UButton>
@@ -155,19 +165,9 @@ const showPassword = ref(false);
             </p>
         </div>
         <div
-            class="bg-indigo-700 hidden lg:grid flex-1 overflow-hidden place-content-center text-center"
+            class="hidden bg-primary lg:grid flex-1 overflow-hidden place-content-center text-center"
         >
-            <div
-                class="animate-ping rounded-full h-4 w-4 dark:bg-neutral-400 bg-white mx-auto"
-            ></div>
-            <div
-                class="bg-white dark:bg-neutral-400 relative flex items-center justify-center w-48 h-48 rounded-2xl [&>*]:absolute [&>*]:rounded-2xl [&>*]:h-12 [&>*]:w-12 [&>*]:bg-neutral-900"
-            >
-                <div class="top-6"></div>
-                <div class="left-6"></div>
-                <div class="right-6"></div>
-                <div class="bottom-6"></div>
-            </div>
+            <img src="~/" alt="" />
         </div>
     </div>
 </template>
