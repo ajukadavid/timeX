@@ -8,7 +8,7 @@
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
-    "prepare": "husky install" ,
+    "prepare": "husky install",
     "lint": "eslint --fix. && prettier --write ."
   },
   "husky": {
@@ -17,7 +17,10 @@
     }
   },
   "lint-staged": {
-    "*.{js,ts,vue}": ["eslint --fix", "git add"]
+    "*.{js,ts,vue}": [
+      "eslint --fix",
+      "git add"
+    ]
   },
   "devDependencies": {
     "@nuxt/devtools": "latest",

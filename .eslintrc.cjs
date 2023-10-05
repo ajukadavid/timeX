@@ -10,6 +10,7 @@ module.exports = {
   },
   extends: ["@nuxtjs/eslint-config-typescript", "plugin:prettier/recommended"],
   plugins: [],
+  files: ["*.vue", "*.ts"],
   rules: {
     // indent: "off",
     // "no-tabs": "off",
