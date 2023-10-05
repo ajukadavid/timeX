@@ -8,6 +8,7 @@
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
+    "prepare": "husky install" ,
     "lint": "eslint --fix. && prettier --write ."
   },
   "husky": {
