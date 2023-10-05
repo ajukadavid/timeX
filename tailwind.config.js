@@ -1,6 +1,9 @@
+const colors = require('tailwindcss/colors')
+
 module.exports = {
     theme: {
         colors: {
+            ...colors,
             blueZodiac: {
                 DEFAULT: "#102542",
                 50: "#61B5D9",

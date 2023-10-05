@@ -8,16 +8,12 @@ const axiosInstance = setupInterceptors(axios.create());
 async function fetchData() {
 
     const data = {
-        firstName: 'david',
-        lastName: 'ajuka',
-        email: 'ajuka@ajuka.com',
-        companyName: 'ajukscompany',
-        phone: 344421144,
-        password: 'lepass'
+
+        lastName: 'doe', email: 'testmail@brr.com', phone: '0902223421'
     }
 
     try {
-        const response = await axiosInstance.post('/employers', data);
+        const response = await axiosInstance.post('/staffs', data);
         // Handle the response here
         console.log(response)
     } catch (error) {
