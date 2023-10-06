@@ -1,6 +1,6 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
-  srcDir: "src/",
+  srcDir: "../src/",
   alias: {
     "class-validator": "class-validator/cjs/index.js",
   },
@@ -10,4 +10,7 @@ export default defineNuxtConfig({
     icons: ["mdi", "simple-icons", "heroicons", "material-icons"],
   },
   pages: true,
+  eslint: {
+    lintOnStart: false,
+  },
 });

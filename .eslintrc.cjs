@@ -4,26 +4,24 @@ module.exports = {
     browser: true,
     node: true,
   },
-
   parser: "vue-eslint-parser",
   parserOptions: {
     parser: "@typescript-eslint/parser",
   },
+  extends: [
+    "@nuxtjs/eslint-config-typescript",
+    "plugin:prettier/recommended",
+    "prettier",
+  ],
   overrides: [
     {
-      files: ["**/*.vue", "**/*.ts"],
+      files: ["src/**/*.*"],
       rules: {
         "no-unused-expressions": "off",
-        "*": "warn",
+        "no-unused-vars": "off",
+        "@typescript-eslint/no-unused-vars": "off",
       },
     },
   ],
-  extends: ["@nuxtjs/eslint-config-typescript", "plugin:prettier/recommended"],
-  plugins: [],
-  rules: {
-    "*": "warn",
-    indent: "off",
-    "no-tabs": "off",
-    "vue/html-indent": "off",
-  },
+  plugins: ["prettier"],
 };
