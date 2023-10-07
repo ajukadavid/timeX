@@ -1,14 +1,14 @@
-import {
+import axios, {
   AxiosError,
   AxiosInstance,
   InternalAxiosRequestConfig,
   AxiosResponse,
 } from "axios";
-import axios from "axios";
 
 const BASE_URL = "https://timex-vzwo.onrender.com/api/v1";
 const logOnDev = (message: string) => {
   if (import.meta.env.MODE === "development") {
+    // eslint-disable-next-line no-console
     console.log(message);
   }
 };
@@ -20,8 +20,8 @@ export const onRequest = (
   config.url = BASE_URL + url;
   logOnDev(`🚀 [API] ${method?.toUpperCase()} ${url} | Request`);
   if (url?.includes("staffs")) {
-    let token = localStorage.getItem("token");
-    if (!!token) {
+    const token = localStorage.getItem("token");
+    if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
   }
