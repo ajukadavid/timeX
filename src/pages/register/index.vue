@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { FormError } from "@nuxt/ui/dist/runtime/types";
+import { useSignUpValidate } from "@/composables/helpers/validate";
 import { employerRegister } from "@/composables/services/auth/auth";
 import { userRegistrationToast } from "@/composables/helpers/notifications";
 
@@ -29,24 +29,6 @@ const state = reactive({
   password: "",
 });
 
-const validate = (state: any): FormError[] => {
-  const errors = [];
-  if (!state.email) errors.push({ path: "email", message: "Required" });
-  if (!state.firstName)
-    errors.push({ path: "given_name", message: "Required" });
-  if (!state.lastName)
-    errors.push({ path: "family_name", message: "Required" });
-  if (!state.companyName)
-    errors.push({ path: "company_name", message: "Required" });
-  if (state.password.length < 8)
-    errors.push({
-      path: "password",
-      message: "Password must be at least 8 characters",
-    });
-  if (errors.length > 0) userRegistrationToast("error");
-  return errors;
-};
-
 const createEmployer = async () => {
   loading.value = true;
   try {
@@ -55,13 +37,15 @@ const createEmployer = async () => {
     // eslint-disable-next-line no-console
     console.log(response);
     loading.value = false;
-    userRegistrationToast("success");
+    userRegistrationToast(response.data.message, response.data.code);
+
     navigateTo("/login");
-  } catch (error) {
+  } catch (error: any) {
     // Handle errors here
     loading.value = false;
-    // eslint-disable-next-line no-console
-    console.log(error);
+
+    const err = [error.response.data.message];
+    userRegistrationToast(err, error.response.data.code);
   }
 };
 
@@ -93,9 +77,8 @@ const showPassword = ref(false);
       </div>
 
       <UForm
-        :validate="validate"
+        :validate="useSignUpValidate"
         :state="state"
-        class="space-y-4"
         :validate-on="['submit']"
         @submit.prevent="createEmployer"
       >
@@ -182,6 +165,7 @@ const showPassword = ref(false);
           type="submit"
           size="lg"
           color="white"
+          class="mt-10 mb-3"
           variant="solid"
           :loading="loading"
         >

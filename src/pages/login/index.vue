@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type { FormError } from "@nuxt/ui/dist/runtime/types";
 import { loginEmployer } from "@/composables/services/auth/auth";
+import { useLoginValidate } from "@/composables/helpers/validate";
 import { userLoginToast } from "@/composables/helpers/notifications";
 
 definePageMeta({
@@ -25,32 +25,19 @@ const state = reactive({
   password: "",
 });
 
-const validate = (state: any): FormError[] => {
-  const errors = [];
-  if (!state.email) errors.push({ path: "email", message: "Required" });
-  if (state.password.length < 8)
-    errors.push({
-      path: "password",
-      message: "Password must be at least 8 characters",
-    });
-  if (errors.length > 0) userLoginToast("error");
-  return errors;
-};
-
 const login = async () => {
   loading.value = true;
   try {
     const response = await loginEmployer(state);
     // Handle the response here
-    // eslint-disable-next-line no-console
-    console.log(response);
+
     loading.value = false;
-    userLoginToast("success");
+    userLoginToast(response.data.message, response.data.code);
     navigateTo("/");
-  } catch (error) {
-    // Handle errors here
+  } catch (error: any) {
     loading.value = false;
-    userLoginToast("error");
+    const err = [error.response.data.message];
+    userLoginToast(err, error.response.data.code);
   }
 };
 
@@ -82,7 +69,7 @@ const showPassword = ref(false);
       </div>
 
       <UForm
-        :validate="validate"
+        :validate="useLoginValidate"
         :state="state"
         class="space-y-4 flex-1 justify-center flex items-center flex-col"
         :validate-on="['submit']"

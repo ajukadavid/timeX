@@ -1,4 +1,19 @@
-export const userRegistrationToast = (type: string) => {
+function concatenateValues(input: any[]): string {
+  return input
+    .map((item) => {
+      if (typeof item === "string") {
+        return item;
+      } else if (typeof item === "object" && "message" in item) {
+        return item.message;
+      } else {
+        return "";
+      }
+    })
+    .join(", ");
+}
+
+export const userRegistrationToast = (errArr: any[], code?: number) => {
+  const msg = concatenateValues(errArr);
   const toast = useToast();
   const props = {
     timeout: 2000,
@@ -16,23 +31,21 @@ export const userRegistrationToast = (type: string) => {
   const removeSuccess = () => {
     toast.remove("success");
   };
-
-  if (type === "success") {
+  if (msg === "success" || code === 200) {
     toast.add({
       id: "success",
-      title: "Registration successful!",
-      description: "You can now login to your account.",
+      title: msg,
       color: "green",
       icon: "i-heroicons-check-circle",
       timeout: props.timeout,
       ui: props.ui,
       callback: removeSuccess,
     });
-  } else if (type === "error") {
+  } else if (msg === "error" || code !== 200) {
     toast.add({
       id: "error",
-      title: "Registration failed!",
-      description: "Please try again.",
+      title: msg,
+      description: "Registration failed!",
       color: "red",
       icon: "i-heroicons-x-circle",
       timeout: props.timeout,
@@ -42,7 +55,8 @@ export const userRegistrationToast = (type: string) => {
   }
 };
 
-export const userLoginToast = (type: string) => {
+export const userLoginToast = (errArr: any[], code?: number) => {
+  const msg = concatenateValues(errArr);
   const toast = useToast();
   const props = {
     timeout: 2000,
@@ -60,21 +74,20 @@ export const userLoginToast = (type: string) => {
   const removeSuccess = () => {
     toast.remove("success");
   };
-
-  if (type === "success") {
+  if (msg === "success" || code === 200) {
     toast.add({
       id: "success",
-      title: "Login successful!",
+      title: msg,
       color: "green",
       icon: "i-heroicons-check-circle",
       timeout: props.timeout,
       ui: props.ui,
       callback: removeSuccess,
     });
-  } else if (type === "error") {
+  } else if (msg === "error" || code !== 200) {
     toast.add({
       id: "error",
-      title: "An Error Occured!",
+      title: msg,
       description: "Please try again.",
       color: "red",
       icon: "i-heroicons-x-circle",
