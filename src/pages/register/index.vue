@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import type { FormError, FormSubmitEvent } from "@nuxt/ui/dist/runtime/types";
+import type { FormError } from "@nuxt/ui/dist/runtime/types";
+import { employerRegister } from "@/composables/services/auth/auth";
+import { userRegistrationToast } from "@/composables/helpers/notifications";
 
 definePageMeta({
   layout: "auth",
@@ -16,7 +18,9 @@ useHead({
   ],
 });
 
-const state = ref({
+const loading = ref(false);
+
+const state = reactive({
   firstName: "",
   lastName: "",
   companyName: "",
@@ -28,14 +32,37 @@ const state = ref({
 const validate = (state: any): FormError[] => {
   const errors = [];
   if (!state.email) errors.push({ path: "email", message: "Required" });
-  if (!state.password) errors.push({ path: "password", message: "Required" });
+  if (!state.firstName)
+    errors.push({ path: "given_name", message: "Required" });
+  if (!state.lastName)
+    errors.push({ path: "family_name", message: "Required" });
+  if (!state.companyName)
+    errors.push({ path: "company_name", message: "Required" });
+  if (state.password.length < 8)
+    errors.push({
+      path: "password",
+      message: "Password must be at least 8 characters",
+    });
+  if (errors.length > 0) userRegistrationToast("error");
   return errors;
 };
 
-const submit = (event: FormSubmitEvent<any>) => {
-  // Do something with data
-  // eslint-disable-next-line no-console
-  console.log(event.data);
+const createEmployer = async () => {
+  loading.value = true;
+  try {
+    const response = await employerRegister(state);
+    // Handle the response here
+    // eslint-disable-next-line no-console
+    console.log(response);
+    loading.value = false;
+    userRegistrationToast("success");
+    navigateTo("/login");
+  } catch (error) {
+    // Handle errors here
+    loading.value = false;
+    // eslint-disable-next-line no-console
+    console.log(error);
+  }
 };
 
 const showPassword = ref(false);
@@ -69,7 +96,8 @@ const showPassword = ref(false);
         :validate="validate"
         :state="state"
         class="space-y-4"
-        @submit="submit"
+        :validate-on="['submit']"
+        @submit.prevent="createEmployer"
       >
         <div class="space-y-5">
           <UFormGroup
@@ -82,6 +110,7 @@ const showPassword = ref(false);
               v-model="state.firstName"
               placeholder="Enter your first name"
               size="xl"
+              class="autofill:bg-transparent"
             />
           </UFormGroup>
           <UFormGroup
@@ -142,6 +171,7 @@ const showPassword = ref(false);
                     showPassword ? 'i-heroicons-eye-slash' : 'i-heroicons-eye'
                   "
                   :padded="false"
+                  :ui="{ color: 'primary' }"
                   @click="showPassword = !showPassword"
                 />
               </template>
@@ -150,9 +180,10 @@ const showPassword = ref(false);
         </div>
         <UButton
           type="submit"
-          class="lg:max-w-[150px] w-full justify-center"
+          size="lg"
           color="white"
           variant="solid"
+          :loading="loading"
         >
           Submit
         </UButton>
@@ -171,5 +202,11 @@ const showPassword = ref(false);
 <style scoped>
 ::-webkit-scrollbar {
   display: none;
+}
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  background-color: transparent !important;
 }
 </style>
