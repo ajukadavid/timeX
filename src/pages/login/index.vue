@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type { FormError } from "@nuxt/ui/dist/runtime/types";
 import { loginEmployer } from "@/composables/services/auth/auth";
+import { useLoginValidate } from "@/composables/helpers/validate";
 import { userLoginToast } from "@/composables/helpers/notifications";
 
 definePageMeta({
@@ -25,32 +25,19 @@ const state = reactive({
   password: "",
 });
 
-const validate = (state: any): FormError[] => {
-  const errors = [];
-  if (!state.email) errors.push({ path: "email", message: "Required" });
-  if (state.password.length < 8)
-    errors.push({
-      path: "password",
-      message: "Password must be at least 8 characters",
-    });
-  if (errors.length > 0) userLoginToast("error");
-  return errors;
-};
-
 const login = async () => {
   loading.value = true;
   try {
     const response = await loginEmployer(state);
     // Handle the response here
-    // eslint-disable-next-line no-console
-    console.log(response);
+
     loading.value = false;
-    userLoginToast("success");
+    userLoginToast(response.data.message, response.data.code);
     navigateTo("/");
-  } catch (error) {
-    // Handle errors here
+  } catch (error: any) {
     loading.value = false;
-    userLoginToast("error");
+    const err = [error.response.data.message];
+    userLoginToast(err, error.response.data.code);
   }
 };
 
@@ -60,94 +47,91 @@ const showPassword = ref(false);
 <template>
   <div class="flex h-screen">
     <div
-      class="hidden bg-primary lg:grid flex-1 overflow-hidden place-content-center text-center"
+      class="hidden bg-primary lg:grid flex-[0.6] overflow-hidden place-content-center text-center"
     >
       <img src="~/" alt="" />
     </div>
     <div
-      class="flex flex-col container mx-auto px-6 pb-6 max-w-lg w-full bg-white overflow-auto dark:bg-slate-800"
+      class="px-6 pb-6 lg:flex-[0.4] flex-1 flex flex-col w-full justify-center bg-white overflow-auto dark:bg-slate-800"
     >
-      <div>
-        <h2 class="my-6 text-2xl font-bold text-carnation">
-          <nuxt-link to="/"> TimeX </nuxt-link>
-        </h2>
-        <p
-          class="text-3xl font-bold selection:bg-indigo-700 selection:text-white"
+      <div class="max-w-md mx-auto space-y-5 w-full">
+        <div>
+          <h2 class="my-6 text-2xl font-bold text-blueZodiac dark:text-white">
+            <nuxt-link to="/"> TimeX </nuxt-link>
+          </h2>
+          <p
+            class="text-3xl font-bold selection:bg-indigo-700 selection:text-white"
+          >
+            Welcome Back
+          </p>
+          <p class="text-gray-500 dark:text-gray-400">
+            Login to your account to continue
+          </p>
+        </div>
+
+        <UForm
+          :validate="useLoginValidate"
+          :state="state"
+          class="space-y-4 justify-center flex items-center flex-col"
+          :validate-on="['submit']"
+          @submit.prevent="login"
         >
-          Welcome Back
-        </p>
-        <p class="text-gray-500 dark:text-gray-400">
-          Login to your account to continue
+          <div class="space-y-5 w-full">
+            <UFormGroup label="Email" name="email" size="xl" class="space-y-2">
+              <UInput
+                v-model="state.email"
+                placeholder="Email Address"
+                size="xl"
+              />
+            </UFormGroup>
+
+            <UFormGroup
+              label="Password"
+              name="password"
+              size="xl"
+              class="space-y-2"
+            >
+              <UInput
+                v-model="state.password"
+                :type="showPassword ? 'text' : 'password'"
+                placeholder="Password"
+                size="xl"
+                :ui="{ icon: { trailing: { pointer: '' } } }"
+              >
+                <template #trailing>
+                  <UButton
+                    color="primary"
+                    variant="link"
+                    :icon="
+                      showPassword ? 'i-heroicons-eye-slash' : 'i-heroicons-eye'
+                    "
+                    :padded="false"
+                    :ui="{ color: 'primary' }"
+                    @click="showPassword = !showPassword"
+                  />
+                </template>
+              </UInput>
+            </UFormGroup>
+          </div>
+          <UButton
+            type="submit"
+            size="lg"
+            color="white"
+            variant="solid"
+            class="self-start"
+            :loading="loading"
+          >
+            Submit
+          </UButton>
+        </UForm>
+
+        <p class="text-sm text-center my-3">
+          Don't have an account?
+          <nuxt-link to="/register" class="text-primary font-bold">
+            Register
+          </nuxt-link>
         </p>
       </div>
-
-      <UForm
-        :validate="validate"
-        :state="state"
-        class="space-y-4 flex-1 justify-center flex items-center flex-col"
-        :validate-on="['submit']"
-        @submit.prevent="login"
-      >
-        <div class="space-y-5 w-full">
-          <UFormGroup
-            label="Email"
-            name="email"
-            size="xl"
-            class="space-y-2 text-black dark:text-white"
-          >
-            <UInput
-              v-model="state.email"
-              placeholder="Email Address"
-              size="xl"
-            />
-          </UFormGroup>
-
-          <UFormGroup
-            label="Password"
-            name="password"
-            size="xl"
-            class="space-y-2 text-black dark:text-white"
-          >
-            <UInput
-              v-model="state.password"
-              :type="showPassword ? 'text' : 'password'"
-              placeholder="Password"
-              size="xl"
-              :ui="{ icon: { trailing: { pointer: '' } } }"
-            >
-              <template #trailing>
-                <UButton
-                  color="primary"
-                  variant="link"
-                  :icon="
-                    showPassword ? 'i-heroicons-eye-slash' : 'i-heroicons-eye'
-                  "
-                  :padded="false"
-                  :ui="{ color: 'primary' }"
-                  @click="showPassword = !showPassword"
-                />
-              </template>
-            </UInput>
-          </UFormGroup>
-        </div>
-        <UButton
-          type="submit"
-          size="lg"
-          color="white"
-          variant="solid"
-          class="self-start"
-          :loading="loading"
-        >
-          Submit
-        </UButton>
-      </UForm>
-
-      <p class="text-sm text-center my-3">
-        Don't have an account?
-        <nuxt-link to="/register" class="text-primary font-bold">
-          Register
-        </nuxt-link>
-      </p>
     </div>
   </div>
 </template>

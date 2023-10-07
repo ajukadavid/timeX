@@ -8,8 +8,6 @@ import axios, {
 const BASE_URL = "https://timex-vzwo.onrender.com/api/v1";
 const logOnDev = (message: string) => {
   if (import.meta.env.MODE === "development") {
-    // eslint-disable-next-line no-console
-    console.log(message);
   }
 };
 
@@ -34,7 +32,7 @@ export const onRequest = (
 const onResponse = (response: AxiosResponse): AxiosResponse => {
   const { method, url } = response.config;
   const { status } = response;
-  if (url?.includes("token")) {
+  if (url?.includes("token") && response.data.token) {
     localStorage.setItem("token", response.data.token);
   }
 
