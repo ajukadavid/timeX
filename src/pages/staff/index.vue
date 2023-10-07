@@ -1,1 +1,1 @@
-<template>staff page</template>
+<template><div>staff page</div></template>

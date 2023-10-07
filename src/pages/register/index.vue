@@ -55,12 +55,12 @@ const showPassword = ref(false);
 <template>
   <div class="flex h-screen">
     <div
-      class="hidden bg-primary lg:grid flex-1 overflow-hidden place-content-center text-center"
+      class="hidden bg-primary lg:grid flex-[0.6] overflow-hidden place-content-center text-center"
     >
       <img src="~/" alt="" />
     </div>
     <div
-      class="container mx-auto px-6 pb-6 max-w-lg w-full bg-white overflow-auto dark:bg-slate-800"
+      class="px-6 pb-6 lg:flex-[0.4] flex-1 flex flex-col w-full bg-white overflow-scroll dark:bg-slate-800"
     >
       <div>
         <h2 class="my-6 text-2xl font-bold text-carnation">
@@ -76,7 +76,7 @@ const showPassword = ref(false);
         </p>
       </div>
 
-      <UForm
+      <!-- <UForm
         :validate="useSignUpValidate"
         :state="state"
         :validate-on="['submit']"
@@ -89,6 +89,27 @@ const showPassword = ref(false);
             size="xl"
             class="space-y-2 text-black dark:text-white"
           >
+            Don't have a timeX account? Let's fix that.
+          </p>
+          <p class="my-5 font-medium text-lg">
+            Fill out the form below to have full access of the platform.
+          </p>
+        </div> -->
+
+      <UForm
+        :validate="useSignUpValidate"
+        :state="state"
+        class="space-y-4"
+        :validate-on="['submit']"
+        @submit.prevent="createEmployer"
+      >
+        <div class="space-y-5">
+          <UFormGroup
+            label="First Name"
+            name="given_name"
+            size="xl"
+            class="space-y-2"
+          >
             <UInput
               v-model="state.firstName"
               placeholder="Enter your first name"
@@ -100,7 +121,7 @@ const showPassword = ref(false);
             label="Last Name"
             name="family_name"
             size="xl"
-            class="space-y-2 text-black dark:text-white"
+            class="space-y-2"
           >
             <UInput
               v-model="state.lastName"
@@ -108,12 +129,7 @@ const showPassword = ref(false);
               size="xl"
             />
           </UFormGroup>
-          <UFormGroup
-            label="Email"
-            name="email"
-            size="xl"
-            class="space-y-2 text-black dark:text-white"
-          >
+          <UFormGroup label="Email" name="email" size="xl" class="space-y-2">
             <UInput
               v-model="state.email"
               placeholder="Email Address"
@@ -124,7 +140,7 @@ const showPassword = ref(false);
             label="Company Name"
             name="company_name"
             size="xl"
-            class="space-y-2 text-black dark:text-white"
+            class="space-y-2"
           >
             <UInput
               v-model="state.companyName"
@@ -137,28 +153,20 @@ const showPassword = ref(false);
             label="Password"
             name="password"
             size="xl"
-            class="space-y-2 text-black dark:text-white"
+            class="space-y-2"
           >
-            <UInput
-              v-model="state.password"
-              :type="showPassword ? 'text' : 'password'"
-              placeholder="Password"
-              size="xl"
-              :ui="{ icon: { trailing: { pointer: '' } } }"
-            >
-              <template #trailing>
-                <UButton
-                  color="primary"
-                  variant="link"
-                  :icon="
-                    showPassword ? 'i-heroicons-eye-slash' : 'i-heroicons-eye'
-                  "
-                  :padded="false"
-                  :ui="{ color: 'primary' }"
-                  @click="showPassword = !showPassword"
-                />
-              </template>
-            </UInput>
+            <template #trailing>
+              <UButton
+                color="primary"
+                variant="link"
+                :icon="
+                  showPassword ? 'i-heroicons-eye-slash' : 'i-heroicons-eye'
+                "
+                :padded="false"
+                :ui="{ color: 'primary' }"
+                @click="showPassword = !showPassword"
+              />
+            </template>
           </UFormGroup>
         </div>
         <UButton
