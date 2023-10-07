@@ -4,13 +4,20 @@ export default defineNuxtConfig({
   alias: {
     "class-validator": "class-validator/cjs/index.js",
   },
-  modules: ["@nuxt/ui", "@nuxtjs/eslint-module"],
+  modules: ["@nuxt/ui", "@nuxtjs/eslint-module", "@nuxt/devtools"],
   ui: {
     global: true,
-    icons: ["mdi", "simple-icons", "heroicons", "material-icons"],
+    icons: ["mdi", "line-md", "simple-icons", "heroicons", "material-icons"],
   },
   pages: true,
   eslint: {
     lintOnStart: false,
+  },
+  devtools: {
+    // Enable devtools (default: true)
+    enabled: true,
+    // VS Code Server options
+    vscode: {},
+    // ...other options
   },
 });
