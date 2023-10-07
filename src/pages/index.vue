@@ -15,6 +15,7 @@ async function fetchData() {
   try {
     const response = await axiosInstance.post("/staffs", data);
     // Handle the response here
+    // eslint-disable-next-line no-console
     console.log(response);
   } catch (error) {
     // Handle errors here

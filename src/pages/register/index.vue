@@ -34,6 +34,7 @@ const validate = (state: any): FormError[] => {
 
 const submit = (event: FormSubmitEvent<any>) => {
   // Do something with data
+  // eslint-disable-next-line no-console
   console.log(event.data);
 };
 

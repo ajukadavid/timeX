@@ -8,6 +8,7 @@ import axios, {
 const BASE_URL = "https://timex-vzwo.onrender.com/api/v1";
 const logOnDev = (message: string) => {
   if (import.meta.env.MODE === "development") {
+    // eslint-disable-next-line no-console
     console.log(message);
   }
 };
