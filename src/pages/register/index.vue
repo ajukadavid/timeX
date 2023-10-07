@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { FormError } from "@nuxt/ui/dist/runtime/types";
+import { useSignUpValidate } from "@/composables/helpers/validate";
 import { employerRegister } from "@/composables/services/auth/auth";
 import { userRegistrationToast } from "@/composables/helpers/notifications";
 
@@ -29,24 +29,6 @@ const state = reactive({
   password: "",
 });
 
-const validate = (state: any): FormError[] => {
-  const errors = [];
-  if (!state.email) errors.push({ path: "email", message: "Required" });
-  if (!state.firstName)
-    errors.push({ path: "given_name", message: "Required" });
-  if (!state.lastName)
-    errors.push({ path: "family_name", message: "Required" });
-  if (!state.companyName)
-    errors.push({ path: "company_name", message: "Required" });
-  if (state.password.length < 8)
-    errors.push({
-      path: "password",
-      message: "Password must be at least 8 characters",
-    });
-  if (errors.length > 0) userRegistrationToast("error");
-  return errors;
-};
-
 const createEmployer = async () => {
   loading.value = true;
   try {
@@ -55,13 +37,15 @@ const createEmployer = async () => {
     // eslint-disable-next-line no-console
     console.log(response);
     loading.value = false;
-    userRegistrationToast("success");
+    userRegistrationToast(response.data.message, response.data.code);
+
     navigateTo("/login");
-  } catch (error) {
+  } catch (error: any) {
     // Handle errors here
     loading.value = false;
-    // eslint-disable-next-line no-console
-    console.log(error);
+
+    const err = [error.response.data.message];
+    userRegistrationToast(err, error.response.data.code);
   }
 };
 
@@ -71,12 +55,12 @@ const showPassword = ref(false);
 <template>
   <div class="flex h-screen">
     <div
-      class="hidden bg-primary lg:grid flex-1 overflow-hidden place-content-center text-center"
+      class="hidden bg-primary lg:grid flex-[0.6] overflow-hidden place-content-center text-center"
     >
       <img src="~/" alt="" />
     </div>
     <div
-      class="container mx-auto px-6 pb-6 max-w-lg w-full bg-white overflow-auto dark:bg-slate-800"
+      class="px-6 pb-6 lg:flex-[0.4] flex-1 flex flex-col w-full bg-white overflow-scroll dark:bg-slate-800"
     >
       <div>
         <h2 class="my-6 text-2xl font-bold text-carnation">
@@ -92,8 +76,28 @@ const showPassword = ref(false);
         </p>
       </div>
 
+      <!-- <UForm
+        :validate="useSignUpValidate"
+        :state="state"
+        :validate-on="['submit']"
+        @submit.prevent="createEmployer"
+      >
+        <div class="space-y-5">
+          <UFormGroup
+            label="First Name"
+            name="given_name"
+            size="xl"
+            class="space-y-2 text-black dark:text-white"
+          >
+            Don't have a timeX account? Let's fix that.
+          </p>
+          <p class="my-5 font-medium text-lg">
+            Fill out the form below to have full access of the platform.
+          </p>
+        </div> -->
+
       <UForm
-        :validate="validate"
+        :validate="useSignUpValidate"
         :state="state"
         class="space-y-4"
         :validate-on="['submit']"
@@ -104,7 +108,7 @@ const showPassword = ref(false);
             label="First Name"
             name="given_name"
             size="xl"
-            class="space-y-2 text-black dark:text-white"
+            class="space-y-2"
           >
             <UInput
               v-model="state.firstName"
@@ -117,7 +121,7 @@ const showPassword = ref(false);
             label="Last Name"
             name="family_name"
             size="xl"
-            class="space-y-2 text-black dark:text-white"
+            class="space-y-2"
           >
             <UInput
               v-model="state.lastName"
@@ -125,12 +129,7 @@ const showPassword = ref(false);
               size="xl"
             />
           </UFormGroup>
-          <UFormGroup
-            label="Email"
-            name="email"
-            size="xl"
-            class="space-y-2 text-black dark:text-white"
-          >
+          <UFormGroup label="Email" name="email" size="xl" class="space-y-2">
             <UInput
               v-model="state.email"
               placeholder="Email Address"
@@ -141,7 +140,7 @@ const showPassword = ref(false);
             label="Company Name"
             name="company_name"
             size="xl"
-            class="space-y-2 text-black dark:text-white"
+            class="space-y-2"
           >
             <UInput
               v-model="state.companyName"
@@ -154,34 +153,27 @@ const showPassword = ref(false);
             label="Password"
             name="password"
             size="xl"
-            class="space-y-2 text-black dark:text-white"
+            class="space-y-2"
           >
-            <UInput
-              v-model="state.password"
-              :type="showPassword ? 'text' : 'password'"
-              placeholder="Password"
-              size="xl"
-              :ui="{ icon: { trailing: { pointer: '' } } }"
-            >
-              <template #trailing>
-                <UButton
-                  color="primary"
-                  variant="link"
-                  :icon="
-                    showPassword ? 'i-heroicons-eye-slash' : 'i-heroicons-eye'
-                  "
-                  :padded="false"
-                  :ui="{ color: 'primary' }"
-                  @click="showPassword = !showPassword"
-                />
-              </template>
-            </UInput>
+            <template #trailing>
+              <UButton
+                color="primary"
+                variant="link"
+                :icon="
+                  showPassword ? 'i-heroicons-eye-slash' : 'i-heroicons-eye'
+                "
+                :padded="false"
+                :ui="{ color: 'primary' }"
+                @click="showPassword = !showPassword"
+              />
+            </template>
           </UFormGroup>
         </div>
         <UButton
           type="submit"
           size="lg"
           color="white"
+          class="mt-10 mb-3"
           variant="solid"
           :loading="loading"
         >

@@ -20,6 +20,8 @@ module.exports = {
         "no-unused-expressions": "off",
         "no-unused-vars": "off",
         "@typescript-eslint/no-unused-vars": "off",
+        "no-useless-escape": "warn",
+        "no-empty": "warn",
       },
     },
   ],
