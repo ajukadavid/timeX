@@ -18,5 +18,10 @@ export default defineAppConfig({
         lg: "px-8 py-3 lg:max-w-[150px] w-full justify-center text-base",
       },
     },
+    formGroup: {
+      label: {
+        base: "block font-medium text-black dark:text-white",
+      },
+    },
   },
 });
