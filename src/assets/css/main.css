@@ -1,0 +1,5 @@
+@import url("https://fonts.googleapis.com/css2?family=Lora:wght@600&family=Open+Sans:ital,wght@0,400;0,500;0,700;1,600&family=Raleway:wght@400;500;600&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;

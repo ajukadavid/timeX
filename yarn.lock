@@ -657,6 +657,13 @@
   dependencies:
     "@iconify/types" "*"
 
+"@iconify-json/line-md@^1.1.31":
+  version "1.1.31"
+  resolved "https://registry.yarnpkg.com/@iconify-json/line-md/-/line-md-1.1.31.tgz#350507d323055ff4f156504ce82bf868379df818"
+  integrity sha512-5/NrNU5LgtTJFMcankOtQLOko8Xa2XPkoIx0b27Rxem21NDh1mQNEUDml6cHSQbXt1/u1OoRcn25J6RvPrdP3A==
+  dependencies:
+    "@iconify/types" "*"
+
 "@iconify-json/mdi@^1.1.54":
   version "1.1.54"
   resolved "https://registry.yarnpkg.com/@iconify-json/mdi/-/mdi-1.1.54.tgz#343477417c15fceeaf0f32012d58a4a8d9791786"
