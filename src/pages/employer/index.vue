@@ -4,4 +4,8 @@ definePageMeta({
 });
 </script>
 
-<template><div class="bg-red-500">employer pagejjj</div></template>
+<template>
+  <div>
+    <p>Employer Page</p>
+  </div>
+</template>

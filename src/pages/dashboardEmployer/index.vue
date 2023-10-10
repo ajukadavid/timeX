@@ -1,1 +1,3 @@
-<template>bruhh</template>
+<template>
+  <p>Hey dashy</p>
+</template>

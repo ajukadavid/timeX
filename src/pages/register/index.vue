@@ -155,18 +155,26 @@ const showPassword = ref(false);
             size="xl"
             class="space-y-2"
           >
-            <template #trailing>
-              <UButton
-                color="primary"
-                variant="link"
-                :icon="
-                  showPassword ? 'i-heroicons-eye-slash' : 'i-heroicons-eye'
-                "
-                :padded="false"
-                :ui="{ color: 'primary' }"
-                @click="showPassword = !showPassword"
-              />
-            </template>
+            <UInput
+              v-model="state.password"
+              :type="showPassword ? 'text' : 'password'"
+              placeholder="Password"
+              size="xl"
+              :ui="{ icon: { trailing: { pointer: '' } } }"
+            >
+              <template #trailing>
+                <UButton
+                  color="primary"
+                  variant="link"
+                  :icon="
+                    showPassword ? 'i-heroicons-eye-slash' : 'i-heroicons-eye'
+                  "
+                  :padded="false"
+                  :ui="{ color: 'primary' }"
+                  @click="showPassword = !showPassword"
+                />
+              </template>
+            </UInput>
           </UFormGroup>
         </div>
         <UButton
