@@ -22,6 +22,8 @@ module.exports = {
         "@typescript-eslint/no-unused-vars": "off",
         "no-useless-escape": "warn",
         "no-empty": "warn",
+        "vue/no-multiple-template-root": "warn",
+        "vue/no-unused-vars": "warn",
       },
     },
   ],
