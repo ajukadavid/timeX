@@ -1,5 +1,5 @@
 <script></script>
 
 <template>
-  <div>new page</div>
+  <div class="flex"></div>
 </template>

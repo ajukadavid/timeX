@@ -5,7 +5,7 @@ const isSideBarOpened = useState("showNav");
   <div class="bg-white dark:bg-primary h-screen w-full flex">
     <XSidebar />
     <div
-      class="flex flex-col w-full flex-1 bg-green-700"
+      class="flex flex-col w-full flex-1"
       :class="isSideBarOpened ? 'ml-64' : 'ml-16'"
     >
       <slot />
