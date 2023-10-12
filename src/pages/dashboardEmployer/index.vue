@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import { getStaffs } from "@/composables/services/data/data";
+const isModalOpen = useState("showModal");
 
 onMounted(() => {
   getStaffs();
@@ -19,9 +20,13 @@ onMounted(() => {
         color="white"
         variant="solid"
         class="self-start"
+        @click="isModalOpen = true"
       >
         Add Employees
       </UButton>
     </div>
   </main>
+  <XModal>
+    <template #header> Create Employer </template>
+  </XModal>
 </template>
