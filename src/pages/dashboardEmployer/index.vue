@@ -27,6 +27,6 @@ onMounted(() => {
     </div>
   </main>
   <XModal>
-    <template #header> Create Employer </template>
+    <template #header> Create Employee </template>
   </XModal>
 </template>
