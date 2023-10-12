@@ -5,6 +5,7 @@ import { userLoginToast } from "@/composables/helpers/notifications";
 
 definePageMeta({
   layout: "auth",
+  middleware: ["auth"],
 });
 
 useHead({
