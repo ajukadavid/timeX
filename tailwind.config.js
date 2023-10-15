@@ -1,6 +1,11 @@
 import colors from "tailwindcss/colors";
 
 export const theme = {
+  fontFamily: {
+    sans: "Open Sans,sans-serif",
+    raleway: "Raleway,sans-serif",
+    lora: "Lora, serif",
+  },
   colors: {
     ...colors,
     blueZodiac: {

@@ -5,6 +5,7 @@ import { userLoginToast } from "@/composables/helpers/notifications";
 
 definePageMeta({
   layout: "auth",
+  middleware: ["auth"],
 });
 
 useHead({
@@ -29,11 +30,13 @@ const login = async () => {
   loading.value = true;
   try {
     const response = await loginEmployer(state);
-    // Handle the response here
-
     loading.value = false;
-    userLoginToast(response.data.message, response.data.code);
-    navigateTo("/");
+    userLoginToast(["Successfully Logged in!"], 200);
+    if (response.employer) {
+      navigateTo("/employer");
+    } else {
+      navigateTo("/staff");
+    }
   } catch (error: any) {
     loading.value = false;
     const err = [error.response.data.message];
@@ -47,9 +50,9 @@ const showPassword = ref(false);
 <template>
   <div class="flex h-screen">
     <div
-      class="hidden bg-primary lg:grid flex-[0.6] overflow-hidden place-content-center text-center"
+      class="hidden bg-primary lg:grid flex-[0.6] overflow-hidden place-items-center text-center"
     >
-      <img src="~/" alt="" />
+      <img src="/login.svg" alt="" class="w-full" />
     </div>
     <div
       class="px-6 pb-6 lg:flex-[0.4] flex-1 flex flex-col w-full justify-center bg-white overflow-auto dark:bg-slate-800"

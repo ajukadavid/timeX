@@ -2,12 +2,16 @@ export default defineAppConfig({
   ui: {
     strategy: "override",
     primary: "blueZodiac",
-    gray: "cool",
+    gray: "zinc",
     notifications: {
       // Show toasts at the top right of the screen
       position: "top-0 right-0",
     },
     button: {
+      default: {
+        color: "white",
+        loadingIcon: "i-mdi-loading",
+      },
       color: {
         white: {
           solid:
