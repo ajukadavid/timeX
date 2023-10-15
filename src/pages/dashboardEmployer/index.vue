@@ -1,7 +1,31 @@
 <script lang="ts" setup>
-import { getStaffs } from "@/composables/services/data/data";
+import { getStaffs, registerStaff } from "@/composables/services/data/data";
+import { userLoginToast } from "@/composables/helpers/notifications";
 const isModalOpen = useState("showModal");
 
+const state = reactive({
+  firstName: "",
+  lastName: "",
+  email: "",
+  role: "",
+});
+const loading = ref(false);
+
+const createStaff = async () => {
+  loading.value = true;
+  try {
+    const response = await registerStaff(state);
+    loading.value = false;
+    userLoginToast(["Employee Successfully Created!"], 200);
+    isModalOpen.value = false;
+    getStaffs();
+  } catch (error: any) {
+    loading.value = false;
+    const err = [error.response.data.message];
+    isModalOpen.value = false;
+    userLoginToast(err, error.response.data.code);
+  }
+};
 onMounted(() => {
   getStaffs();
 });
@@ -32,8 +56,10 @@ onMounted(() => {
     </template>
     <div>
       <UForm
+        :state="state"
         class="space-y-4 justify-center flex items-center flex-col"
         :validate-on="['submit']"
+        @submit.prevent="createStaff"
       >
         <div class="space-y-5 w-full">
           <UFormGroup
@@ -42,7 +68,11 @@ onMounted(() => {
             size="xl"
             class="space-y-2"
           >
-            <UInput placeholder="First Name" size="xl" />
+            <UInput
+              v-model="state.firstName"
+              placeholder="First Name"
+              size="xl"
+            />
           </UFormGroup>
 
           <UFormGroup
@@ -51,15 +81,23 @@ onMounted(() => {
             size="xl"
             class="space-y-2"
           >
-            <UInput placeholder="First Last" size="xl" />
+            <UInput
+              v-model="state.lastName"
+              placeholder="First Last"
+              size="xl"
+            />
           </UFormGroup>
 
           <UFormGroup label="Email" name="email" size="xl" class="space-y-2">
-            <UInput placeholder="Email Address" size="xl" />
+            <UInput
+              v-model="state.email"
+              placeholder="Email Address"
+              size="xl"
+            />
           </UFormGroup>
 
           <UFormGroup label="Role" name="role" size="xl" class="space-y-2">
-            <UInput placeholder="Role" size="xl" />
+            <UInput v-model="state.role" placeholder="Role" size="xl" />
           </UFormGroup>
         </div>
       </UForm>
@@ -72,6 +110,8 @@ onMounted(() => {
           color="white"
           variant="solid"
           class="self-start"
+          :loading="loading"
+          @click="createStaff"
         >
           Submit
         </UButton>
