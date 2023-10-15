@@ -1,6 +1,8 @@
 <script lang="ts" setup>
 import { getStaffs, registerStaff } from "@/composables/services/data/data";
 import { userLoginToast } from "@/composables/helpers/notifications";
+import { StaffData } from "@/types/data";
+
 const isModalOpen = useState("showModal");
 
 const state = reactive({
@@ -10,7 +12,7 @@ const state = reactive({
   role: "",
 });
 const loading = ref(false);
-
+const staffData = ref<StaffData[]>([]);
 const createStaff = async () => {
   loading.value = true;
   try {
@@ -26,8 +28,9 @@ const createStaff = async () => {
     userLoginToast(err, error.response.data.code);
   }
 };
-onMounted(() => {
-  getStaffs();
+onMounted(async () => {
+  const data = await getStaffs();
+  staffData.value = data.staff;
 });
 </script>
 
@@ -48,6 +51,9 @@ onMounted(() => {
       >
         Add Employees
       </UButton>
+    </div>
+    <div class="mt-20">
+      <XTable :staff-data="staffData" />
     </div>
   </main>
   <XModal show-header show-footer>

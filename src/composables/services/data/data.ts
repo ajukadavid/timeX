@@ -1,13 +1,8 @@
 import axios from "axios";
 import { setupInterceptors } from "../../helpers/axios-interceptor";
-const axiosInstance = setupInterceptors(axios.create());
+import { StaffRegister } from "@/types/auth";
 
-interface StaffRegister {
-  firstName: string;
-  lastName: string;
-  email: string;
-  role: string;
-}
+const axiosInstance = setupInterceptors(axios.create());
 
 export const getStaffs = async () => {
   const response = await axiosInstance.get("/staffs");

@@ -1,18 +1,7 @@
 import axios from "axios";
 import { setupInterceptors } from "../../helpers/axios-interceptor";
+import { EmployerRegister, Login } from "@/types/auth";
 const axiosInstance = setupInterceptors(axios.create());
-
-export interface Login {
-  email: string;
-  password?: string;
-}
-
-interface EmployerRegister extends Login {
-  firstName: string;
-  lastName: string;
-  companyName: string;
-  phone?: string;
-}
 
 export const loginEmployer = async (data: Login) => {
   const response = await axiosInstance.post("/employers/tokens", data);
