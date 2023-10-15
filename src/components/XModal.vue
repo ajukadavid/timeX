@@ -2,7 +2,10 @@
   <UModal v-model="showModal">
     <UCard :ui="{ divide: 'divide-y divide-gray-100 dark:divide-gray-800' }">
       <template #header>
-        <div class="flex justify-between dark:text-white text-slate-800">
+        <div
+          class="flex dark:text-white text-slate-800"
+          :class="[showHeader ? 'justify-between' : 'justify-end ']"
+        >
           <slot v-if="showHeader" name="header"></slot>
           <UIcon
             name="i-heroicons-x-mark"
@@ -15,7 +18,6 @@
       <slot></slot>
 
       <template v-if="showFooter" #footer>
-        <!-- Content -->
         <slot name="footer"></slot>
       </template>
     </UCard>
