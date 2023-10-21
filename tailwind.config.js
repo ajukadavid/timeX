@@ -53,6 +53,9 @@ export const theme = {
     colors: {
       link: "#eee",
     },
+    backgroundImage: {
+      "login-bg": "url('./src/public/login.svg')",
+    },
   },
 };
 export const variants = {

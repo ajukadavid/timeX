@@ -53,7 +53,8 @@ onMounted(async () => {
       </UButton>
     </div>
     <div class="mt-20">
-      <XTable :staff-data="staffData" />
+      <XTable :staff-data="staffData">
+      </XTable>
     </div>
   </main>
   <XModal show-header show-footer>
