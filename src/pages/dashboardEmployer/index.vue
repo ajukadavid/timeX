@@ -17,10 +17,15 @@ const createStaff = async () => {
   loading.value = true;
   try {
     const response = await registerStaff(state);
+
     loading.value = false;
     userLoginToast(["Employee Successfully Created!"], 200);
     isModalOpen.value = false;
-    getStaffs();
+    state.email = "";
+    state.firstName = "";
+    state.lastName = "";
+    state.role = "";
+    getData();
   } catch (error: any) {
     loading.value = false;
     const err = [error.response.data.message];
@@ -28,9 +33,26 @@ const createStaff = async () => {
     userLoginToast(err, error.response.data.code);
   }
 };
-onMounted(async () => {
+
+const pageData = reactive({
+  page: 1,
+  count: "5",
+  total: 0,
+});
+
+const getData = async () => {
   const data = await getStaffs();
+
+  pageData.page = 1;
+  pageData.total = data.count;
   staffData.value = data.staff;
+};
+
+const getPage = (e: any) => {
+  console.log(e);
+};
+onMounted(async () => {
+  getData();
 });
 </script>
 
@@ -53,7 +75,12 @@ onMounted(async () => {
       </UButton>
     </div>
     <div class="mt-20">
-      <XTable :staff-data="staffData">
+      <XTable
+        :staff-data="staffData"
+        :pagination-data="pageData"
+        @prevPage="getPage"
+        @nextPage="getPage"
+      >
       </XTable>
     </div>
   </main>
