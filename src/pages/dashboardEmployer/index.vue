@@ -38,18 +38,24 @@ const pageData = reactive({
   page: 1,
   count: "5",
   total: 0,
+  next: "",
+  prev: "",
 });
 
 const getData = async () => {
   const data = await getStaffs();
 
   pageData.page = 1;
+  pageData.prev = data.previous;
+  pageData.next = data.next;
   pageData.total = data.count;
   staffData.value = data.staff;
 };
 
-const getPage = (e: any) => {
-  console.log(e);
+const getPage = async (page: any) => {
+  console.log(page);
+  const b = await page();
+  console.log(b);
 };
 onMounted(async () => {
   getData();

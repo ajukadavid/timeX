@@ -85,7 +85,7 @@ const items = (row: any) => [
               color="primary"
               :ui="{ rounded: 'rounded-full' }"
               class="rtl:[&_span:first-child]:rotate-180 me-2"
-              @click="emit('prevPage', paginationData.page - 1)"
+              @click="emit('prevPage', paginationData.prev)"
             />
           </UTooltip>
         </template>
@@ -96,7 +96,7 @@ const items = (row: any) => [
               color="primary"
               :ui="{ rounded: 'rounded-full' }"
               class="rtl:[&_span:last-child]:rotate-180 ms-2"
-              @click="emit('nextPage', paginationData.page + 1)"
+              @click="emit('nextPage', paginationData.next)"
             />
           </UTooltip>
         </template>
