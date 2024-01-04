@@ -42,8 +42,8 @@ const pageData = reactive({
   prev: "",
 });
 
-const getData = async () => {
-  const data = await getStaffs();
+const getData = async (pageNum?: number) => {
+  const data = await getStaffs(pageNum);
 
   pageData.page = 1;
   pageData.prev = data.previous;
@@ -52,12 +52,15 @@ const getData = async () => {
   staffData.value = data.staff;
 };
 
-const getPage = async (page: any) => {
-  console.log(page);
-  const b = await page();
-  console.log(b);
+const getPage = (page: any) => {
+  if (!page) {
+    getData();
+  } else {
+    const pageNumber = new URL(page).searchParams.get("page");
+    getData(Number(pageNumber));
+  }
 };
-onMounted(async () => {
+onMounted(() => {
   getData();
 });
 </script>
