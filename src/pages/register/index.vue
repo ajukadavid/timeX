@@ -33,15 +33,12 @@ const createEmployer = async () => {
   loading.value = true;
   try {
     const response = await employerRegister(state);
-    // Handle the response here
-    // eslint-disable-next-line no-console
-    console.log(response);
+
     loading.value = false;
     userRegistrationToast(response.data.message, response.data.code);
 
     navigateTo("/login");
   } catch (error: any) {
-    // Handle errors here
     loading.value = false;
 
     const err = [error.response.data.message];
