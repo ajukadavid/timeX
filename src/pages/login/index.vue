@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import { loginEmployer } from "@/composables/services/auth/auth";
+import { loginEmployer, loginStaff } from "@/composables/services/auth/auth";
 import { useLoginValidate } from "@/composables/helpers/validate";
 import { userLoginToast } from "@/composables/helpers/notifications";
 
+const $route = useRoute();
+const $router = useRouter();
+
 definePageMeta({
   layout: "auth",
-  middleware: ["auth"],
 });
 
 useHead({
@@ -20,6 +22,7 @@ useHead({
 });
 
 const loading = ref(false);
+const showPassword = ref(false);
 
 const state = reactive({
   email: "",
@@ -33,7 +36,7 @@ const login = async () => {
     loading.value = false;
     userLoginToast(["Successfully Logged in!"], 200);
     if (response.employer) {
-      navigateTo("/employer");
+      navigateTo("/dashboardEmployer");
     } else {
       navigateTo("/staff");
     }
@@ -44,24 +47,35 @@ const login = async () => {
   }
 };
 
-const showPassword = ref(false);
+onMounted(async () => {
+  if ($route.query.authToken) {
+    const token = $route.query.authToken;
+    const res = await loginStaff(token);
+    $router.push("/dashboardStaff");
+  }
+});
 </script>
 
 <template>
   <div class="flex h-screen">
-    <div
-      class="hidden bg-primary lg:grid flex-[0.6] overflow-hidden place-items-center text-center"
-    >
-      <img src="/login.svg" alt="" class="w-full" />
+    <div class="hero-bg hidden bg-primary lg:grid flex-[0.6] overflow-hidden">
+      <div class="flex px-8 gap-32 flex-col text-white">
+        <h2 class="my-6 text-5xl font-bold">
+          <nuxt-link to="/"> TimeX </nuxt-link>
+        </h2>
+        <em>
+          <h4 class="text-3xl italic justify-self-center font-lighter">
+            Your No. 1 HR Management <br />
+            System.
+          </h4>
+        </em>
+      </div>
     </div>
     <div
       class="px-6 pb-6 lg:flex-[0.4] flex-1 flex flex-col w-full justify-center bg-white overflow-auto dark:bg-slate-800"
     >
       <div class="max-w-md mx-auto space-y-5 w-full">
         <div>
-          <h2 class="my-6 text-2xl font-bold text-blueZodiac dark:text-white">
-            <nuxt-link to="/"> TimeX </nuxt-link>
-          </h2>
           <p
             class="text-3xl font-bold selection:bg-indigo-700 selection:text-white"
           >
@@ -148,5 +162,9 @@ input:-webkit-autofill:hover,
 input:-webkit-autofill:focus,
 input:-webkit-autofill:active {
   background-color: transparent !important;
+}
+
+.hero-bg {
+  background: url("/login.svg") no-repeat;
 }
 </style>

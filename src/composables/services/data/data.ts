@@ -4,8 +4,13 @@ import { StaffRegister } from "@/types/auth";
 
 const axiosInstance = setupInterceptors(axios.create());
 
-export const getStaffs = async () => {
-  const response = await axiosInstance.get("/staffs");
+export const getStaffs = async (page?: number) => {
+  let response;
+  if (page) {
+    response = await axiosInstance.get(`/staffs?page=${page}`);
+  } else {
+    response = await axiosInstance.get(`/staffs`);
+  }
   return response.data;
 };
 
