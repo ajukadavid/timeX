@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { loginEmployer } from "@/composables/services/auth/auth";
+import { loginEmployer, loginStaff } from "@/composables/services/auth/auth";
 import { useLoginValidate } from "@/composables/helpers/validate";
 import { userLoginToast } from "@/composables/helpers/notifications";
 
+const $route = useRoute();
 definePageMeta({
   layout: "auth",
 });
@@ -19,6 +20,7 @@ useHead({
 });
 
 const loading = ref(false);
+const showPassword = ref(false);
 
 const state = reactive({
   email: "",
@@ -43,7 +45,13 @@ const login = async () => {
   }
 };
 
-const showPassword = ref(false);
+onMounted(async () => {
+  if ($route.query.authToken) {
+    const token = $route.query.authToken;
+    const res = await loginStaff(token);
+    console.log(res);
+  }
+});
 </script>
 
 <template>

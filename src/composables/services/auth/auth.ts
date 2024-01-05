@@ -12,3 +12,8 @@ export const employerRegister = async (data: EmployerRegister) => {
   const response = await axiosInstance.post("/employers", data);
   return response.data;
 };
+
+export const loginStaff = async (authToken: string) => {
+  const res = await axiosInstance.post("/staffs/tokens", { authToken });
+  return res.data;
+};
