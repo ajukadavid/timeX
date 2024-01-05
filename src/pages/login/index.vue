@@ -2,7 +2,9 @@
 import { loginEmployer, loginStaff } from "@/composables/services/auth/auth";
 import { useLoginValidate } from "@/composables/helpers/validate";
 import { userLoginToast } from "@/composables/helpers/notifications";
+import { useUserStore } from "@/store/userStore";
 
+const store = useUserStore();
 const $route = useRoute();
 const $router = useRouter();
 
@@ -51,6 +53,10 @@ onMounted(async () => {
   if ($route.query.authToken) {
     const token = $route.query.authToken;
     const res = await loginStaff(token);
+    store.$patch({
+      role: res.staff.role,
+      name: `${res.staff.firstName} ${res.staff.lastName}`,
+    });
     $router.push("/dashboardStaff");
   }
 });
