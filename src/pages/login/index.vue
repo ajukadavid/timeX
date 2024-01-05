@@ -4,6 +4,8 @@ import { useLoginValidate } from "@/composables/helpers/validate";
 import { userLoginToast } from "@/composables/helpers/notifications";
 
 const $route = useRoute();
+const $router = useRouter();
+
 definePageMeta({
   layout: "auth",
 });
@@ -49,7 +51,7 @@ onMounted(async () => {
   if ($route.query.authToken) {
     const token = $route.query.authToken;
     const res = await loginStaff(token);
-    console.log(res);
+    $router.push("/dashboardStaff");
   }
 });
 </script>

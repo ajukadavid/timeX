@@ -43,6 +43,8 @@
     "@iconify/json": "^2.2.123",
     "@nuxt/ui": "^2.9.0",
     "@nuxtjs/eslint-module": "^4.1.0",
-    "axios": "^1.5.1"
+    "@pinia/nuxt": "^0.5.1",
+    "axios": "^1.5.1",
+    "pinia": "^2.1.7"
   }
 }
