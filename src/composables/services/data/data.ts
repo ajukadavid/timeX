@@ -29,7 +29,6 @@ export const registerStaff = async (data: StaffRegister) => {
 };
 
 export const createDepartment = async (name: string) => {
-  console.log(name);
-  // const response = await axiosInstance.post("/departments", { name });
-  // return response.data;
+  const response = await axiosInstance.post("/departments", { name });
+  return response.data;
 };

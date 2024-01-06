@@ -15,7 +15,6 @@ const staffData = ref<StaffData[]>([]);
 const handleCreateDepartment = async () => {
   loading.value = true;
   try {
-    console.log(state.deptName);
     const response = await createDepartment(state.deptName);
 
     loading.value = false;
@@ -129,7 +128,7 @@ onMounted(() => {
           variant="solid"
           class="self-start"
           :loading="loading"
-          @click="createDepartment"
+          @click="handleCreateDepartment"
         >
           Submit
         </UButton>
