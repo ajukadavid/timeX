@@ -6,18 +6,13 @@ import axios, {
 } from "axios";
 
 const BASE_URL = "https://timex-vzwo.onrender.com/api/v1";
-const logOnDev = (message: string) => {
-  if (import.meta.env.MODE === "development") {
-  }
-};
 
 export const onRequest = (
   config: InternalAxiosRequestConfig
 ): InternalAxiosRequestConfig => {
   const { method, url } = config;
   config.url = BASE_URL + url;
-  logOnDev(`🚀 [API] ${method?.toUpperCase()} ${url} | Request`);
-  if (url?.includes("staffs")) {
+  if (url?.includes("staffs") || url?.includes("departments")) {
     const token = localStorage.getItem("token");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
@@ -47,10 +42,6 @@ export const onErrorResponse = (
     const { method, url } = error.config as InternalAxiosRequestConfig;
     const { statusText, status } = (error.response as AxiosResponse) ?? {};
 
-    logOnDev(
-      `🚨 [API] ${method?.toUpperCase()} ${url} | Error ${status} ${message}`
-    );
-
     switch (status) {
       case 401: {
         // "Login required"
@@ -79,7 +70,6 @@ export const onErrorResponse = (
       sessionStorage.removeItem("token");
     }
   } else {
-    logOnDev(`🚨 [API] | Error ${error.message}`);
   }
 
   return Promise.reject(error);

@@ -1,3 +1,4 @@
+<!-- eslint-disable vue/no-multiple-template-root -->
 <script lang="ts" setup>
 import {
   getDepartments,
