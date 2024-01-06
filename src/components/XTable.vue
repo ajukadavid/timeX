@@ -1,82 +1,35 @@
 <script lang="ts" setup>
-import { StaffData } from "@/types/data";
-
 const emit = defineEmits(["prevPage", "nextPage"]);
 
-defineProps({
+const props = defineProps({
   staffData: {
-    type: Array as PropType<StaffData[]>,
+    type: Array as PropType<any>,
     required: true,
   },
   paginationData: {
     type: Object,
     required: true,
   },
+  columns: {
+    type: Array as PropType<{ key: string; label?: string }[]>,
+    required: true,
+  },
+  itemsGenerator: {
+    type: Function as PropType<(row: any) => any[]>,
+    required: true,
+  },
 });
-const columns = [
-  {
-    key: "_id",
-    label: "ID",
-  },
-  {
-    key: "firstName",
-    label: "First Name",
-  },
-  {
-    key: "lastName",
-    label: "Last Name",
-  },
-  {
-    key: "role",
-    label: "Staff Role",
-  },
-  {
-    key: "email",
-    label: "Email",
-  },
-  {
-    key: "actions",
-  },
-];
 
-const items = (row: any) => [
-  [
-    {
-      label: "View Employee",
-      icon: "i-heroicons-pencil-square-20-solid",
-      click: () => console.log("Edit", row.id),
-    },
-    {
-      label: "Duplicate",
-      icon: "i-heroicons-document-duplicate-20-solid",
-    },
-  ],
-  [
-    {
-      label: "Archive",
-      icon: "i-heroicons-archive-box-20-solid",
-    },
-    {
-      label: "Move",
-      icon: "i-heroicons-arrow-right-circle-20-solid",
-    },
-  ],
-  [
-    {
-      label: "Delete",
-      icon: "i-heroicons-trash-20-solid",
-    },
-  ],
-];
+const generateItems = (row: any) => props.itemsGenerator(row);
 </script>
 
 <template>
   <div class="flex flex-col">
     <div class="w-full flex mb-2 justify-end">
       <UPagination
-        v-model="paginationData.page"
-        :page-count="paginationData.count"
-        :total="paginationData.total"
+        v-model="props.paginationData.page"
+        :page-count="props.paginationData.count"
+        :total="props.paginationData.total"
       >
         <template #prev>
           <UTooltip text="Previous page">
@@ -102,9 +55,9 @@ const items = (row: any) => [
         </template>
       </UPagination>
     </div>
-    <UTable :columns="columns" :rows="staffData">
+    <UTable :columns="props.columns" :rows="props.staffData">
       <template #actions-data="{ row }">
-        <UDropdown :items="items(row)">
+        <UDropdown :items="generateItems(row)">
           <UButton
             color="gray"
             variant="ghost"

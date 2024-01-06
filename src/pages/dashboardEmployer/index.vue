@@ -11,6 +11,49 @@ const state = reactive({
   email: "",
   role: "",
 });
+
+const columns = [
+  {
+    key: "_id",
+    label: "ID",
+  },
+  {
+    key: "firstName",
+    label: "First Name",
+  },
+  {
+    key: "lastName",
+    label: "Last Name",
+  },
+  {
+    key: "role",
+    label: "Staff Role",
+  },
+  {
+    key: "email",
+    label: "Email",
+  },
+  {
+    key: "actions",
+  },
+];
+
+const items = (row: any) => [
+  [
+    {
+      label: "View Employee",
+      icon: "i-heroicons-pencil-square-20-solid",
+      click: () => console.log("Edit", row.id),
+    },
+  ],
+  [
+    {
+      label: "Send Query",
+      icon: "i-heroicons-archive-box-20-solid",
+    },
+  ],
+];
+
 const loading = ref(false);
 const staffData = ref<StaffData[]>([]);
 const createStaff = async () => {
@@ -85,6 +128,8 @@ onMounted(() => {
     </div>
     <div class="mt-20">
       <XTable
+        :columns="columns"
+        :items-generator="items"
         :staff-data="staffData"
         :pagination-data="pageData"
         @prevPage="getPage"
