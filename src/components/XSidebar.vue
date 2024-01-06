@@ -76,9 +76,10 @@ const isDark = computed({
       class="space-y-5 overflow-y-scroll flex-1"
       :class="showNav ? 'px-6' : 'px-2'"
     >
-      <h3 class="text-xs mt-4 mb-2 font-medium" :class="{ hidden: !showNav }">
-        MAIN
-      </h3>
+      <h3
+        class="text-xs mt-4 mb-2 font-medium"
+        :class="{ hidden: !showNav }"
+      ></h3>
       <UVerticalNavigation
         :links="showNav ? links : iconLinks"
         :ui="{

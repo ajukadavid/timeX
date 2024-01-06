@@ -42,7 +42,7 @@ const items = (row: any) => [
   [
     {
       label: "View Employee",
-      icon: "i-heroicons-pencil-square-20-solid",
+      icon: "i-heroicons-eye-20-solid",
       click: () => console.log("Edit", row.id),
     },
   ],
@@ -130,7 +130,7 @@ onMounted(() => {
       <XTable
         :columns="columns"
         :items-generator="items"
-        :staff-data="staffData"
+        :table-data="staffData"
         :pagination-data="pageData"
         @prevPage="getPage"
         @nextPage="getPage"

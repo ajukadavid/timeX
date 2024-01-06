@@ -5,14 +5,38 @@ import {
   createDepartment,
 } from "@/composables/services/data/data";
 import { userLoginToast } from "@/composables/helpers/notifications";
-import { StaffData } from "@/types/data";
 
 const isModalOpen = useState("showModal");
 const state = reactive({
   deptName: "",
 });
 const loading = ref(false);
-const staffData = ref<StaffData[]>([]);
+const deptData = ref<any[]>([]);
+
+const columns = [
+  {
+    key: "_id",
+    label: "Department ID",
+  },
+  {
+    key: "name",
+    label: "Department Name",
+  },
+  {
+    key: "actions",
+  },
+];
+
+const items = (row: any) => [
+  [
+    {
+      label: "View Details",
+      icon: "i-heroicons-eye-20-solid",
+      click: () => console.log("Edit", row.id),
+    },
+  ],
+];
+
 const handleCreateDepartment = async () => {
   loading.value = true;
   try {
@@ -42,12 +66,11 @@ const pageData = reactive({
 
 const getData = async (pageNum?: number) => {
   const data = await getDepartments(pageNum);
-
   pageData.page = 1;
   pageData.prev = data.previous;
   pageData.next = data.next;
   pageData.total = data.count;
-  staffData.value = data.staff;
+  deptData.value = data.departments;
 };
 
 const getPage = (page: any) => {
@@ -85,7 +108,9 @@ onMounted(() => {
     </div>
     <div class="mt-20">
       <XTable
-        :staff-data="staffData"
+        :columns="columns"
+        :items-generator="items"
+        :table-data="deptData"
         :pagination-data="pageData"
         @prevPage="getPage"
         @nextPage="getPage"

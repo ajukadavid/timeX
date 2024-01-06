@@ -2,7 +2,7 @@
 const emit = defineEmits(["prevPage", "nextPage"]);
 
 const props = defineProps({
-  staffData: {
+  tableData: {
     type: Array as PropType<any>,
     required: true,
   },
@@ -55,7 +55,7 @@ const generateItems = (row: any) => props.itemsGenerator(row);
         </template>
       </UPagination>
     </div>
-    <UTable :columns="props.columns" :rows="props.staffData">
+    <UTable :columns="props.columns" :rows="props.tableData">
       <template #actions-data="{ row }">
         <UDropdown :items="generateItems(row)">
           <UButton
