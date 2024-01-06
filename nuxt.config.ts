@@ -25,7 +25,12 @@ export default defineNuxtConfig({
   alias: {
     "class-validator": "class-validator/cjs/index.js",
   },
-  modules: ["@nuxt/ui", "@nuxtjs/eslint-module", "@nuxt/devtools"],
+  modules: [
+    "@nuxt/ui",
+    "@nuxtjs/eslint-module",
+    "@nuxt/devtools",
+    "@pinia/nuxt",
+  ],
   ui: {
     global: true,
     icons: ["line-md", "mdi", "heroicons"],
