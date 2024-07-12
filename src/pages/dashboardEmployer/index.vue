@@ -1,5 +1,10 @@
 <script lang="ts" setup>
-import { getStaffs, registerStaff } from "@/composables/services/data/data";
+import {
+  getStaffs,
+  getStaff,
+  registerStaff,
+  getDepartments,
+} from "@/composables/services/data/data";
 import { userLoginToast } from "@/composables/helpers/notifications";
 import { StaffData } from "@/types/data";
 
@@ -10,7 +15,53 @@ const state = reactive({
   lastName: "",
   email: "",
   role: "",
+  department: "",
 });
+
+const columns = [
+  {
+    key: "_id",
+    label: "ID",
+  },
+  {
+    key: "firstName",
+    label: "First Name",
+  },
+  {
+    key: "lastName",
+    label: "Last Name",
+  },
+  {
+    key: "role",
+    label: "Staff Role",
+  },
+  {
+    key: "email",
+    label: "Email",
+  },
+  {
+    key: "actions",
+  },
+];
+
+const items = (row: any) => [
+  [
+    {
+      label: "View Employee",
+      icon: "i-heroicons-eye-20-solid",
+      click: () => console.log(getStaff(row._id)),
+    },
+  ],
+  [
+    {
+      label: "Send Query",
+      icon: "i-heroicons-archive-box-20-solid",
+    },
+  ],
+];
+
+const departmentItems = ref([]);
+
 const loading = ref(false);
 const staffData = ref<StaffData[]>([]);
 const createStaff = async () => {
@@ -60,6 +111,20 @@ const getPage = (page: any) => {
     getData(Number(pageNumber));
   }
 };
+
+const handleAddEmployees = async () => {
+  isModalOpen.value = true;
+
+  const res = await getDepartments();
+
+  departmentItems.value = res.data.map((val: any) => {
+    return {
+      label: val.name,
+      icon: "i-heroicons-building-office-20-solid",
+    };
+  });
+};
+
 onMounted(() => {
   getData();
 });
@@ -78,14 +143,16 @@ onMounted(() => {
         color="white"
         variant="solid"
         class="self-start"
-        @click="isModalOpen = true"
+        @click="handleAddEmployees"
       >
         Add Employees
       </UButton>
     </div>
     <div class="mt-20">
       <XTable
-        :staff-data="staffData"
+        :columns="columns"
+        :items-generator="items"
+        :table-data="staffData"
         :pagination-data="pageData"
         @prevPage="getPage"
         @nextPage="getPage"
@@ -142,6 +209,17 @@ onMounted(() => {
           <UFormGroup label="Role" name="role" size="xl" class="space-y-2">
             <UInput v-model="state.role" placeholder="Role" size="xl" />
           </UFormGroup>
+
+          <UDropdown
+            :items="departmentItems"
+            :popper="{ placement: 'bottom-start' }"
+          >
+            <UButton
+              color="white"
+              label="Options"
+              trailing-icon="i-heroicons-chevron-down-20-solid"
+            />
+          </UDropdown>
         </div>
       </UForm>
     </div>
