@@ -1,5 +1,10 @@
 <script lang="ts" setup>
-import { getStaffs, registerStaff } from "@/composables/services/data/data";
+import {
+  getStaffs,
+  getStaff,
+  registerStaff,
+  getDepartments,
+} from "@/composables/services/data/data";
 import { userLoginToast } from "@/composables/helpers/notifications";
 import { StaffData } from "@/types/data";
 
@@ -10,6 +15,7 @@ const state = reactive({
   lastName: "",
   email: "",
   role: "",
+  department: "",
 });
 
 const columns = [
@@ -43,7 +49,7 @@ const items = (row: any) => [
     {
       label: "View Employee",
       icon: "i-heroicons-eye-20-solid",
-      click: () => console.log("Edit", row.id),
+      click: () => console.log(getStaff(row._id)),
     },
   ],
   [
@@ -53,6 +59,8 @@ const items = (row: any) => [
     },
   ],
 ];
+
+const departmentItems = ref([]);
 
 const loading = ref(false);
 const staffData = ref<StaffData[]>([]);
@@ -103,6 +111,20 @@ const getPage = (page: any) => {
     getData(Number(pageNumber));
   }
 };
+
+const handleAddEmployees = async () => {
+  isModalOpen.value = true;
+
+  const res = await getDepartments();
+
+  departmentItems.value = res.data.map((val: any) => {
+    return {
+      label: val.name,
+      icon: "i-heroicons-building-office-20-solid",
+    };
+  });
+};
+
 onMounted(() => {
   getData();
 });
@@ -121,7 +143,7 @@ onMounted(() => {
         color="white"
         variant="solid"
         class="self-start"
-        @click="isModalOpen = true"
+        @click="handleAddEmployees"
       >
         Add Employees
       </UButton>
@@ -187,6 +209,17 @@ onMounted(() => {
           <UFormGroup label="Role" name="role" size="xl" class="space-y-2">
             <UInput v-model="state.role" placeholder="Role" size="xl" />
           </UFormGroup>
+
+          <UDropdown
+            :items="departmentItems"
+            :popper="{ placement: 'bottom-start' }"
+          >
+            <UButton
+              color="white"
+              label="Options"
+              trailing-icon="i-heroicons-chevron-down-20-solid"
+            />
+          </UDropdown>
         </div>
       </UForm>
     </div>

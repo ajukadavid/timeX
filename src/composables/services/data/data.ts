@@ -13,6 +13,10 @@ export const getStaffs = async (page?: number) => {
   }
   return response.data;
 };
+export const getStaff = async (id: string) => {
+  const response = await axiosInstance.get(`/staffs/${id}`);
+  return response.data;
+};
 
 export const getDepartments = async (page?: number) => {
   let response;
