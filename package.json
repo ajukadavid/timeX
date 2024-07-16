@@ -41,10 +41,12 @@
     "@iconify-json/line-md": "^1.1.31",
     "@iconify-json/mdi": "^1.1.54",
     "@iconify/json": "^2.2.123",
+    "@nuxt/fonts": "^0.7.1",
     "@nuxt/ui": "^2.9.0",
     "@nuxtjs/eslint-module": "^4.1.0",
     "@pinia/nuxt": "^0.5.1",
     "axios": "^1.5.1",
-    "pinia": "^2.1.7"
+    "pinia": "^2.1.7",
+    "typed.js": "^2.1.0"
   }
 }

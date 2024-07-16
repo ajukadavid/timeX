@@ -30,6 +30,7 @@ export default defineNuxtConfig({
     "@nuxtjs/eslint-module",
     "@nuxt/devtools",
     "@pinia/nuxt",
+    "@nuxt/fonts",
   ],
   ui: {
     global: true,
