@@ -6,6 +6,8 @@ import {
 } from "@/composables/services/data/data";
 import { userLoginToast } from "@/composables/helpers/notifications";
 
+const $route = useRoute();
+const $router = useRouter();
 const isModalOpen = useState("showModal");
 const state = reactive({
   deptName: "",
@@ -70,7 +72,7 @@ const getData = async (pageNum?: number) => {
   pageData.prev = data.previous;
   pageData.next = data.next;
   pageData.total = data.count;
-  deptData.value = data.departments;
+  deptData.value = data.data;
 };
 
 const getPage = (page: any) => {

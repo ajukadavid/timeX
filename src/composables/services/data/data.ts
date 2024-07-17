@@ -1,6 +1,7 @@
 import axios from "axios";
 import { setupInterceptors } from "../../helpers/axios-interceptor";
 import { StaffRegister } from "@/types/auth";
+// const $router = useRouter();
 
 const axiosInstance = setupInterceptors(axios.create());
 
@@ -20,12 +21,18 @@ export const getStaff = async (id: string) => {
 
 export const getDepartments = async (page?: number) => {
   let response;
-  if (page) {
-    response = await axiosInstance.get(`/departments?page=${page}`);
-  } else {
-    response = await axiosInstance.get(`/departments`);
+  try {
+    if (page) {
+      response = await axiosInstance.get(`/departments?page=${page}`);
+    } else {
+      response = await axiosInstance.get(`/departments`);
+    }
+    return response.data;
+  } catch (e: any) {
+    if (e.response.status === 401) {
+      // $router.push("/login");
+    }
   }
-  return response.data;
 };
 export const registerStaff = async (data: StaffRegister) => {
   const response = await axiosInstance.post("/staffs", data);

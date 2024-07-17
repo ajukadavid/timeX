@@ -1,6 +1,3 @@
-export default defineNuxtRouteMiddleware((to, from) => {
-  // if (to.path === "/" && !token) {
-  //   console.log(token);
-  //   return navigateTo("/login");
-  // }
-});
+import { useStorage } from "@vueuse/core";
+
+export default defineNuxtRouteMiddleware((to, from) => {});

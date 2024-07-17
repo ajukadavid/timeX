@@ -52,15 +52,15 @@ const showPassword = ref(false);
 <template>
   <div class="flex h-screen">
     <div
-      class="hidden bg-primary lg:grid flex-[0.6] overflow-hidden place-content-center text-center"
+      class="hidden bg-[#102542] lg:grid flex-[0.6] overflow-hidden place-content-center text-center"
     >
-      <img src="~/" alt="" />
+      <img src="/signspl.png" alt="" />
     </div>
     <div
       class="px-6 pb-6 lg:flex-[0.4] flex-1 flex flex-col w-full bg-white overflow-scroll dark:bg-slate-800"
     >
       <div>
-        <h2 class="my-6 text-2xl font-bold text-carnation">
+        <h2 class="my-6 text-2xl font-bold text-[#102542]">
           <nuxt-link to="/"> TimeX </nuxt-link>
         </h2>
         <p
@@ -72,26 +72,6 @@ const showPassword = ref(false);
           Fill out the form below to have full access of the platform.
         </p>
       </div>
-
-      <!-- <UForm
-        :validate="useSignUpValidate"
-        :state="state"
-        :validate-on="['submit']"
-        @submit.prevent="createEmployer"
-      >
-        <div class="space-y-5">
-          <UFormGroup
-            label="First Name"
-            name="given_name"
-            size="xl"
-            class="space-y-2 text-black dark:text-white"
-          >
-            Don't have a timeX account? Let's fix that.
-          </p>
-          <p class="my-5 font-medium text-lg">
-            Fill out the form below to have full access of the platform.
-          </p>
-        </div> -->
 
       <UForm
         :validate="useSignUpValidate"

@@ -123,6 +123,7 @@ const handleAddEmployees = async () => {
       icon: "i-heroicons-building-office-20-solid",
     };
   });
+  console.log(departmentItems.value);
 };
 
 onMounted(() => {

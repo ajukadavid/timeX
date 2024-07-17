@@ -54,16 +54,17 @@ onMounted(() => {
             Sign up
           </UButton>
         </nuxt-link>
-
-        <UButton
-          type="submit"
-          size="xl"
-          color="white"
-          variant="solid"
-          class="self-start"
-        >
-          Log in
-        </UButton>
+        <nuxt-link to="/login">
+          <UButton
+            type="submit"
+            size="xl"
+            color="white"
+            variant="solid"
+            class="self-start"
+          >
+            Log in
+          </UButton>
+        </nuxt-link>
       </div>
     </div>
     <div class="justify-center flex mb-10 items-center h-fit">
@@ -76,15 +77,17 @@ onMounted(() => {
             </p>
           </div>
         </span>
-        <UButton
-          type="submit"
-          size="xl"
-          color="white"
-          variant="solid"
-          class="self-center text-3xl font-extrabold"
-        >
-          Get Started.
-        </UButton>
+        <nuxt-link class="self-center" to="/register">
+          <UButton
+            type="submit"
+            size="xl"
+            color="white"
+            variant="solid"
+            class="text-3xl font-extrabold"
+          >
+            Get Started.
+          </UButton>
+        </nuxt-link>
       </div>
     </div>
     <div class="bg-white p-10 w-full items-center flex space-x-5">
