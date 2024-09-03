@@ -7,6 +7,7 @@ import {
 } from "@/composables/services/data/data";
 import { userLoginToast } from "@/composables/helpers/notifications";
 import { StaffData } from "@/types/data";
+import XDropdown from "@/components/XDropdown.vue";
 
 const isModalOpen = useState("showModal");
 
@@ -112,21 +113,25 @@ const getPage = (page: any) => {
   }
 };
 
+
+
 const handleAddEmployees = async () => {
   isModalOpen.value = true;
 
+ 
+};
+
+onMounted( async () => {
+  getData();
   const res = await getDepartments();
 
   departmentItems.value = res.data.map((val: any) => {
     return {
       label: val.name,
       icon: "i-heroicons-building-office-20-solid",
+      id: val._id
     };
   });
-};
-
-onMounted(() => {
-  getData();
 });
 </script>
 
@@ -169,7 +174,6 @@ onMounted(() => {
         :state="state"
         class="space-y-4 justify-center flex items-center flex-col"
         :validate-on="['submit']"
-        @submit.prevent="createStaff"
       >
         <div class="space-y-5 w-full">
           <UFormGroup
@@ -209,17 +213,12 @@ onMounted(() => {
           <UFormGroup label="Role" name="role" size="xl" class="space-y-2">
             <UInput v-model="state.role" placeholder="Role" size="xl" />
           </UFormGroup>
-
-          <UDropdown
-            :items="departmentItems"
-            :popper="{ placement: 'bottom-start' }"
-          >
-            <UButton
-              color="white"
-              label="Options"
-              trailing-icon="i-heroicons-chevron-down-20-solid"
-            />
-          </UDropdown>
+          <div class="flex flex-col space-y-2">
+            <label for="department">Department</label>
+        
+          <XDropdown :items="departmentItems" @select="((val: any) => state.department = val.id)" />
+          </div>
+      
         </div>
       </UForm>
     </div>
