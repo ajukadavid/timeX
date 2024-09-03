@@ -28,13 +28,19 @@ const columns = [
 ];
 
 const items = (row: any) => [
-  [
-    {
-      label: "View Details",
-      icon: "i-heroicons-eye-20-solid",
-      click: () => console.log("Edit", row.id),
-    },
-  ],
+[
+  { "_id": "1", "name": "Human Resources" },
+  { "_id": "2", "name": "Engineering" },
+  { "_id": "3", "name": "Marketing" },
+  { "_id": "4", "name": "Sales" },
+  { "_id": "5", "name": "Customer Support" },
+  { "_id": "6", "name": "Finance" },
+  { "_id": "7", "name": "IT" },
+  { "_id": "8", "name": "Legal" },
+  { "_id": "9", "name": "Operations" },
+  { "_id": "10", "name": "Research and Development" }
+]
+
 ];
 
 const handleCreateDepartment = async () => {
@@ -66,11 +72,12 @@ const pageData = reactive({
 
 const getData = async (pageNum?: number) => {
   const data = await getDepartments(pageNum);
+  console.log(data.data)
   pageData.page = 1;
   pageData.prev = data.previous;
   pageData.next = data.next;
   pageData.total = data.count;
-  deptData.value = data.departments;
+  deptData.value = data.data;
 };
 
 const getPage = (page: any) => {
