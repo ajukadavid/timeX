@@ -4,7 +4,7 @@ import { ref } from "vue";
 interface DropdownItem {
   label: string;
   value: string | number;
-  id: string;
+  id?: string;
 }
 
 const props = defineProps<{

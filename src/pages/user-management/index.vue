@@ -3,8 +3,10 @@
 import {
   getDepartments,
   createDepartment,
+  updateTime
 } from "@/composables/services/data/data";
 import { userLoginToast } from "@/composables/helpers/notifications";
+import XDropdown from "@/components/XDropdown.vue";
 
 const isModalOpen = useState("showModal");
 const state = reactive({
@@ -12,36 +14,47 @@ const state = reactive({
 });
 const loading = ref(false);
 const deptData = ref<any[]>([]);
+const signInTime = ref<string>("");
+const showUpdateTime = ref<boolean>(false);
 
 const columns = [
+{
+    key: "name",
+    label: "Department Name",
+  },
   {
     key: "_id",
     label: "Department ID",
   },
-  {
-    key: "name",
-    label: "Department Name",
-  },
+ 
   {
     key: "actions",
   },
 ];
 
 const items = (row: any) => [
-[
-  { "_id": "1", "name": "Human Resources" },
-  { "_id": "2", "name": "Engineering" },
-  { "_id": "3", "name": "Marketing" },
-  { "_id": "4", "name": "Sales" },
-  { "_id": "5", "name": "Customer Support" },
-  { "_id": "6", "name": "Finance" },
-  { "_id": "7", "name": "IT" },
-  { "_id": "8", "name": "Legal" },
-  { "_id": "9", "name": "Operations" },
-  { "_id": "10", "name": "Research and Development" }
-]
+  [
+    { "id": "18:00", "name": "" },
+    { "_id": "2", "name": "Engineering" },
+    { "_id": "3", "name": "Marketing" },
+    { "_id": "4", "name": "Sales" },
+    { "_id": "5", "name": "Customer Support" },
+    { "_id": "6", "name": "Finance" },
+    { "_id": "7", "name": "IT" },
+    { "_id": "8", "name": "Legal" },
+    { "_id": "9", "name": "Operations" },
+    { "_id": "10", "name": "Research and Development" }
+  ]
 
 ];
+
+const morningTimes = [
+  { value: "06:00", label: "6:00 AM" },
+  { value: "07:00", label: "7:00 AM" },
+  { value: "08:00", label: "8:00 AM" },
+  { value: "09:00", label: "9:00 AM" }
+];
+
 
 const handleCreateDepartment = async () => {
   loading.value = true;
@@ -72,7 +85,6 @@ const pageData = reactive({
 
 const getData = async (pageNum?: number) => {
   const data = await getDepartments(pageNum);
-  console.log(data.data)
   pageData.page = 1;
   pageData.prev = data.previous;
   pageData.next = data.next;
@@ -88,6 +100,12 @@ const getPage = (page: any) => {
     getData(Number(pageNumber));
   }
 };
+
+const handleSaveTime = async () => {
+  const response = await updateTime(signInTime.value);
+  console.log(response);
+}
+
 onMounted(() => {
   getData();
 });
@@ -98,30 +116,34 @@ onMounted(() => {
     <div class="flex items-center justify-between">
       <div class="flex flex-col">
         <span class="text-2xl font-bold">User Management</span>
-        <span class="text-sm font-light"
-          >Manage your company's users & departments</span
-        >
+        <span class="text-sm font-light">Manage your company's users & departments</span>
       </div>
-      <UButton
-        type="submit"
-        size="xl"
-        color="white"
-        variant="solid"
-        class="self-start"
-        @click="isModalOpen = true"
-      >
-        Create Department
-      </UButton>
+      <div class="flex flex-col space-y-3">
+        <div class="flex space-x-3">
+          <UButton @click="showUpdateTime = true" type="submit" size="xl" color="white" variant="solid" class="self-start">
+            Update Time
+          </UButton>
+
+          <UButton type="submit" size="xl" color="white" variant="solid" class="self-start" @click="isModalOpen = true">
+            Create Department
+          </UButton>
+        </div>
+
+        <div v-if="showUpdateTime" class="flex  space-x-3">
+          <XDropdown placeholder="Select Time" :items="morningTimes" @select="((val: any) => signInTime = val.value)" />
+
+          <UButton type="submit" size="xl" color="white" variant="solid" class="self-start" @click="handleSaveTime">
+           Save
+          </UButton>
+        </div>
+      </div>
+
+
+
     </div>
     <div class="mt-20">
-      <XTable
-        :columns="columns"
-        :items-generator="items"
-        :table-data="deptData"
-        :pagination-data="pageData"
-        @prevPage="getPage"
-        @nextPage="getPage"
-      >
+      <XTable :columns="columns" :items-generator="items" :table-data="deptData" :pagination-data="pageData"
+        @prevPage="getPage" @nextPage="getPage">
       </XTable>
     </div>
   </main>
@@ -130,39 +152,19 @@ onMounted(() => {
       <div>Create Department</div>
     </template>
     <div>
-      <UForm
-        :state="state"
-        class="space-y-4 justify-center flex items-center flex-col"
-        :validate-on="['submit']"
-        @submit.prevent="handleCreateDepartment"
-      >
+      <UForm :state="state" class="space-y-4 justify-center flex items-center flex-col" :validate-on="['submit']"
+        @submit.prevent="handleCreateDepartment">
         <div class="space-y-5 w-full">
-          <UFormGroup
-            label="Department Name"
-            name="deptName"
-            size="xl"
-            class="space-y-2"
-          >
-            <UInput
-              v-model="state.deptName"
-              placeholder="Please Enter name of department"
-              size="xl"
-            />
+          <UFormGroup label="Department Name" name="deptName" size="xl" class="space-y-2">
+            <UInput v-model="state.deptName" placeholder="Please Enter name of department" size="xl" />
           </UFormGroup>
         </div>
       </UForm>
     </div>
     <template #footer>
       <div class="flex justify-end">
-        <UButton
-          type="submit"
-          size="lg"
-          color="white"
-          variant="solid"
-          class="self-start"
-          :loading="loading"
-          @click="handleCreateDepartment"
-        >
+        <UButton type="submit" size="lg" color="white" variant="solid" class="self-start" :loading="loading"
+          @click="handleCreateDepartment">
           Submit
         </UButton>
       </div>

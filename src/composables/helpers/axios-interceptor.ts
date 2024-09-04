@@ -12,7 +12,7 @@ export const onRequest = (
 ): InternalAxiosRequestConfig => {
   const { method, url } = config;
   config.url = BASE_URL + url;
-  if (url?.includes("staffs") || url?.includes("departments")) {
+  if (url?.includes("staffs") || url?.includes("departments") || method === "put") {
     const token = localStorage.getItem("token");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;

@@ -36,3 +36,9 @@ export const createDepartment = async (name: string) => {
   const response = await axiosInstance.post("/departments", { name });
   return response.data;
 };
+
+
+export const updateTime = async (loginTime: string) => {
+  const response = await axiosInstance.put("/employers", { loginTime });
+  return response.data;
+}
