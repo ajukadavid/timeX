@@ -147,7 +147,7 @@ onMounted( async () => {
         size="lg"
         color="white"
         variant="solid"
-        class="self-start"
+        class="self-start dark:bg-white dark:text-primary-800 hover:dark:bg-white hover:dark:text-primary-800 dark:border-primary-800"
         @click="handleAddEmployees"
       >
         Add Employees

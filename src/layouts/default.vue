@@ -2,7 +2,7 @@
 const isSideBarOpened = useState("showNav");
 </script>
 <template>
-  <div class="bg-white dark:bg-primary h-screen w-full flex">
+  <div class="bg-white dark:bg-primary-800 h-screen w-full flex">
     <XSidebar />
     <div
       class="flex flex-col w-full flex-1"

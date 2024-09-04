@@ -63,22 +63,22 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="flex h-screen">
-    <div class="hero-bg hidden bg-primary lg:grid flex-[0.6] overflow-hidden">
+  <div class="flex w-full h-screen">
+    <div class="hero-bg w-1/2 hidden bg-primary-800 lg:grid flex-[0.6] overflow-hidden">
       <div class="flex px-8 gap-32 flex-col text-white">
         <h2 class="my-6 text-5xl font-bold">
           <nuxt-link to="/"> TimeX </nuxt-link>
         </h2>
         <em>
           <h4 class="text-3xl italic justify-self-center font-lighter">
-            Your No. 1 HR Management <br />
+            Your No. 1 Employee Time Management <br />
             System.
           </h4>
         </em>
       </div>
     </div>
     <div
-      class="px-6 pb-6 lg:flex-[0.4] flex-1 flex flex-col w-full justify-center bg-white overflow-auto dark:bg-slate-800"
+      class="px-6 pb-6 lg:flex-[0.4] flex-1 flex flex-col w-full justify-center bg-white overflow-auto dark:bg-primary-800"
     >
       <div class="max-w-md mx-auto space-y-5 w-full">
         <div>
@@ -172,5 +172,6 @@ input:-webkit-autofill:active {
 
 .hero-bg {
   background: url("/login.svg") no-repeat;
+  background-size: cover;
 }
 </style>

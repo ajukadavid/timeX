@@ -35,15 +35,7 @@ const columns = [
 const items = (row: any) => [
   [
     { "id": "18:00", "name": "" },
-    { "_id": "2", "name": "Engineering" },
-    { "_id": "3", "name": "Marketing" },
-    { "_id": "4", "name": "Sales" },
-    { "_id": "5", "name": "Customer Support" },
-    { "_id": "6", "name": "Finance" },
-    { "_id": "7", "name": "IT" },
-    { "_id": "8", "name": "Legal" },
-    { "_id": "9", "name": "Operations" },
-    { "_id": "10", "name": "Research and Development" }
+    
   ]
 
 ];
@@ -103,7 +95,9 @@ const getPage = (page: any) => {
 
 const handleSaveTime = async () => {
   const response = await updateTime(signInTime.value);
-  console.log(response);
+    showUpdateTime.value = false;
+    userLoginToast(["Department Successfully Created!"], 200);
+
 }
 
 onMounted(() => {
@@ -120,11 +114,11 @@ onMounted(() => {
       </div>
       <div class="flex flex-col space-y-3">
         <div class="flex space-x-3">
-          <UButton @click="showUpdateTime = true" type="submit" size="xl" color="white" variant="solid" class="self-start">
+          <UButton @click="showUpdateTime = true" type="submit" size="xl" color="white" variant="solid" class="self-start dark:bg-white dark:text-primary-800 hover:dark:bg-white hover:dark:text-primary-800 dark:border-primary-800">
             Update Time
           </UButton>
 
-          <UButton type="submit" size="xl" color="white" variant="solid" class="self-start" @click="isModalOpen = true">
+          <UButton class="dark:bg-white dark:text-primary-800 self-start hover:dark:bg-white hover:dark:text-primary-800 dark:border-primary-800" type="submit" size="xl" color="white" variant="solid" @click="isModalOpen = true">
             Create Department
           </UButton>
         </div>
@@ -132,7 +126,7 @@ onMounted(() => {
         <div v-if="showUpdateTime" class="flex  space-x-3">
           <XDropdown placeholder="Select Time" :items="morningTimes" @select="((val: any) => signInTime = val.value)" />
 
-          <UButton type="submit" size="xl" color="white" variant="solid" class="self-start" @click="handleSaveTime">
+          <UButton type="submit" size="xl" color="white" variant="solid" class="self-start dark:bg-white dark:text-primary hover:dark:bg-white hover:dark:text-primary" @click="handleSaveTime">
            Save
           </UButton>
         </div>
