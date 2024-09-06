@@ -10,6 +10,8 @@ import { StaffData } from "@/types/data";
 import XDropdown from "@/components/XDropdown.vue";
 
 const isModalOpen = useState("showModal");
+const $route = useRoute();
+const $router = useRouter();
 
 const state = reactive({
   firstName: "",
@@ -50,7 +52,7 @@ const items = (row: any) => [
     {
       label: "View Employee",
       icon: "i-heroicons-eye-20-solid",
-      click: () => console.log(getStaff(row._id)),
+      click: () => $router.push(`/dashboardStaff/${row._id}`),
     },
   ],
   [
