@@ -16,11 +16,11 @@ const props = defineProps({
   },
   itemsGenerator: {
     type: Function as PropType<(row: any) => any[]>,
-    required: true,
+    required: false,
   },
 });
 
-const generateItems = (row: any) => props.itemsGenerator(row);
+const generateItems = (row: any) => props.itemsGenerator ? props.itemsGenerator(row) : [];
 </script>
 
 <template>
@@ -29,7 +29,7 @@ const generateItems = (row: any) => props.itemsGenerator(row);
       <UPagination
         v-model="props.paginationData.page"
         :page-count="props.paginationData.count"
-        :total="props.paginationData.total"
+        :total="props.paginationData?.total"
       >
         <template #prev>
           <UTooltip text="Previous page">
@@ -56,7 +56,10 @@ const generateItems = (row: any) => props.itemsGenerator(row);
       </UPagination>
     </div>
     <UTable :columns="props.columns" :rows="props.tableData">
-      <template #actions-data="{ row }">
+      <template #entryTime-data="{ row }">
+         <span class="text-base" :class="row.late ? 'text-red-700' : 'text-green-700'">{{ row.entryTime }}</span> 
+        </template>
+      <template v-if="props.itemsGenerator" #actions-data="{ row }">
         <UDropdown :items="generateItems(row)">
           <UButton
             color="gray"
@@ -65,6 +68,7 @@ const generateItems = (row: any) => props.itemsGenerator(row);
           />
         </UDropdown>
       </template>
+     
     </UTable>
   </div>
 </template>
