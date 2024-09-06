@@ -1,6 +1,10 @@
 export default defineNuxtRouteMiddleware((to, from) => {
-  // if (to.path === "/" && !token) {
-  //   console.log(token);
-  //   return navigateTo("/login");
-  // }
+  if (process.client) {
+    if (to.path === "/dashboardEmployer" || to.path === "/dashboardStaff") {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        return navigateTo("/login");
+      }
+    }
+  }
 });

@@ -54,7 +54,7 @@ onMounted(() => {
             Sign up
           </UButton>
         </nuxt-link>
-
+        <nuxt-link to="/login">
         <UButton
           type="submit"
           size="xl"
@@ -64,6 +64,7 @@ onMounted(() => {
         >
           Log in
         </UButton>
+      </nuxt-link>
       </div>
     </div>
     <div class="justify-center flex mb-10 items-center h-fit">
