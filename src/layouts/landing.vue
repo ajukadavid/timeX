@@ -73,9 +73,9 @@ onMounted(() => {
         <img src="/designn.png" />
       </div>
     </div>
-    <div class="bg-white p-10 w-full items-center flex space-x-5">
-      <img src="/about_us.jpg" class="w-1/2 border rounded-md" />
-      <div class="bg-[#3B0764] text-white w-1/2 h-fit p-8 border rounded-md border-[#1022542]">
+    <div class="bg-white  w-full items-center justify-center flex space-x-5">
+      <img src="/about_us.jpg" class="w-1/2  h-2/4" />
+      <div class=" text-[#3B0764] w-1/2 h-full  rounded-md ">
         <p class="text-lg">
           Our HR Time Management System is a comprehensive software application
           designed to streamline employee attendance management, sign-in
@@ -141,12 +141,12 @@ onMounted(() => {
       </div>
     </div>
 
-    <div class="w-full space-x-6 flex text-white h-fit justify-between items-center p-20 mt-8 bg-[#102542]">
+    <div class="w-full space-x-6 flex text-white h-fit justify-between items-center p-20 mt-8 mb-10 bg-[#102542]">
       <img src="/ill1.png" class="h-64" />
       <span class="text-5xl">Join Now! Manage your staff proceses efficiently!</span>
       <img src="/ill2.png" class="h-64" />
     </div>
-    <div class="bg-[#102542] w-full flex justify-between text-white p-10">
+    <div class="bg-[#102542] w-full flex mt-10 justify-between text-white p-10">
       <span class="cursor-pointer">FAQ</span>
       <span class="cursor-pointer">Contact</span>
       <span class="cursor-pointer">About Us</span>
