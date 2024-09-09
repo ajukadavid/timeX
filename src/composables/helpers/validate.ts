@@ -1,5 +1,5 @@
 import type { FormError } from "@nuxt/ui/dist/runtime/types";
-import { userLoginToast, userRegistrationToast } from "./notifications";
+import { userToast, userRegistrationToast } from "./notifications";
 
 function containsSpecialCharacter(str: string): boolean {
   const specialCharacters = /[!@#$%^&*()_+{}\[\]:;<>,.?~\\|-]/;
@@ -21,7 +21,7 @@ export const useLoginValidate = (state: any): FormError[] => {
       path: "password",
       message: "Password must be at least 8 characters",
     });
-  if (errors.length > 0) userLoginToast(errors);
+  if (errors.length > 0) userToast(errors);
   return errors;
 };
 

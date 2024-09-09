@@ -55,7 +55,7 @@ export const userRegistrationToast = (errArr: any[], code?: number) => {
   }
 };
 
-export const userLoginToast = (errArr: any[], code?: number) => {
+export const userToast = (errArr: any[], code?: number) => {
   const msg = concatenateValues(errArr);
   const toast = useToast();
   const props = {

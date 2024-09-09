@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { loginEmployer, loginStaff } from "@/composables/services/auth/auth";
 import { useLoginValidate } from "@/composables/helpers/validate";
-import { userLoginToast } from "@/composables/helpers/notifications";
+import { userToast } from "@/composables/helpers/notifications";
 import { useUserStore } from "@/store/userStore";
 
 const store = useUserStore();
@@ -36,7 +36,7 @@ const login = async () => {
   try {
     const response = await loginEmployer(state);
     loading.value = false;
-    userLoginToast(["Successfully Logged in!"], 200);
+    userToast(["Successfully Logged in!"], 200);
     if (response.employer) {
       navigateTo("/dashboardEmployer");
     } else {
@@ -45,7 +45,7 @@ const login = async () => {
   } catch (error: any) {
     loading.value = false;
     const err = [error.response.data.message];
-    userLoginToast(err, error.response.data.code);
+    userToast(err, error.response.data.code);
   }
 };
 
