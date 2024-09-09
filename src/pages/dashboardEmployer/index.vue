@@ -5,7 +5,7 @@ import {
   registerStaff,
   getDepartments,
 } from "@/composables/services/data/data";
-import { userLoginToast } from "@/composables/helpers/notifications";
+import { userToast } from "@/composables/helpers/notifications";
 import { StaffData } from "@/types/data";
 import XDropdown from "@/components/XDropdown.vue";
 
@@ -73,7 +73,7 @@ const createStaff = async () => {
     const response = await registerStaff(state);
 
     loading.value = false;
-    userLoginToast(["Employee Successfully Created!"], 200);
+    userToast(["Employee Successfully Created!"], 200);
     isModalOpen.value = false;
     state.email = "";
     state.firstName = "";
@@ -84,7 +84,7 @@ const createStaff = async () => {
     loading.value = false;
     const err = [error.response.data.message];
     isModalOpen.value = false;
-    userLoginToast(err, error.response.data.code);
+    userToast(err, error.response.data.code);
   }
 };
 

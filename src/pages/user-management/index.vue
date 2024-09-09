@@ -5,7 +5,7 @@ import {
   createDepartment,
   updateTime
 } from "@/composables/services/data/data";
-import { userLoginToast } from "@/composables/helpers/notifications";
+import { userToast } from "@/composables/helpers/notifications";
 import XDropdown from "@/components/XDropdown.vue";
 
 const isModalOpen = useState("showModal");
@@ -54,7 +54,7 @@ const handleCreateDepartment = async () => {
     const response = await createDepartment(state.deptName);
 
     loading.value = false;
-    userLoginToast(["Department Successfully Created!"], 200);
+    userToast(["Department Successfully Created!"], 200);
     isModalOpen.value = false;
     state.deptName = "";
 
@@ -63,7 +63,7 @@ const handleCreateDepartment = async () => {
     loading.value = false;
     const err = [error.response.data.message];
     isModalOpen.value = false;
-    userLoginToast(err, error.response.data.code);
+    userToast(err, error.response.data.code);
   }
 };
 
@@ -94,9 +94,21 @@ const getPage = (page: any) => {
 };
 
 const handleSaveTime = async () => {
-  const response = await updateTime(signInTime.value);
+ 
+
+
+    try {
+      const response = await updateTime(signInTime.value);
     showUpdateTime.value = false;
-    userLoginToast(["Department Successfully Created!"], 200);
+    userToast(["Login time Successfully Updated!"], 200);
+
+    getData();
+  } catch (error: any) {
+    loading.value = false;
+    const err = [error.response.data.message];
+    isModalOpen.value = false;
+    userToast(err, error.response.data.code);
+  }
 
 }
 
