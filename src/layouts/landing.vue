@@ -37,62 +37,45 @@ onMounted(() => {
 </script>
 
 <template>
-  <div
-    class="landing flex flex-col justify-between h-screen bg-cover bg-center bg-no-repeat"
-  >
-    <div class="flex justify-between sticky top-0 items-center mx-4">
-      <img src="/logo.png" class="w-16 md:w-28 cursor-pointer" />
+  <div class=" flex flex-col bg-white justify-between ">
+    <div class="flex justify-between bg-white  sticky top-0 items-center p-4">
+      <img src="/logo.png" class="w-10 md:w-16 cursor-pointer" />
       <div class="flex space-x-3 font-bold text-white text-lg">
         <nuxt-link to="/register">
-          <UButton
-            type="submit"
-            size="xl"
-            color="white"
-            variant="solid"
-            class="self-start"
-          >
+          <UButton type="submit" size="sm" color="white" variant="solid" class="self-start">
             Sign up
           </UButton>
         </nuxt-link>
         <nuxt-link to="/login">
-        <UButton
-          type="submit"
-          size="xl"
-          color="white"
-          variant="solid"
-          class="self-start"
-        >
-          Log in
-        </UButton>
-      </nuxt-link>
+          <UButton type="submit" size="sm" color="white" variant="solid" class="self-start">
+            Log in
+          </UButton>
+        </nuxt-link>
       </div>
     </div>
-    <div class="justify-center flex mb-10 items-center h-fit">
-      <div class="flex flex-col space-y-4">
-        <span class="text-8xl font-extrabold splashText">
-          <div class="text-[#102542] w-full leading-relaxed pl-8">
-            <p>
-              {{ staticText }}<span class="text-white">{{ dynamicText }}</span
-              >.
+    <div class="justify-between bg-primary p-20 flex  items-center h-fit">
+      <div class="flex flex-col  space-y-4">
+        <span class=" font-extrabold splashText mb-3">
+          <div class="text-white w-full leading-relaxed pl-8">
+            <p class="text-5xl ">
+              {{ staticText }} <br />
+              <span class="text-black text-6xl line-clamp-3">{{ dynamicText }}.</span>
             </p>
           </div>
         </span>
-        <UButton
-          type="submit"
-          size="xl"
-          color="white"
-          variant="solid"
-          class="self-center text-3xl font-extrabold"
-        >
+
+
+        <UButton type="submit" size="xl" color="purple" variant="soft" class="self-center text-3xl font-extrabold">
           Get Started.
         </UButton>
       </div>
+      <div class="max-w-fit">
+        <img src="/designn.png" />
+      </div>
     </div>
-    <div class="bg-white p-10 w-full items-center flex space-x-5">
-      <img src="/about_us.jpg" class="w-1/2 border rounded-md" />
-      <div
-        class="bg-[#102542] text-white w-1/2 h-fit p-8 border rounded-md border-[#1022542]"
-      >
+    <div class="bg-white  w-full items-center justify-center flex space-x-5">
+      <img src="/about_us.jpg" class="w-1/2  h-2/4" />
+      <div class=" text-[#3B0764] w-1/2 h-full  rounded-md ">
         <p class="text-lg">
           Our HR Time Management System is a comprehensive software application
           designed to streamline employee attendance management, sign-in
@@ -121,11 +104,9 @@ onMounted(() => {
       </div>
     </div>
 
-    <div
-      class="w-full bg-[#102542] flex flex-col items-center px-8 py-12 space-y-9"
-    >
-      <span class="text-4xl text-white">Our Core Features</span>
-      <div class="flex w-full justify-between text-white text-2xl">
+    <div class="w-full flex border-primary border-2 mb-4  flex-col items-center px-8 py-12 space-y-9">
+      <span class="text-4xl text-primary">Our Core Features</span>
+      <div class="flex w-full justify-between text-primary text-2xl">
         <div class="flex flex-col space-y-5 items-center">
           <UIcon name="i-heroicons-user" class="text-7xl" />
           <span>User Management</span>
@@ -144,16 +125,28 @@ onMounted(() => {
         </div>
       </div>
     </div>
-    <div
-      class="w-full space-x-6 flex text-white h-fit justify-between items-center p-20 mt-8 bg-[#102542]"
-    >
+
+    <div class="w-full bg-[#FEF1AE] px-24 space-x-20 justify-between items-center flex py-20">
+      <div>
+        <span class="text-5xl text-primary">Revolutionize Your
+          Workforce Management
+          with Our Cutting-Edge
+          HR Time System
+        </span>
+
+        
+      </div>
+      <div>
+        <img src="/image.png" />
+      </div>
+    </div>
+
+    <div class="w-full space-x-6 flex text-white h-fit justify-between items-center p-20 mt-8 mb-10 bg-[#102542]">
       <img src="/ill1.png" class="h-64" />
-      <span class="text-5xl"
-        >Join Now! Manage your staff proceses efficiently!</span
-      >
+      <span class="text-5xl">Join Now! Manage your staff proceses efficiently!</span>
       <img src="/ill2.png" class="h-64" />
     </div>
-    <div class="bg-[#102542] w-full flex justify-between text-white p-10">
+    <div class="bg-[#102542] w-full flex mt-10 justify-between text-white p-10">
       <span class="cursor-pointer">FAQ</span>
       <span class="cursor-pointer">Contact</span>
       <span class="cursor-pointer">About Us</span>
@@ -165,6 +158,7 @@ onMounted(() => {
 .landing {
   background-image: url("/landing_splash.jpg");
 }
+
 .splashText {
   font-family: "AllenSans";
 }
