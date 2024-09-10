@@ -18,7 +18,7 @@ const signInTime = ref<string>("");
 const showUpdateTime = ref<boolean>(false);
 
 const columns = [
-{
+  {
     key: "name",
     label: "Department Name",
   },
@@ -26,7 +26,6 @@ const columns = [
     key: "_id",
     label: "Department ID",
   },
- 
   {
     key: "actions",
   },
@@ -35,9 +34,7 @@ const columns = [
 const items = (row: any) => [
   [
     { "id": "18:00", "name": "" },
-    
   ]
-
 ];
 
 const morningTimes = [
@@ -46,7 +43,6 @@ const morningTimes = [
   { value: "08:00", label: "8:00 AM" },
   { value: "09:00", label: "9:00 AM" }
 ];
-
 
 const handleCreateDepartment = async () => {
   loading.value = true;
@@ -94,11 +90,8 @@ const getPage = (page: any) => {
 };
 
 const handleSaveTime = async () => {
- 
-
-
-    try {
-      const response = await updateTime(signInTime.value);
+  try {
+    const response = await updateTime(signInTime.value);
     showUpdateTime.value = false;
     userToast(["Login time Successfully Updated!"], 200);
 
@@ -109,7 +102,6 @@ const handleSaveTime = async () => {
     isModalOpen.value = false;
     userToast(err, error.response.data.code);
   }
-
 }
 
 onMounted(() => {
@@ -118,36 +110,32 @@ onMounted(() => {
 </script>
 
 <template>
-  <main class="p-10">
-    <div class="flex items-center justify-between">
-      <div class="flex flex-col">
-        <span class="text-2xl font-bold">User Management</span>
+  <main class="p-4 md:p-10">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+      <div class="flex flex-col mb-4 md:mb-0">
+        <span class="text-xl md:text-2xl font-bold">User Management</span>
         <span class="text-sm font-light">Manage your company's users & departments</span>
       </div>
-      <div class="flex flex-col space-y-3">
-        <div class="flex space-x-3">
-          <UButton @click="showUpdateTime = true" type="submit" size="xl" color="white" variant="solid" class="self-start dark:bg-white dark:text-primary-800 hover:dark:bg-white hover:dark:text-primary-800 dark:border-primary-800">
-            Update Time
-          </UButton>
+      <div class="flex flex-col space-y-3 md:flex-row md:space-y-0 md:space-x-3">
+        <UButton @click="showUpdateTime = !showUpdateTime" type="submit" size="xl" color="white" variant="solid" class="self-start dark:bg-white dark:text-primary-800 hover:dark:bg-white hover:dark:text-primary-800 dark:border-primary-800">
+          Update Time
+        </UButton>
 
-          <UButton class="dark:bg-white dark:text-primary-800 self-start hover:dark:bg-white hover:dark:text-primary-800 dark:border-primary-800" type="submit" size="xl" color="white" variant="solid" @click="isModalOpen = true">
-            Create Department
-          </UButton>
-        </div>
-
-        <div v-if="showUpdateTime" class="flex  space-x-3">
-          <XDropdown placeholder="Select Time" :items="morningTimes" @select="((val: any) => signInTime = val.value)" />
-
-          <UButton type="submit" size="xl" color="white" variant="solid" class="self-start dark:bg-white dark:text-primary hover:dark:bg-white hover:dark:text-primary" @click="handleSaveTime">
-           Save
-          </UButton>
-        </div>
+        <UButton class="dark:bg-white dark:text-primary-800 self-start hover:dark:bg-white hover:dark:text-primary-800 dark:border-primary-800" type="submit" size="xl" color="white" variant="solid" @click="isModalOpen = true">
+          Create Department
+        </UButton>
       </div>
-
-
-
     </div>
-    <div class="mt-20">
+
+    <div v-if="showUpdateTime" class="flex flex-col md:flex-row space-y-3 md:space-y-0 md:space-x-3 mt-4">
+      <XDropdown placeholder="Select Time" :items="morningTimes" @select="((val: any) => signInTime = val.value)" class="w-full md:w-auto" />
+
+      <UButton type="submit" size="xl" color="white" variant="solid" class="self-start dark:bg-white dark:text-primary hover:dark:bg-white hover:dark:text-primary" @click="handleSaveTime">
+        Save
+      </UButton>
+    </div>
+
+    <div class="mt-8 md:mt-20">
       <XTable :columns="columns" :items-generator="items" :table-data="deptData" :pagination-data="pageData"
         @prevPage="getPage" @nextPage="getPage">
       </XTable>
