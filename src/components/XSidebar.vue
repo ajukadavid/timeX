@@ -51,8 +51,12 @@ const isDark = computed({
 
 <template>
   <aside
-    class="h-screen fixed bg-white dark:bg-primary-800 border border-gray-400 flex flex-col"
-    :class="showNav ? 'w-64' : 'w-16'"
+    class="h-screen fixed bg-white dark:bg-primary-800 border border-gray-400 flex flex-col transition-all duration-300"
+    :class="[
+      showNav ? 'w-64' : 'w-16',
+      'md:w-64 md:translate-x-0',
+      showNav ? 'translate-x-0' : '-translate-x-full'
+    ]"
   >
     <div
       class="py-4 border-b flex items-center justify-center border-gray-400 dark:bg-[#2D2F39] bg-gray-100"
@@ -60,7 +64,7 @@ const isDark = computed({
     >
       <h2
         v-if="showNav"
-        class="font-sans text-2xl cursor-pointer font-bold text-blueZodiac dark:text-white"
+        class="font-sans text-2xl cursor-pointer font-bold text-blueZodiac dark:text-white md:block"
         @click="showNav = !showNav"
       >
         <span> TimeX </span>
@@ -68,7 +72,7 @@ const isDark = computed({
       <UIcon
         v-else
         name="i-heroicons-bars-3-20-solid"
-        class="text-[28px] cursor-pointer hover:scale-110 dark:text-white text-slate-800"
+        class="text-[28px] cursor-pointer hover:scale-110 dark:text-white text-slate-800 md:hidden"
         @click="showNav = !showNav"
       />
     </div>
@@ -78,7 +82,7 @@ const isDark = computed({
     >
       <h3
         class="text-xs mt-4 mb-2 font-medium"
-        :class="{ hidden: !showNav }"
+        :class="{ 'hidden': !showNav, 'md:block': true }"
       ></h3>
       <UVerticalNavigation
         :links="showNav ? links : iconLinks"
@@ -103,18 +107,12 @@ const isDark = computed({
     >
       <ClientOnly>
         <UButton
-          :icon="
-            isDark ? 'i-heroicons-moon-20-solid' : 'i-heroicons-sun-20-solid'
-          "
+          :icon="isDark ? 'i-heroicons-moon-20-solid' : 'i-heroicons-sun-20-solid'"
           color="gray"
           variant="ghost"
-          aria-label="Theme"
+          aria-label="Toggle dark mode"
           @click="isDark = !isDark"
         />
-
-        <template #fallback>
-          <div class="w-8 h-8" />
-        </template>
       </ClientOnly>
     </div>
   </aside>

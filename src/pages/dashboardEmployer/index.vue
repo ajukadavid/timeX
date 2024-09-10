@@ -115,33 +115,20 @@ const getPage = (page: any) => {
   }
 };
 
-
-
 const handleAddEmployees = async () => {
   isModalOpen.value = true;
-
- 
 };
 
-onMounted( async () => {
+onMounted(() => {
   getData();
-  const res = await getDepartments();
-
-  departmentItems.value = res.data.map((val: any) => {
-    return {
-      label: val.name,
-      icon: "i-heroicons-building-office-20-solid",
-      id: val._id
-    };
-  });
 });
 </script>
 
 <template>
-  <main class="p-10">
-    <div class="flex items-center justify-between">
-      <div class="flex flex-col">
-        <span class="text-2xl font-bold">Employees</span>
+  <main class="min-h-full bg-white dark:bg-primary-800 p-4 md:p-10">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+      <div class="flex flex-col mb-4 md:mb-0">
+        <span class="text-xl md:text-2xl font-bold">Employees</span>
         <span class="text-sm font-light">Here is a list of all employees</span>
       </div>
       <UButton
@@ -155,7 +142,7 @@ onMounted( async () => {
         Add Employees
       </UButton>
     </div>
-    <div class="mt-20">
+    <div class="mt-8 md:mt-20">
       <XTable
         :columns="columns"
         :items-generator="items"
