@@ -47,12 +47,20 @@ const isDark = computed({
     colorMode.preference = colorMode.value === "dark" ? "light" : "dark";
   },
 });
+
+const toggleSidebar = () => {
+  showNav.value = !showNav.value;
+};
 </script>
 
 <template>
   <aside
-    class="h-screen fixed bg-white dark:bg-primary-800 border border-gray-400 flex flex-col"
-    :class="showNav ? 'w-64' : 'w-16'"
+    class="h-screen fixed bg-white dark:bg-primary-800 border border-gray-400 flex flex-col transition-all duration-300 z-50"
+    :class="[
+      showNav ? 'w-64' : 'w-0 md:w-16',
+      'md:translate-x-0',
+      showNav ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
+    ]"
   >
     <div
       class="py-4 border-b flex items-center justify-center border-gray-400 dark:bg-[#2D2F39] bg-gray-100"
@@ -61,15 +69,15 @@ const isDark = computed({
       <h2
         v-if="showNav"
         class="font-sans text-2xl cursor-pointer font-bold text-blueZodiac dark:text-white"
-        @click="showNav = !showNav"
+        @click="toggleSidebar"
       >
         <span> TimeX </span>
       </h2>
       <UIcon
         v-else
         name="i-heroicons-bars-3-20-solid"
-        class="text-[28px] cursor-pointer hover:scale-110 dark:text-white text-slate-800"
-        @click="showNav = !showNav"
+        class="text-[28px] cursor-pointer hover:scale-110 dark:text-white text-slate-800 md:block hidden"
+        @click="toggleSidebar"
       />
     </div>
     <div
@@ -78,7 +86,7 @@ const isDark = computed({
     >
       <h3
         class="text-xs mt-4 mb-2 font-medium"
-        :class="{ hidden: !showNav }"
+        :class="{ 'hidden': !showNav, 'md:block': true }"
       ></h3>
       <UVerticalNavigation
         :links="showNav ? links : iconLinks"
@@ -103,21 +111,25 @@ const isDark = computed({
     >
       <ClientOnly>
         <UButton
-          :icon="
-            isDark ? 'i-heroicons-moon-20-solid' : 'i-heroicons-sun-20-solid'
-          "
+          :icon="isDark ? 'i-heroicons-moon-20-solid' : 'i-heroicons-sun-20-solid'"
           color="gray"
           variant="ghost"
-          aria-label="Theme"
+          aria-label="Toggle dark mode"
           @click="isDark = !isDark"
         />
-
-        <template #fallback>
-          <div class="w-8 h-8" />
-        </template>
       </ClientOnly>
     </div>
   </aside>
+  <div
+    class="fixed top-4 left-4 z-50 md:hidden"
+    @click="toggleSidebar"
+  >
+    <UIcon
+      v-if="!showNav"
+      name="i-heroicons-bars-3-20-solid"
+      class="text-[28px] cursor-pointer hover:scale-110 dark:text-white text-slate-800"
+    />
+  </div>
 </template>
 
 <style scoped>

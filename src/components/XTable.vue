@@ -55,20 +55,21 @@ const generateItems = (row: any) => props.itemsGenerator ? props.itemsGenerator(
         </template>
       </UPagination>
     </div>
-    <UTable :columns="props.columns" :rows="props.tableData">
-      <template #entryTime-data="{ row }">
-         <span class="text-base" :class="row.late ? 'text-red-700' : 'text-green-700'">{{ row.entryTime }}</span> 
+    <div class="overflow-x-auto">
+      <UTable :columns="props.columns" :rows="props.tableData">
+        <template #entryTime-data="{ row }">
+          <span class="text-base" :class="row.late ? 'text-red-700' : 'text-green-700'">{{ row.entryTime }}</span> 
         </template>
-      <template v-if="props.itemsGenerator" #actions-data="{ row }">
-        <UDropdown :items="generateItems(row)">
-          <UButton
-            color="gray"
-            variant="ghost"
-            icon="i-heroicons-ellipsis-horizontal-20-solid"
-          />
-        </UDropdown>
-      </template>
-     
-    </UTable>
+        <template v-if="props.itemsGenerator" #actions-data="{ row }">
+          <UDropdown :items="generateItems(row)">
+            <UButton
+              color="gray"
+              variant="ghost"
+              icon="i-heroicons-ellipsis-horizontal-20-solid"
+            />
+          </UDropdown>
+        </template>
+      </UTable>
+    </div>
   </div>
 </template>
