@@ -2,7 +2,7 @@
 import { ref } from "vue";
 
 interface DropdownItem {
-  label: string;
+  name: string;
   value: string | number;
   id?: string;
 }
@@ -36,7 +36,7 @@ const selectItem = (item: DropdownItem) => {
       @click="toggleDropdown"
       class="w-full bg-white text-left px-4 py-2 border border-gray-300 rounded-lg flex justify-between items-center"
     >
-      <span class=" dark:text-primary ">{{ selectedItem?.label || props.placeholder || 'Select an option' }}</span>
+      <span class=" dark:text-primary ">{{ selectedItem?.name || props.placeholder || 'Select an option' }}</span>
       <i class="i-heroicons-chevron-down-20-solid"></i>
     </button>
 
@@ -51,7 +51,7 @@ const selectItem = (item: DropdownItem) => {
           @click="selectItem(item)"
           class="cursor-pointer px-4 py-2 hover:bg-gray-100 dark:text-primary"
         >
-          {{ item.label }}
+          {{ item.name }}
         </li>
       </ul>
     </div>

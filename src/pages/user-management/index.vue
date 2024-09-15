@@ -38,10 +38,10 @@ const items = (row: any) => [
 ];
 
 const morningTimes = [
-  { value: "06:00", label: "6:00 AM" },
-  { value: "07:00", label: "7:00 AM" },
-  { value: "08:00", label: "8:00 AM" },
-  { value: "09:00", label: "9:00 AM" }
+  { value: "06:00", name: "6:00 AM" },
+  { value: "07:00", name: "7:00 AM" },
+  { value: "08:00", name: "8:00 AM" },
+  { value: "09:00", name: "9:00 AM" }
 ];
 
 const handleCreateDepartment = async () => {

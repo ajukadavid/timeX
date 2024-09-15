@@ -119,7 +119,9 @@ const handleAddEmployees = async () => {
   isModalOpen.value = true;
 };
 
-onMounted(() => {
+onMounted( async () => {
+  const depts = await getDepartments()
+  departmentItems.value = depts.data
   getData();
 });
 </script>
