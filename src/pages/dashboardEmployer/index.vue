@@ -69,23 +69,24 @@ const loading = ref(false);
 const staffData = ref<StaffData[]>([]);
 const createStaff = async () => {
   loading.value = true;
-  try {
-    const response = await registerStaff(state);
+  console.log(state)
+  // try {
+  //   const response = await registerStaff(state);
 
-    loading.value = false;
-    userToast(["Employee Successfully Created!"], 200);
-    isModalOpen.value = false;
-    state.email = "";
-    state.firstName = "";
-    state.lastName = "";
-    state.role = "";
-    getData();
-  } catch (error: any) {
-    loading.value = false;
-    const err = [error.response.data.message];
-    isModalOpen.value = false;
-    userToast(err, error.response.data.code);
-  }
+  //   loading.value = false;
+  //   userToast(["Employee Successfully Created!"], 200);
+  //   isModalOpen.value = false;
+  //   state.email = "";
+  //   state.firstName = "";
+  //   state.lastName = "";
+  //   state.role = "";
+  //   getData();
+  // } catch (error: any) {
+  //   loading.value = false;
+  //   const err = [error.response.data.message];
+  //   isModalOpen.value = false;
+  //   userToast(err, error.response.data.code);
+  // }
 };
 
 const pageData = reactive({
@@ -207,7 +208,7 @@ onMounted( async () => {
           <div class="flex flex-col space-y-2">
             <label for="department">Department</label>
         
-          <XDropdown :items="departmentItems" @select="((val: any) => state.department = val.id)" />
+          <XDropdown :items="departmentItems" @select="((val: any) => state.department = val._id)" />
           </div>
       
         </div>
