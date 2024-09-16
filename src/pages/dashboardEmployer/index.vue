@@ -69,24 +69,23 @@ const loading = ref(false);
 const staffData = ref<StaffData[]>([]);
 const createStaff = async () => {
   loading.value = true;
-  console.log(state)
-  // try {
-  //   const response = await registerStaff(state);
+  try {
+    const response = await registerStaff(state);
 
-  //   loading.value = false;
-  //   userToast(["Employee Successfully Created!"], 200);
-  //   isModalOpen.value = false;
-  //   state.email = "";
-  //   state.firstName = "";
-  //   state.lastName = "";
-  //   state.role = "";
-  //   getData();
-  // } catch (error: any) {
-  //   loading.value = false;
-  //   const err = [error.response.data.message];
-  //   isModalOpen.value = false;
-  //   userToast(err, error.response.data.code);
-  // }
+    loading.value = false;
+    userToast(["Employee Successfully Created!"], 200);
+    isModalOpen.value = false;
+    state.email = "";
+    state.firstName = "";
+    state.lastName = "";
+    state.role = "";
+    getData();
+  } catch (error: any) {
+    loading.value = false;
+    const err = [error.response.data.message];
+    isModalOpen.value = false;
+    userToast(err, error.response.data.code);
+  }
 };
 
 const pageData = reactive({
