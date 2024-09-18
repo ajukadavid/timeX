@@ -44,10 +44,10 @@ const selectItem = (item: DropdownItem) => {
       v-if="isOpen"
       class="absolute mt-1 w-full bg-white shadow-lg rounded-lg z-10"
     >
-      <ul class="max-h-48 overflow-y-auto">
+      <ul class="max-h-24 overflow-y-auto">
         <li
           v-for="item in props.items"
-          :key="item.value"
+          :key="item.id"
           @click="selectItem(item)"
           class="cursor-pointer px-4 py-2 hover:bg-gray-100 dark:text-primary"
         >

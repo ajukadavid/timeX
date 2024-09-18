@@ -121,7 +121,10 @@ const handleAddEmployees = async () => {
 
 onMounted( async () => {
   const depts = await getDepartments()
-  departmentItems.value = depts.data
+  departmentItems.value = depts.data.map((item: { name: any; _id: any; }) => ({
+    name: item.name, // Adjust according to your data structure
+    id: item._id    // Adjust according to your data structure
+  }));
   getData();
 });
 </script>
@@ -130,7 +133,7 @@ onMounted( async () => {
   <main class="min-h-full bg-white dark:bg-primary-800 p-4 md:p-10">
     <div class="flex flex-col md:flex-row md:items-center md:justify-between">
       <div class="flex flex-col mb-4 md:mb-0">
-        <span class="text-xl md:text-2xl font-bold">Employees</span>
+        <span class="text-xl md:text-2xl font-bold">Employees</span> 
         <span class="text-sm font-light">Here is a list of all employees</span>
       </div>
       <UButton
@@ -158,7 +161,7 @@ onMounted( async () => {
   </main>
   <XModal show-header show-footer>
     <template #header>
-      <div>Create Employees</div>
+      <div>Create Employees</div> 
     </template>
     <div>
       <UForm
@@ -207,7 +210,7 @@ onMounted( async () => {
           <div class="flex flex-col space-y-2">
             <label for="department">Department</label>
         
-          <XDropdown :items="departmentItems" @select="((val: any) => state.department = val._id)" />
+          <XDropdown :items="departmentItems" @select="((val: any) => state.department = val.id)" />
           </div>
       
         </div>
