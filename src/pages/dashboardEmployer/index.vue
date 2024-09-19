@@ -22,10 +22,7 @@ const state = reactive({
 });
 
 const columns = [
-  {
-    key: "_id",
-    label: "ID",
-  },
+
   {
     key: "firstName",
     label: "First Name",
@@ -41,6 +38,10 @@ const columns = [
   {
     key: "email",
     label: "Email",
+  },
+  {
+    key: "lastEntryTime",
+    label: "Last login time"
   },
   {
     key: "actions",
@@ -98,6 +99,16 @@ const pageData = reactive({
 
 const getData = async (pageNum?: number) => {
   const data = await getStaffs(pageNum);
+  data.staff.map((x:any) => {
+    x.lastEntryTime = new Date(x.lastEntryTime).toLocaleString('en-US', { 
+          year: 'numeric', 
+          month: 'long', 
+          day: 'numeric', 
+          hour: 'numeric', 
+          minute: 'numeric', 
+          hour12: true 
+      });
+      })
 
   pageData.page = 1;
   pageData.prev = data.previous;
