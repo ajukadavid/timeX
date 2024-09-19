@@ -52,12 +52,13 @@ const login = async () => {
 onMounted(async () => {
   if ($route.query.authToken) {
     const token = $route.query.authToken;
+    console.log(token)
     const res = await loginStaff(token);
     store.$patch({
       role: res.staff.role,
       name: `${res.staff.firstName} ${res.staff.lastName}`,
     });
-    $router.push("/dashboardStaff");
+    $router.push(`/dashboardStaff/${token}`);
   }
 });
 </script>

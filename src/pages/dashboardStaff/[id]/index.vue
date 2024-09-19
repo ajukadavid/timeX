@@ -11,11 +11,11 @@ definePageMeta({
 const staffTableData = ref<any[]>([]);
 
 const paginationData = {
-  page: 1,          // Current page number
-  count: 5,        // Total number of pages
-  total: 10,       // Total number of items
-  prev: null,       // Previous page number (null if on the first page)
-  next: 2           // Next page number (null if on the last page)
+  page: 1,        
+  count: 5,       
+  total: 10,       
+  prev: null,      
+  next: 2      
 };
 
 
