@@ -4,10 +4,12 @@ import {
   getStaff,
   registerStaff,
   getDepartments,
+  updateStaffPassword,
 } from "@/composables/services/data/data";
 import { userToast } from "@/composables/helpers/notifications";
 import { StaffData } from "@/types/data";
 import XDropdown from "@/components/XDropdown.vue";
+import XModal from '@/components/XModal.vue';
 
 const isModalOpen = useState("showModal");
 const $route = useRoute();
@@ -60,6 +62,13 @@ const items = (row: any) => [
     {
       label: "Send Query",
       icon: "i-heroicons-archive-box-20-solid",
+    },
+  ],
+  [
+    {
+      label: "Add Password",
+      icon: "i-heroicons-wrench-screwdriver-solid",
+      click: () => handleAddPassword(row),
     },
   ],
 ];
@@ -126,8 +135,69 @@ const getPage = (page: any) => {
   }
 };
 
-const handleAddEmployees = async () => {
-  isModalOpen.value = true;
+const showAddEmployeeModal = ref(false);
+const showAddPasswordModal = ref(false);
+
+const handleAddEmployees = () => {
+  showAddEmployeeModal.value = true;
+};
+
+// Simplified password state
+interface PasswordState {
+  password: string;
+  confirmPassword: string;
+}
+
+const passwordState = reactive<PasswordState>({
+  password: '',
+  confirmPassword: ''
+});
+
+const selectedUser = ref({
+  email: '',
+  _id: ''
+});
+
+const handleAddPassword = (user: any) => {
+  selectedUser.value = user;
+  showAddPasswordModal.value = true;
+};
+
+const handlePasswordSubmit = async () => {
+  if (passwordState.password !== passwordState.confirmPassword) {
+    userToast(['Passwords do not match'], 400);
+    return;
+  }
+
+  loading.value = true;
+  try {
+    await updateStaffPassword(selectedUser.value._id, passwordState.password);
+    
+    showAddPasswordModal.value = false;
+    userToast(['Password successfully updated'], 200);
+    handleModalClose('add-password');
+  } catch (error: any) {
+    userToast(
+      [error.response?.data?.message || 'Error updating password'], 
+      error.response?.status || 400
+    );
+  } finally {
+    loading.value = false;
+  }
+};
+
+const handleModalClose = (modalId: string) => {
+  if (modalId === 'add-employee') {
+    state.email = "";
+    state.firstName = "";
+    state.lastName = "";
+    state.role = "";
+    state.department = "";
+  } else if (modalId === 'add-password') {
+    selectedUser.value = { email: '', _id: '' };
+    passwordState.password = '';
+    passwordState.confirmPassword = '';
+  }
 };
 
 onMounted( async () => {
@@ -170,75 +240,132 @@ onMounted( async () => {
       </XTable>
     </div>
   </main>
-  <XModal show-header show-footer>
-    <template #header>
-      <div>Create Employees</div> 
-    </template>
-    <div>
-      <UForm
-        :state="state"
-        class="space-y-4 justify-center flex items-center flex-col"
-        :validate-on="['submit']"
-      >
-        <div class="space-y-5 w-full">
-          <UFormGroup
-            label="First Name"
-            name="firstName"
-            size="xl"
-            class="space-y-2"
-          >
-            <UInput
-              v-model="state.firstName"
-              placeholder="First Name"
-              size="xl"
-            />
-          </UFormGroup>
 
-          <UFormGroup
-            label="Last Name"
-            name="last Name"
-            size="xl"
-            class="space-y-2"
-          >
-            <UInput
-              v-model="state.lastName"
-              placeholder="First Last"
-              size="xl"
-            />
-          </UFormGroup>
+  <!-- Add Employee Modal -->
+  <XModal
+    modal-id="add-employee"
+    v-model="showAddEmployeeModal"
+    title="Create Employee"
+    size="2xl"
+    @close="handleModalClose"
+  >
+    <UForm
+      :state="state"
+      class="space-y-4 justify-center flex items-center flex-col"
+      :validate-on="['submit']"
+    >
+      <div class="space-y-5 w-full">
+        <UFormGroup label="First Name" name="firstName" size="xl" class="space-y-2">
+          <UInput v-model="state.firstName" placeholder="First Name" size="xl" />
+        </UFormGroup>
 
-          <UFormGroup label="Email" name="email" size="xl" class="space-y-2">
-            <UInput
-              v-model="state.email"
-              placeholder="Email Address"
-              size="xl"
-            />
-          </UFormGroup>
+        <UFormGroup label="Last Name" name="lastName" size="xl" class="space-y-2">
+          <UInput v-model="state.lastName" placeholder="Last Name" size="xl" />
+        </UFormGroup>
 
-          <UFormGroup label="Role" name="role" size="xl" class="space-y-2">
-            <UInput v-model="state.role" placeholder="Role" size="xl" />
-          </UFormGroup>
-          <div class="flex flex-col space-y-2">
-            <label for="department">Department</label>
-        
-          <XDropdown :items="departmentItems" @select="((val: any) => state.department = val.id)" />
-          </div>
-      
+        <UFormGroup label="Email" name="email" size="xl" class="space-y-2">
+          <UInput v-model="state.email" placeholder="Email Address" size="xl" />
+        </UFormGroup>
+
+        <UFormGroup label="Role" name="role" size="xl" class="space-y-2">
+          <UInput v-model="state.role" placeholder="Role" size="xl" />
+        </UFormGroup>
+
+        <div class="flex flex-col space-y-2">
+          <label for="department">Department</label>
+          <XDropdown 
+            :items="departmentItems" 
+            @select="((val: any) => state.department = val.id)" 
+          />
         </div>
-      </UForm>
-    </div>
+      </div>
+    </UForm>
+
     <template #footer>
-      <div class="flex justify-end">
+      <div class="flex justify-end gap-3">
+        <UButton
+          color="gray"
+          variant="soft"
+          @click="showAddEmployeeModal = false"
+        >
+          Cancel
+        </UButton>
         <UButton
           type="submit"
-          size="lg"
-          color="white"
-          variant="solid"
-          class="self-start"
           :loading="loading"
           @click="createStaff"
         >
-          Submit
+          Create Employee
+        </UButton>
+      </div>
+    </template>
+  </XModal>
+
+  <!-- Add Password Modal -->
+  <XModal
+    modal-id="add-password"
+    v-model="showAddPasswordModal"
+    title="Set Password"
+    size="md"
+    @close="handleModalClose"
+  >
+    <UForm
+      :state="passwordState"
+      class="space-y-6"
+    >
+      <div class="space-y-4">
+        <!-- User Info Section -->
+        <div class="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
+          <div class="text-sm text-gray-600 dark:text-gray-300">Setting password for:</div>
+          <div class="font-medium text-gray-900 dark:text-white">{{ selectedUser.email }}</div>
+        </div>
+
+        <!-- Password Fields -->
+        <UFormGroup
+          label="New Password"
+          name="password"
+          class="space-y-2"
+        >
+          <UInput
+            v-model="passwordState.password"
+            type="password"
+            placeholder="Enter new password"
+            size="lg"
+            autocomplete="new-password"
+          />
+        </UFormGroup>
+
+        <UFormGroup
+          label="Confirm Password"
+          name="confirmPassword"
+          class="space-y-2"
+        >
+          <UInput
+            v-model="passwordState.confirmPassword"
+            type="password"
+            placeholder="Confirm new password"
+            size="lg"
+            autocomplete="new-password"
+          />
+        </UFormGroup>
+      </div>
+    </UForm>
+
+    <template #footer>
+      <div class="flex justify-end gap-3">
+        <UButton
+          color="gray"
+          variant="soft"
+          @click="showAddPasswordModal = false"
+        >
+          Cancel
+        </UButton>
+        <UButton
+          :loading="loading"
+          color="primary"
+          @click="handlePasswordSubmit"
+        >
+          Set Password
         </UButton>
       </div>
     </template>

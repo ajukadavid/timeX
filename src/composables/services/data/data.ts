@@ -42,3 +42,8 @@ export const updateTime = async (loginTime: string) => {
   const response = await axiosInstance.put("/employers", { loginTime });
   return response.data;
 }
+
+export const updateStaffPassword = async (staffId: string, password: string) => {
+  const response = await axiosInstance.put(`/staffs/${staffId}`, { password });
+  return response.data;
+};

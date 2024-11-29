@@ -25,6 +25,7 @@ useHead({
 
 const loading = ref(false);
 const showPassword = ref(false);
+const isStaffLogin = ref(false);
 
 const state = reactive({
   email: "",
@@ -34,26 +35,43 @@ const state = reactive({
 const login = async () => {
   loading.value = true;
   try {
-    const response = await loginEmployer(state);
-    loading.value = false;
-    userToast(["Successfully Logged in!"], 200);
-    if (response.employer) {
-      navigateTo("/dashboardEmployer");
+    if (isStaffLogin.value) {
+      // Staff login - uses email and password
+      const res = await loginStaff({
+        email: state.email,
+        password: state.password
+      });
+      store.$patch({
+        role: res.staff.role,
+        name: `${res.staff.firstName} ${res.staff.lastName}`,
+      });
+      $router.push(`/dashboardStaff/${res.staff._id}`);
     } else {
-      navigateTo("/staff");
+      // Employer login - uses email and password
+      const response = await loginEmployer(state);
+      if (response.employer) {
+        navigateTo("/dashboardEmployer");
+      } else {
+        navigateTo("/staff");
+      }
     }
+    
+    userToast(["Successfully Logged in!"], 200);
   } catch (error: any) {
-    loading.value = false;
     const err = [error.response.data.message];
     userToast(err, error.response.data.code);
+  } finally {
+    loading.value = false;
   }
 };
 
 onMounted(async () => {
   if ($route.query.authToken) {
     const token = $route.query.authToken;
-    console.log(token)
-    const res = await loginStaff(token);
+    const res = await loginStaff({
+      email: state.email,
+      password: token as string
+    });
     store.$patch({
       role: res.staff.role,
       name: `${res.staff.firstName} ${res.staff.lastName}`,
@@ -91,6 +109,22 @@ onMounted(async () => {
           <p class="text-gray-500 dark:text-gray-400">
             Login to your account to continue
           </p>
+        </div>
+
+        <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+          <span class="text-sm font-medium text-gray-900 dark:text-gray-200">
+            {{ isStaffLogin ? 'Staff Login' : 'Employer Login' }}
+          </span>
+          <UToggle
+            v-model="isStaffLogin"
+            size="lg"
+            color="primary"
+            :ui="{
+              container: 'w-[52px]',
+              active: 'bg-primary-500',
+              inactive: 'bg-gray-200 dark:bg-gray-700'
+            }"
+          />
         </div>
 
         <UForm
