@@ -16,11 +16,11 @@ export const useLoginValidate = (state: any): FormError[] => {
   const errors = [];
   if (!state.email)
     errors.push({ path: "email", message: "Email is Required" });
-  if (state.password.length < 8)
-    errors.push({
-      path: "password",
-      message: "Password must be at least 8 characters",
-    });
+  // if (state.password.length < 8)
+  //   errors.push({
+  //     path: "password",
+  //     message: "Password must be at least 8 characters",
+  //   });
   if (errors.length > 0) userToast(errors);
   return errors;
 };
