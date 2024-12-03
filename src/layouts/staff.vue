@@ -6,8 +6,31 @@ const store = useUserStore();
 
 </script>
 <template>
-  <div class="flex bg-white h-screen dark:bg-primary-800 flex-col">
+  <div class="flex bg-white h-screen dark:bg-primary-800 flex-col p-20">
+  
+    <UButton v-if="store.role !== 'employer'"
+            type="submit"
+            size="lg"
+            color="white"
+            variant="solid"
+      class="self-start"
+      @click="$router.push('/login')"
+    >
+      Save & Exit
+      </UButton>
+    <UButton v-else
+            type="submit"
+            size="lg"
+            color="white"
+            variant="solid"
+      class="self-start"
+      @click="$router.push('/dashboardEmployer')"
+    >
+      Go Back
+      </UButton>
+     
     <div class="flex items-center justify-between">
+     
       <div class="w-full h-12">
         <img src="/logo.png" class="w-16 md:w-28 cursor-pointer" />
       </div>
