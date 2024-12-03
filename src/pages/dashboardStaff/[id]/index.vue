@@ -56,7 +56,7 @@ onMounted( async () => {
 </script>
 
 <template>
-  <main class="w-full px-10 mt-5">
+  <main class="w-full mt-5">
     <div class=" w-full">
       <XTable :rows="columns" :paginationData="paginationData" :columns="columns" :table-data="staffTableData">
       
