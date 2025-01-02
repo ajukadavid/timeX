@@ -41,19 +41,20 @@ const login = async () => {
         email: state.email,
         password: state.password
       });
-      store.$patch({
-        role: res.staff.role,
+      await store.$patch({
+        userRole: res.staff.role,
         name: `${res.staff.firstName} ${res.staff.lastName}`,
       });
+      localStorage.setItem('userType', 'staff');
       $router.push(`/dashboardStaff/${res.staff._id}`);
     } else {
       // Employer login - uses email and password
       const response = await loginEmployer(state);
-      if (response.employer) {
-        navigateTo("/dashboardEmployer");
-      } else {
-        navigateTo("/staff");
-      }
+      await store.$patch({
+        userRole: "Admin",
+      });
+      localStorage.setItem('userType', 'employer');
+      $router.push('/dashboardEmployer');
     }
     
     userToast(["Successfully Logged in!"], 200);
@@ -66,18 +67,7 @@ const login = async () => {
 };
 
 onMounted(async () => {
-  if ($route.query.authToken) {
-    const token = $route.query.authToken;
-    const res = await loginStaff({
-      email: state.email,
-      password: token as string
-    });
-    store.$patch({
-      role: res.staff.role,
-      name: `${res.staff.firstName} ${res.staff.lastName}`,
-    });
-    $router.push(`/dashboardStaff/${token}`);
-  }
+
 });
 </script>
 
