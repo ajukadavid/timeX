@@ -18,6 +18,10 @@ const props = defineProps({
     type: Function as PropType<(row: any) => any[]>,
     required: false,
   },
+  loading: {
+    type: Boolean,
+    default: false
+  }
 });
 
 const generateItems = (row: any) => props.itemsGenerator ? props.itemsGenerator(row) : [];
@@ -55,7 +59,10 @@ const generateItems = (row: any) => props.itemsGenerator ? props.itemsGenerator(
         </template>
       </UPagination>
     </div>
-    <div class="overflow-x-auto">
+    <div class="overflow-x-auto relative">
+      <div v-if="props.loading" class="absolute inset-0 bg-white/50 dark:bg-gray-900/50 z-10 flex items-center justify-center">
+        <UIcon name="i-heroicons-arrow-path-20-solid" class="w-8 h-8 animate-spin text-primary-500" />
+      </div>
       <UTable :columns="props.columns" :rows="props.tableData">
         <template #entryTime-data="{ row }">
           <span class="text-base" :class="row.late ? 'text-red-700' : 'text-green-700'">{{ row.entryTime }}</span> 

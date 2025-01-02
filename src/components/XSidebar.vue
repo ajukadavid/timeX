@@ -19,6 +19,12 @@ const iconLinks = [
   },
 ];
 
+const handleLogout = () => {
+  localStorage.removeItem('userType');
+  localStorage.removeItem('token');
+  navigateTo('/login');
+};
+
 const links = [
   {
     label: "Dashboard",
@@ -34,6 +40,7 @@ const links = [
     label: "Log out",
     icon: "i-heroicons-arrow-left-on-rectangle-20-solid",
     to: "/login",
+    onClick: handleLogout
   },
 ];
 
@@ -51,6 +58,8 @@ const isDark = computed({
 const toggleSidebar = () => {
   showNav.value = !showNav.value;
 };
+
+
 </script>
 
 <template>

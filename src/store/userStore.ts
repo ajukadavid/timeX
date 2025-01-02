@@ -4,7 +4,7 @@ export const useUserStore = defineStore("staff", {
   state: () => {
     return {
       name: "",
-      role: "",
+      userRole: "",
       department: "",
       signInTimes: [],
     };

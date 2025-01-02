@@ -4,11 +4,14 @@ import { useUserStore } from "@/store/userStore";
 
 const store = useUserStore();
 
+// Get role from localStorage instead of store
+const role = localStorage.getItem('userType')
+
 </script>
 <template>
   <div class="flex bg-white h-screen dark:bg-primary-800 flex-col p-20">
   
-    <UButton v-if="store.role !== 'employer'"
+    <UButton v-if="role !== 'employer'"
             type="submit"
             size="lg"
             color="white"

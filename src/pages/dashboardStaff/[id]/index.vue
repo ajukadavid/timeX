@@ -3,13 +3,17 @@ import { getStaff } from '@/composables/services/data/data';
 import { useUserStore } from '@/store/userStore';
 import { Line } from 'vue-chartjs'
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js'
+import { saveAs } from 'file-saver';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend)
 
 const store = useUserStore();
 const $route = useRoute();
+const localStorage = window?.localStorage;
+const userType = process.client ? localStorage.getItem('userType') : null;
+
 definePageMeta({
-  layout: 'staff'
+  layout: computed(() => userType === 'employer' ? 'default' : 'staff')
 })
 
 const staffTableData = ref<any[]>([]);
@@ -132,6 +136,27 @@ const chartOptions = {
   }
 };
 
+const exportToCSV = () => {
+  // Create CSV headers
+  const headers = ['Date', 'Sign in Time', 'Status'];
+  
+  // Convert data to CSV format
+  const csvData = staffTableData.value.map(row => {
+    return [
+      row.entryDate,
+      row.entryTime,
+      row.late ? 'Late' : 'Early'
+    ].join(',');
+  });
+  
+  // Combine headers and data
+  const csvContent = [headers.join(','), ...csvData].join('\n');
+  
+  // Create and download the file
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8' });
+  saveAs(blob, `staff_attendance_${new Date().toISOString().split('T')[0]}.csv`);
+};
+
 onMounted( async () => {
   const staffData = await getStaff($route.params.id);
   staffData.entryLogs.map((val:any) => {
@@ -141,7 +166,7 @@ onMounted( async () => {
   staffTableData.value = staffData.entryLogs
 
    store.$patch({
-      role: staffData.staff.role,
+    userRole: staffData.staff.role,
       name: `${staffData.staff.firstName} ${staffData.staff.lastName}`,
     });
 
@@ -186,8 +211,19 @@ onMounted( async () => {
 </script>
 
 <template>
-  <main class="w-full p-2 sm:p-4">
+  <main class="w-full p-2 sm:p-4"> 
     <div class="max-w-7xl mx-auto">
+      <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-semibold">Staff Attendance Dashboard</h1>
+        <button
+          v-if="localStorage.getItem('userType') === 'employer'"
+          @click="exportToCSV"
+          class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors flex items-center gap-2"
+        >
+          Export to CSV
+        </button>
+      </div>
+
       <div class="bg-white rounded-lg shadow p-3 sm:p-6 mb-8">
         <div class="h-[300px] md:h-[400px] lg:h-[500px]">
           <Line :data="chartData" :options="chartOptions" />
