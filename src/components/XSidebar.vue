@@ -1,5 +1,7 @@
 <script setup lang="ts">
+import { useUserStore } from '@/store/userStore';
 const showNav = useState("showNav", () => true);
+const store = useUserStore();
 
 const iconLinks = [
   {
@@ -59,6 +61,29 @@ const toggleSidebar = () => {
   showNav.value = !showNav.value;
 };
 
+const userType = store.$state.userRole
+
+const filteredLinks = computed(() => {
+  if (userType !== 'Admin') {
+    return links.filter(link => 
+      !['Dashboard', 'User Management'].includes(link.label)
+    );
+  }
+  return links;
+});
+
+const filteredIconLinks = computed(() => {
+  if (userType === 'Admin') {
+    return iconLinks.filter(link => 
+      link.to !== '/dashboard' && link.to !== '/user-management'
+    );
+  }
+  return iconLinks;
+});
+
+onMounted(() => {
+  console.log(store.$state)
+})
 
 </script>
 
@@ -98,7 +123,7 @@ const toggleSidebar = () => {
         :class="{ 'hidden': !showNav, 'md:block': true }"
       ></h3>
       <UVerticalNavigation
-        :links="showNav ? links : iconLinks"
+        :links="showNav ? filteredLinks : filteredIconLinks"
         :ui="{
           base: 'group relative flex py-2.5 px-3 items-center dark:text-white text-slate-800 gap-[10px] mb-2 text-[15px] focus:outline-none focus-visible:outline-none dark:focus-visible:outline-none focus-visible:before:ring-inset focus-visible:before:ring-1 focus-visible:before:ring-primary-500 dark:focus-visible:before:ring-primary-400 before:absolute before:inset-px before:rounded-md disabled:cursor-not-allowed disabled:opacity-75',
           active:
