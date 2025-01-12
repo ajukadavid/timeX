@@ -5,6 +5,7 @@ import {
   registerStaff,
   getDepartments,
   updateStaffPassword,
+  deleteStaff,
 } from "@/composables/services/data/data";
 import { userToast } from "@/composables/helpers/notifications";
 import { StaffData } from "@/types/data";
@@ -60,8 +61,9 @@ const items = (row: any) => [
   ],
   [
     {
-      label: "Send Query",
-      icon: "i-heroicons-archive-box-20-solid",
+      label: "Delete Employee",
+      icon: "i-heroicons-trash-20-solid",
+      click: () => handleDeleteStaff(row),
     },
   ],
   [
@@ -197,6 +199,36 @@ const handleModalClose = (modalId: string) => {
     selectedUser.value = { email: '', _id: '' };
     passwordState.password = '';
     passwordState.confirmPassword = '';
+  }
+};
+
+const showDeleteModal = ref(false);
+const selectedUserForDelete = ref({
+  _id: '',
+  firstName: '',
+  lastName: ''
+});
+
+const handleDeleteStaff = (user: any) => {
+  selectedUserForDelete.value = user;
+  showDeleteModal.value = true;
+};
+
+const confirmDelete = async () => {
+  loading.value = true;
+  try {
+    await deleteStaff(selectedUserForDelete.value._id);
+    userToast(['Employee successfully deleted'], 200);
+    getData(); // Refresh the table
+  } catch (error: any) {
+    userToast(
+      [error.response?.data?.message || 'Error deleting employee'],
+      error.response?.status || 400
+    );
+  } finally {
+    loading.value = false;
+    showDeleteModal.value = false;
+    selectedUserForDelete.value = { _id: '', firstName: '', lastName: '' };
   }
 };
 
@@ -366,6 +398,41 @@ onMounted( async () => {
           @click="handlePasswordSubmit"
         >
           Set Password
+        </UButton>
+      </div>
+    </template>
+  </XModal>
+
+  <!-- Delete Confirmation Modal -->
+  <XModal
+    modal-id="delete-staff"
+    v-model="showDeleteModal"
+    title="Delete Employee"
+    size="md"
+    @close="showDeleteModal = false"
+  >
+    <div class="p-4">
+      <p class="text-gray-600 dark:text-gray-300">
+        Are you sure you want to delete {{ selectedUserForDelete.firstName }} {{ selectedUserForDelete.lastName }}? 
+        This action cannot be undone.
+      </p>
+    </div>
+
+    <template #footer>
+      <div class="flex justify-end gap-3">
+        <UButton
+          color="gray"
+          variant="soft"
+          @click="showDeleteModal = false"
+        >
+          Cancel
+        </UButton>
+        <UButton
+          color="red"
+          :loading="loading"
+          @click="confirmDelete"
+        >
+          Delete Employee
         </UButton>
       </div>
     </template>
