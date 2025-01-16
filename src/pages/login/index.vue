@@ -33,6 +33,7 @@ const state = reactive({
 });
 
 const login = async () => {
+  console.log(isStaffLogin.value)
   loading.value = true;
   try {
     if (isStaffLogin.value) {
@@ -45,15 +46,14 @@ const login = async () => {
         userRole: res.staff.role,
         name: `${res.staff.firstName} ${res.staff.lastName}`,
       });
-      localStorage.setItem('userType', 'staff');
       $router.push(`/dashboardStaff/${res.staff._id}`);
     } else {
       // Employer login - uses email and password
       const response = await loginEmployer(state);
+      console.log(response)
       await store.$patch({
         userRole: "Admin",
       });
-      localStorage.setItem('userType', 'employer');
       $router.push('/dashboardEmployer');
     }
     
@@ -67,7 +67,7 @@ const login = async () => {
 };
 
 onMounted(async () => {
-
+console.log(store.userRole)
 });
 </script>
 

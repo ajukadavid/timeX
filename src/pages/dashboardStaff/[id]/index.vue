@@ -9,11 +9,11 @@ ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, T
 
 const store = useUserStore();
 const $route = useRoute();
-const localStorage = window?.localStorage;
-const userType = process.client ? localStorage.getItem('userType') : null;
+
+
 
 definePageMeta({
-  layout: computed(() => userType === 'employer' ? 'default' : 'staff')
+  // layout: computed(() => userType.value === 'employer' ? 'default' : 'staff')
 })
 
 const staffTableData = ref<any[]>([]);
@@ -157,18 +157,17 @@ const exportToCSV = () => {
   saveAs(blob, `staff_attendance_${new Date().toISOString().split('T')[0]}.csv`);
 };
 
+const staff = ref('')
 onMounted( async () => {
   const staffData = await getStaff($route.params.id);
+  staff.value = staffData.staff.firstName + ' ' + staffData.staff.lastName
   staffData.entryLogs.map((val:any) => {
     val.entryDate = new Date(val.entryDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
     val.entryTime = new Date(val.entryTime).toLocaleTimeString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true });
   })
   staffTableData.value = staffData.entryLogs
 
-   store.$patch({
-    userRole: staffData.staff.role,
-      name: `${staffData.staff.firstName} ${staffData.staff.lastName}`,
-    });
+
 
   // Process data for chart
   const monthlyStats = staffData.entryLogs.reduce((acc: any, log: any) => {
@@ -213,10 +212,9 @@ onMounted( async () => {
 <template>
   <main class="w-full p-2 sm:p-4"> 
     <div class="max-w-7xl mx-auto">
-      <div class="flex justify-between items-center mb-6">
-        <h1 class="text-2xl font-semibold">Staff Attendance Dashboard</h1>
-        <button
-          v-if="localStorage.getItem('userType') === 'employer'"
+      <div class="flex justify-between items-center mb-6"> 
+        <h1 class="text-2xl font-semibold">{{ staff }} Attendance Summary</h1>
+        <button v-if="store.$state.userRole === 'Admin'"
           @click="exportToCSV"
           class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors flex items-center gap-2"
         >
@@ -224,7 +222,7 @@ onMounted( async () => {
         </button>
       </div>
 
-      <div class="bg-white rounded-lg shadow p-3 sm:p-6 mb-8">
+      <div v-if="store.$state.userRole === 'Admin'" class="bg-white rounded-lg shadow p-3 sm:p-6 mb-8">
         <div class="h-[300px] md:h-[400px] lg:h-[500px]">
           <Line :data="chartData" :options="chartOptions" />
         </div>

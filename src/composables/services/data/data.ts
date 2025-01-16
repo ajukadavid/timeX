@@ -47,3 +47,8 @@ export const updateStaffPassword = async (staffId: string, password: string) => 
   const response = await axiosInstance.put(`/staffs/${staffId}`, { password });
   return response.data;
 };
+
+export const deleteStaff = async (staffId: string) => {
+  const response = await axiosInstance.delete(`/staffs/${staffId}`);
+  return response.data;
+};

@@ -6,7 +6,6 @@ const store = useUserStore();
 
 // Get role from localStorage instead of store
 const role = localStorage.getItem('userType')
-
 </script>
 <template>
   <div class="flex bg-white h-screen dark:bg-primary-800 flex-col p-20">
