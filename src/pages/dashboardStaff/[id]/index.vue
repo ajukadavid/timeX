@@ -213,7 +213,7 @@ onMounted( async () => {
   <main class="w-full p-2 sm:p-4"> 
     <div class="max-w-7xl mx-auto">
       <div class="flex justify-between items-center mb-6"> 
-        <h1 v-if="store.$state.userRole === 'Admin'" class="text-2xl font-semibold">{{ staff }} Attendance Dashboard</h1>
+        <h1 class="text-2xl font-semibold">{{ staff }} Attendance Summary</h1>
         <button v-if="store.$state.userRole === 'Admin'"
           @click="exportToCSV"
           class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors flex items-center gap-2"
