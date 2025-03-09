@@ -61,151 +61,170 @@ const features = [
 </script>
 
 <template>
-  <!-- Header - Added gradient background and improved spacing -->
-  <div class="flex flex-col min-h-screen">
-    <nav class="flex justify-between bg-white/90 backdrop-blur-sm sticky top-0 items-center px-8 py-6 shadow-sm z-50">
-      <img src="/logo.png" class="w-12 md:w-20 cursor-pointer transition-transform hover:scale-105" />
-      <div class="flex gap-4">
-        <nuxt-link class="cursor-pointer" to="/register">
-          <UButton size="lg" color="primary" variant="soft" class="font-semibold">
-            Sign up
-          </UButton>
-        </nuxt-link>
-        <nuxt-link class="cursor-pointer" to="/login">
-          <UButton size="lg" color="primary" variant="solid" class="font-semibold">
-            Log in
-          </UButton>
-        </nuxt-link>
-      </div>
-    </nav>
+  <!-- Updated navbar background -->
+  <nav class="flex justify-between bg-primary backdrop-blur-sm sticky top-0 items-center px-5 py-5 shadow-sm z-50">
+    <div class="flex items-center space-x-6">
+      <img src="/logo.png" class="w-12 md:w-20 bg-gray-100 rounded-lg cursor-pointer transition-transform hover:scale-105" />
 
-    <!-- Hero Section - Updated color scheme -->
-    <div class="relative overflow-hidden bg-gradient-to-br from-[#2E2E41] via-[#3F3D56] to-[#6C63FF] py-24 px-8 md:px-20">
-      <!-- Decorative background elements -->
-      <div class="absolute inset-0">
-        <div class="absolute top-0 left-0 w-96 h-96 bg-[#6C63FF]/20 rounded-full filter blur-3xl"></div>
-        <div class="absolute bottom-0 right-0 w-96 h-96 bg-[#E6E6E6]/10 rounded-full filter blur-3xl"></div>
-      </div>
+      <span class="text-xl text-white ml-10 font-bold border border-white rounded-lg px-3 py-1 transition-transform hover:scale-105 cursor-pointer"> Platform </span>
+      <span class="text-xl text-white  font-bold border border-white rounded-lg px-3 py-1 transition-transform hover:scale-105 cursor-pointer"> Use Cases </span>
+      <span class="text-xl text-white  font-bold border border-white rounded-lg px-3 py-1 transition-transform hover:scale-105 cursor-pointer"> Why TimeX </span>
+      <span class="text-xl text-white  font-bold border border-white rounded-lg px-3 py-1 transition-transform hover:scale-105 cursor-pointer"> Pricing </span>
+      <span class="text-xl text-white  font-bold border border-white rounded-lg px-3 py-1 transition-transform hover:scale-105 cursor-pointer"> Resources </span>
 
-      <!-- Subtle pattern overlay -->
-      <div class="absolute inset-0 bg-pattern opacity-5"></div>
-      
-      <div class="max-w-7xl mx-auto grid md:grid-cols-2 gap-12 items-center relative z-10">
-        <!-- Text content -->
-        <div class="space-y-8">
-          <h1 class="text-[#E6E6E6] text-4xl md:text-6xl font-extrabold leading-tight splashText">
-            {{ staticText }}<br />
-            <span class="text-[#6C63FF] bg-white/90 px-2 rounded-lg transition-all duration-300">
-              {{ dynamicText }}.
-            </span>
-          </h1>
-          <p class="text-[#E6E6E6]/90 text-lg md:text-xl max-w-xl">
-            Transform your workforce management with our innovative HR Time Management System.
-          </p>
-          <div class="flex gap-4">
-            <UButton 
-              size="xl" 
-              class="bg-[#6C63FF] hover:bg-[#6C63FF]/90 text-white text-xl font-bold px-8 py-4 transform hover:scale-105 transition-all"
-            >
-              Get Started Today
-            </UButton>
-            <UButton 
-              size="xl" 
-              class="border-2 border-[#E6E6E6] text-[#E6E6E6] hover:bg-white/10 text-xl font-bold px-8 py-4 transform hover:scale-105 transition-all"
-            >
-              Watch Demo
-            </UButton>
-          </div>
-        </div>
+    </div>
+    <div class="flex gap-4">
+      <button class="px-4 py-2 text-white border-2 border-white rounded-lg hover:bg-white hover:text-primary transition-all duration-300 font-semibold">
+        Log in
+      </button>
+      <button class="px-4 py-2 text-white border-2 border-white rounded-lg hover:bg-white hover:text-primary transition-all duration-300 font-semibold">
+        Request A Demo
+      </button>
+    </div>
+  </nav>
 
-        <!-- Hero art -->
-        <div class="hidden md:block relative">
-          <img 
-            src="/hero_art.svg" 
-            class="w-full h-auto animate-float hero-image relative z-10" 
-            alt="HR Management System Illustration" 
-          />
-          
-          <!-- Decorative elements -->
-          <div class="absolute -top-4 -right-4 w-20 h-20 bg-[#6C63FF]/20 rounded-full animate-pulse"></div>
-          <div class="absolute -bottom-4 -left-4 w-12 h-12 bg-[#E6E6E6]/20 rounded-full animate-pulse delay-300"></div>
-        </div>
-      </div>
+  <!-- Updated hero section background gradient -->
+  <div class="relative overflow-hidden bg-gradient-to-br from-primary via-primary to-primary py-24 px-8 md:px-20">
+    <!-- Decorative background elements -->
+    <div class="absolute inset-0">
+      <div class="absolute top-0 left-0 w-96 h-96 bg-[#6C63FF]/20 rounded-full filter blur-3xl"></div>
+      <div class="absolute bottom-0 right-0 w-96 h-96 bg-[#E6E6E6]/10 rounded-full filter blur-3xl"></div>
     </div>
 
-    <!-- About Section - Improved layout and readability -->
-    <div class="py-20 px-8 md:px-20 bg-gray-50">
-      <div class="max-w-7xl mx-auto grid md:grid-cols-2 gap-12 items-center">
-        <img src="/about_us.jpg" class="w-full h-auto rounded-2xl shadow-xl" />
-        <div class="space-y-6">
-          <h2 class="text-3xl md:text-4xl font-bold text-primary mb-6">About Our Solution</h2>
-          <div class="text-gray-700 space-y-4 text-lg leading-relaxed">
-            <!-- Split the large paragraph into smaller chunks -->
-            <p>Our HR Time Management System is a comprehensive software application
-              designed to streamline employee attendance management, sign-in
-              records, and punctuality monitoring for organizations.</p>
-            <!-- ... rest of the text split into paragraphs ... -->
-          </div>
+    <!-- Subtle pattern overlay -->
+    <div class="absolute inset-0 bg-pattern opacity-5"></div>
+    
+    <div class="max-w-7xl  mx-auto grid md:grid-cols-2 gap-12 items-center relative z-10">
+      <!-- Text content -->
+      <div class="space-y-8">
+        <h1 class="text-[#E6E6E6] text-4xl md:text-6xl font-extrabold leading-tight splashText">
+          {{ staticText }}<br />
+          <span class="text-primary bg-white/90 px-2 rounded-lg transition-all duration-300">
+            {{ dynamicText }}.
+          </span>
+        </h1>
+        <p class="text-[#E6E6E6]/90 text-lg md:text-xl max-w-xl">
+          Transform your workforce management with our innovative HR Time Management System.
+        </p>
+        <div class="flex gap-4">
+          <button 
+            class="bg-primary hover:bg-primary/90 text-white text-xl font-bold px-8 py-4 transform hover:scale-105 transition-all"
+          >
+            Get Started Today
+          </button>
+          <button 
+            class="border-2 border-white rounded-lg text-white hover:bg-white/10 text-xl font-bold px-8 py-4 transform hover:scale-105 transition-all"
+          >
+            Watch Demo
+          </button>
         </div>
+      </div>
+
+      <!-- Hero art -->
+      <div class="hidden md:block relative">
+        <img 
+          src="/hero_art.svg" 
+          class="w-full h-auto animate-float hero-image relative z-10" 
+          alt="HR Management System Illustration" 
+        />
+        
+        <!-- Decorative elements -->
+        <div class="absolute -top-4 -right-4 w-20 h-20 bg-[#6C63FF]/20 rounded-full animate-pulse"></div>
+        <div class="absolute -bottom-4 -left-4 w-12 h-12 bg-[#E6E6E6]/20 rounded-full animate-pulse delay-300"></div>
       </div>
     </div>
-
-    <!-- Features Section - Improved cards and hover effects -->
-    <div class="py-20 px-8 md:px-20 bg-white">
-      <div class="max-w-7xl mx-auto space-y-12">
-        <h2 class="text-4xl font-bold text-primary text-center">Our Core Features</h2>
-        <div class="grid md:grid-cols-4 gap-8">
-          <div v-for="feature in features" :key="feature.title" 
-            class="p-6 rounded-xl bg-white shadow-lg hover:shadow-xl transition-all hover:-translate-y-1">
-            <UIcon :name="feature.icon" class="text-6xl text-primary mb-4" />
-            <h3 class="text-xl font-semibold text-primary">{{ feature.title }}</h3>
-            <p class="text-gray-600 mt-2">{{ feature.description }}</p>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Call to Action Sections - Enhanced styling -->
-    <div class="bg-yellow-50 py-20 px-8 md:px-20">
-      <div class="max-w-7xl mx-auto grid md:grid-cols-2 gap-12 items-center">
-        <div class="space-y-6">
-          <h2 class="text-4xl md:text-5xl font-bold text-primary leading-tight">
-            Revolutionize Your Workforce Management
-          </h2>
-          <UButton size="lg" color="primary" variant="solid" class="text-xl font-semibold">
-            Learn More
-          </UButton>
-        </div>
-        <img src="/image.png" class="w-full h-auto" />
-      </div>
-    </div>
-
-    <!-- Footer - Improved layout and added content -->
-    <footer class="bg-gray-900 text-white">
-      <div class="max-w-7xl mx-auto px-8 py-20">
-        <div class="grid md:grid-cols-3 gap-12">
-          <div class="space-y-4">
-            <img src="/logo.png" class="w-32" />
-            <p class="text-gray-400">Empowering organizations with smart HR solutions.</p>
-          </div>
-          <div class="space-y-4">
-            <h3 class="text-xl font-semibold">Quick Links</h3>
-            <div class="flex flex-col space-y-2">
-              <a href="#" class="text-gray-400 hover:text-white transition-colors">FAQ</a>
-              <a href="#" class="text-gray-400 hover:text-white transition-colors">Contact</a>
-              <a href="#" class="text-gray-400 hover:text-white transition-colors">About Us</a>
-            </div>
-          </div>
-          <div class="space-y-4">
-            <h3 class="text-xl font-semibold">Connect With Us</h3>
-            <div class="flex space-x-4">
-              <!-- Add social media icons here -->
-            </div>
-          </div>
-        </div>
-      </div>
-    </footer>
   </div>
+
+  <!-- About Section - Improved layout and readability -->
+  <div class="py-20 px-8 md:px-20 bg-gray-50 ">
+    <div class="max-w-7xl mx-auto grid md:grid-cols-2 gap-12 items-center">
+      <div class="space-y-6">
+        <h2 class="text-3xl md:text-4xl font-bold text-primary mb-6">TimeX is the only HR platform with everything you need, for everyone</h2>
+        <div class="text-gray-700 space-y-4 text-lg leading-relaxed">
+          <p>We're making remote workforce time management effortless and precise. Whether you need to track attendance across different time zones, manage flexible work schedules, or maintain accurate time records for your distributed team, TimeX handles it all while ensuring compliance with local labor regulations.</p>
+          
+         <button class="bg-primary hover:bg-primary/90 text-white text-xl font-bold px-8 py-4 transform hover:scale-105 transition-all">
+          Request a Demo
+         </button>
+        </div>
+      </div>
+      <img src="/office.gif" class="w-full h-auto" />
+      
+    </div>
+    <div class="flex justify-between w-full space-x-9">
+     <div class="flex flex-col items-center justify-center">
+      <UIcon name="i-heroicons-globe-americas" class="text-primary text-5xl" />
+      <span class="text-primary text-xl font-bold">International Employees</span>
+      <span class="text-gray-700 text-base text-center">Manage remote workers across different <br /> time zones with ease</span>
+     </div>
+     <div class="flex flex-col items-center justify-center">
+      <UIcon name="i-heroicons-document-check" class="text-primary text-5xl" />
+      <span class="text-primary text-xl font-bold">Contract Workers</span>
+      <span class="text-gray-700 text-base text-center">Track time and attendance for your <br /> freelancers and contractors</span>
+     </div>
+     <div class="flex flex-col items-center justify-center">
+      <UIcon name="i-heroicons-building-office" class="text-primary text-5xl" />
+      <span class="text-primary text-xl font-bold">Local Employees</span>
+      <span class="text-gray-700 text-base text-center">Monitor attendance and working hours <br /> for your in-house team</span>
+     </div>
+    </div>
+  </div>
+
+  <!-- Features Section - Improved cards and hover effects -->
+  <div class="py-20 px-8 md:px-20 bg-white">
+    <div class="max-w-7xl mx-auto space-y-12">
+      <h2 class="text-4xl font-bold text-primary text-center">Our Core Features</h2>
+      <div class="grid md:grid-cols-4 gap-8">
+        <div v-for="feature in features" :key="feature.title" 
+          class="p-6 rounded-xl bg-white shadow-lg hover:shadow-xl transition-all hover:-translate-y-1">
+          <UIcon :name="feature.icon" class="text-6xl text-primary mb-4" />
+          <h3 class="text-xl font-semibold text-primary">{{ feature.title }}</h3>
+          <p class="text-gray-600 mt-2">{{ feature.description }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Call to Action Sections - Enhanced styling -->
+  <div class="bg-yellow-50 py-20 px-8 md:px-20">
+    <div class="max-w-7xl mx-auto grid md:grid-cols-2 gap-12 items-center">
+      <div class="space-y-6">
+        <h2 class="text-4xl md:text-5xl font-bold text-primary leading-tight">
+          Revolutionize Your Workforce Management
+        </h2>
+        <UButton size="lg" color="primary" variant="solid" class="text-xl font-semibold">
+          Learn More
+        </UButton>
+      </div>
+      <img src="/image.png" class="w-full h-auto" />
+    </div>
+  </div>
+
+  <!-- Footer - Improved layout and added content -->
+  <footer class="bg-gray-900 text-white">
+    <div class="max-w-7xl mx-auto px-8 py-20">
+      <div class="grid md:grid-cols-3 gap-12">
+        <div class="space-y-4">
+          <img src="/logo.png" class="w-32" />
+          <p class="text-gray-400">Empowering organizations with smart HR solutions.</p>
+        </div>
+        <div class="space-y-4">
+          <h3 class="text-xl font-semibold">Quick Links</h3>
+          <div class="flex flex-col space-y-2">
+            <a href="#" class="text-gray-400 hover:text-white transition-colors">FAQ</a>
+            <a href="#" class="text-gray-400 hover:text-white transition-colors">Contact</a>
+            <a href="#" class="text-gray-400 hover:text-white transition-colors">About Us</a>
+          </div>
+        </div>
+        <div class="space-y-4">
+          <h3 class="text-xl font-semibold">Connect With Us</h3>
+          <div class="flex space-x-4">
+            <!-- Add social media icons here -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </footer>
 </template>
 
 <style scoped>
@@ -240,5 +259,18 @@ const features = [
 
 .hero-content {
   animation: reveal 1s ease-out forwards;
+}
+
+/* Add these font styles */
+.nav-text {
+  font-family: 'Inter', sans-serif;
+}
+
+h1, h2, h3, .heading-text {
+  font-family: 'Outfit', sans-serif;
+}
+
+.body-text {
+  font-family: 'Inter', sans-serif;
 }
 </style>
