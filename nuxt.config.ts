@@ -35,12 +35,26 @@ export default defineNuxtConfig({
     icons: ["line-md", "mdi", "heroicons"],
     // icons: "all",
   },
+  icon: {
+    serverBundle: {
+      collections: ["line-md", "mdi", "heroicons"],
+    },
+  },
   pages: true,
   devtools: {
-    // Enable devtools (default: true)
-    enabled: true,
+    // Disable devtools in production to save memory
+    enabled: process.env.NODE_ENV !== "production",
     // VS Code Server options
     vscode: {},
     // ...other options
+  },
+  nitro: {
+    compressPublicAssets: true,
+    minify: true,
+  },
+  vite: {
+    build: {
+      chunkSizeWarningLimit: 1000,
+    },
   },
 });
