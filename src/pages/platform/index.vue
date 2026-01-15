@@ -19,7 +19,7 @@
           </div>
           <div class="w-full lg:w-1/2 px-4">
             <div class="relative">
-              <img src="~/assets/hero_art.svg" alt="Platform Overview" class="w-full h-auto"/>
+              <img src="/hero_art.svg" alt="Platform Overview" class="w-full h-auto"/>
             </div>
           </div>
         </div>
@@ -184,7 +184,7 @@ definePageMeta({
 }
 
 .btn-primary {
-  @apply px-8 py-3 bg-primary text-white rounded-lg font-semibold hover:bg-primary-dark transition-colors duration-300;
+  @apply px-8 py-3 bg-primary text-white rounded-lg font-semibold hover:opacity-90 transition-colors duration-300;
 }
 
 .btn-secondary {

@@ -316,7 +316,7 @@ definePageMeta({
 }
 
 .btn-primary {
-  @apply px-6 py-2 bg-primary text-white rounded-lg font-semibold hover:bg-primary-dark transition-colors duration-300;
+  @apply px-6 py-2 bg-primary text-white rounded-lg font-semibold hover:opacity-90 transition-colors duration-300;
 }
 
 .btn-outline-primary {

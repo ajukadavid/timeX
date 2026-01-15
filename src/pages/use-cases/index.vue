@@ -102,7 +102,7 @@
           <!-- Story 1 -->
           <div class="success-story bg-white rounded-xl p-8 shadow-sm">
             <div class="flex items-start gap-4 mb-6">
-              <img src="~/assets/review.svg" alt="Company Logo" class="w-16 h-16 rounded-lg"/>
+              <img src="/review.svg" alt="Company Logo" class="w-16 h-16 rounded-lg"/>
               <div>
                 <h3 class="text-xl font-semibold">Global Manufacturing Co.</h3>
                 <p class="text-gray-600">Manufacturing Industry</p>
@@ -112,7 +112,7 @@
               "TimeX has revolutionized how we manage our workforce. The AI-powered time tracking and real-time analytics have given us unprecedented visibility into our operations."
             </blockquote>
             <div class="flex items-center gap-4">
-              <img src="~/assets/review.svg" alt="CEO Portrait" class="w-12 h-12 rounded-full"/>
+              <img src="/review.svg" alt="CEO Portrait" class="w-12 h-12 rounded-full"/>
               <div>
                 <p class="font-semibold">Sarah Johnson</p>
                 <p class="text-gray-600">Chief Operations Officer</p>
@@ -123,7 +123,7 @@
           <!-- Story 2 -->
           <div class="success-story bg-white rounded-xl p-8 shadow-sm">
             <div class="flex items-start gap-4 mb-6">
-              <img src="~/assets/review.svg" alt="Company Logo" class="w-16 h-16 rounded-lg"/>
+              <img src="/review.svg" alt="Company Logo" class="w-16 h-16 rounded-lg"/>
               <div>
                 <h3 class="text-xl font-semibold">City General Hospital</h3>
                 <p class="text-gray-600">Healthcare Industry</p>
@@ -133,7 +133,7 @@
               "The automated scheduling and compliance features have been a game-changer for our hospital. We've significantly reduced administrative overhead while improving accuracy."
             </blockquote>
             <div class="flex items-center gap-4">
-              <img src="~/assets/review.svg" alt="CEO Portrait" class="w-12 h-12 rounded-full"/>
+              <img src="/review.svg" alt="CEO Portrait" class="w-12 h-12 rounded-full"/>
               <div>
                 <p class="font-semibold">Dr. Michael Chen</p>
                 <p class="text-gray-600">Hospital Administrator</p>
@@ -199,7 +199,7 @@ definePageMeta({
 }
 
 .btn-primary {
-  @apply px-8 py-3 bg-primary text-white rounded-lg font-semibold hover:bg-primary-dark transition-colors duration-300;
+  @apply px-8 py-3 bg-primary text-white rounded-lg font-semibold hover:opacity-90 transition-colors duration-300;
 }
 
 .btn-white {
