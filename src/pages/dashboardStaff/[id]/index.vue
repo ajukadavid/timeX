@@ -17,6 +17,9 @@ definePageMeta({
 })
 
 const staffTableData = ref<any[]>([]);
+const allLogs = ref<any[]>([]);
+const startDate = ref('');
+const endDate = ref('');
 
 const paginationData = {
   page: 1,        
@@ -157,15 +160,40 @@ const exportToCSV = () => {
   saveAs(blob, `staff_attendance_${new Date().toISOString().split('T')[0]}.csv`);
 };
 
+const clearFilter = () => {
+  startDate.value = '';
+  endDate.value = '';
+  staffTableData.value = allLogs.value;
+};
+
 const staff = ref('')
+
+watch([startDate, endDate], () => {
+  if (startDate.value && endDate.value) {
+    const start = new Date(startDate.value);
+    const end = new Date(endDate.value);
+    end.setHours(23, 59, 59, 999); // Set to the end of the day
+    staffTableData.value = allLogs.value.filter(log => {
+      const logDate = log.originalEntryDate;
+      return logDate >= start && logDate <= end;
+    });
+  }
+});
+
 onMounted( async () => {
   const staffData = await getStaff($route.params.id);
   staff.value = staffData.staff.firstName + ' ' + staffData.staff.lastName
-  staffData.entryLogs.map((val:any) => {
-    val.entryDate = new Date(val.entryDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-    val.entryTime = new Date(val.entryTime).toLocaleTimeString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true });
-  })
-  staffTableData.value = staffData.entryLogs
+  const processedLogs = staffData.entryLogs.map((val: any) => {
+    const originalDate = new Date(val.entryDate);
+    return {
+      ...val,
+      originalEntryDate: originalDate,
+      entryDate: originalDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
+      entryTime: new Date(val.entryTime).toLocaleTimeString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true })
+    };
+  });
+  staffTableData.value = processedLogs;
+  allLogs.value = processedLogs;
 
 
 
@@ -212,14 +240,31 @@ onMounted( async () => {
 <template>
   <main class="w-full p-2 sm:p-4"> 
     <div class="max-w-7xl mx-auto">
-      <div class="flex justify-between items-center mb-6"> 
+      <div class="flex justify-between items-center mb-6">
         <h1 class="text-2xl font-semibold">{{ staff }} Attendance Summary</h1>
-        <button v-if="store.$state.userRole === 'Admin'"
-          @click="exportToCSV"
-          class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors flex items-center gap-2"
-        >
-          Export to CSV
-        </button>
+        <div class="flex items-center gap-4">
+          <div class="flex items-center gap-2">
+            <label for="startDate">From:</label>
+            <input type="date" id="startDate" v-model="startDate" class="border rounded px-2 py-1" />
+          </div>
+          <div class="flex items-center gap-2">
+            <label for="endDate">To:</label>
+            <input type="date" id="endDate" v-model="endDate" class="border rounded px-2 py-1" />
+          </div>
+          <button
+            @click="clearFilter"
+            class="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400 transition-colors"
+          >
+            Clear
+          </button>
+          <button
+            v-if="store.$state.userRole === 'Admin'"
+            @click="exportToCSV"
+            class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors flex items-center gap-2"
+          >
+            Export to CSV
+          </button>
+        </div>
       </div>
 
       <div v-if="store.$state.userRole === 'Admin'" class="bg-white rounded-lg shadow p-3 sm:p-6 mb-8">
