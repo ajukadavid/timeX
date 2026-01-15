@@ -8,7 +8,7 @@ import {
 import { userToast } from "@/composables/helpers/notifications";
 import XDropdown from "@/components/XDropdown.vue";
 
-const isModalOpen = useState("showModal");
+const isModalOpen = ref(false);
 const state = reactive({
   deptName: "",
 });
@@ -32,9 +32,11 @@ const columns = [
 ];
 
 const items = (row: any) => [
-  [
-    { "id": "18:00", "name": "" },
-  ]
+  {
+    id: "update-time",
+    name: "Update Time",
+    icon: "i-heroicons-clock"
+  }
 ];
 
 const morningTimes = [
@@ -63,7 +65,15 @@ const handleCreateDepartment = async () => {
   }
 };
 
-const pageData = reactive({
+interface PaginationData {
+  page: number;
+  count: string;
+  total: number;
+  next: string;
+  prev: string;
+}
+
+const pageData = reactive<PaginationData>({
   page: 1,
   count: "5",
   total: 0,
@@ -141,7 +151,7 @@ onMounted(() => {
       </XTable>
     </div>
   </main>
-  <XModal show-header show-footer>
+  <XModal v-model="isModalOpen" show-header show-footer modalId="create-department">
     <template #header>
       <div>Create Department</div>
     </template>

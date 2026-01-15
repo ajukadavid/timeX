@@ -11,6 +11,7 @@ import { userToast } from "@/composables/helpers/notifications";
 import { StaffData } from "@/types/data";
 import XDropdown from "@/components/XDropdown.vue";
 import XModal from '@/components/XModal.vue';
+import XSummary from "@/components/XSummary.vue";
 
 const isModalOpen = useState("showModal");
 const $route = useRoute();
@@ -246,21 +247,30 @@ onMounted( async () => {
   <main class="min-h-full bg-white dark:bg-primary-800 p-4 md:p-10">
     <div class="flex flex-col md:flex-row md:items-center md:justify-between">
       <div class="flex flex-col mb-4 md:mb-0">
-        <span class="text-xl md:text-2xl font-bold">Employees</span> 
-        <span class="text-sm font-light">Here is a list of all employees</span>
+        <span class="text-xl md:text-2xl font-bold">Welcome Admin</span> 
+        <span class="text-sm font-light">See Today's attendance overview..</span>
       </div>
-      <UButton
-        type="submit"
-        size="lg"
-        color="white"
-        variant="solid"
-        class="self-start dark:bg-white dark:text-primary-800 hover:dark:bg-white hover:dark:text-primary-800 dark:border-primary-800"
-        @click="handleAddEmployees"
-      >
-        Add Employees
-      </UButton>
+      <div class="flex space-x-2">
+        <div class="border-[#762CC0] cursor-pointer border py-3 px-5 space-x-2 rounded-md flex justify-center">
+          <svg width="20" height="20" viewBox="0 0 20 21" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M9.922 3.29004C14.6963 1.66245 17.0834 0.848663 18.3674 2.13261C19.6513 3.41656 18.8375 5.80371 17.21 10.578L16.1016 13.8292C14.8517 17.4958 14.2267 19.3291 13.1964 19.4808C12.9195 19.5216 12.6328 19.4971 12.3587 19.4091C11.3395 19.0819 10.8007 17.1489 9.7231 13.283C9.4841 12.4255 9.3646 11.9967 9.0924 11.6692C9.0134 11.5742 8.9258 11.4866 8.8308 11.4076C8.5033 11.1354 8.0745 11.0159 7.21705 10.7769C3.35111 9.6993 1.41814 9.1605 1.0909 8.14127C1.00292 7.86724 0.97837 7.58053 1.01916 7.30355C1.17088 6.27332 3.00419 5.64834 6.6708 4.39838L9.922 3.29004Z" stroke="#1A1A1A" stroke-width="2"/>
+</svg>
+<span>Send Invite</span>
+        </div>
+        <div class="bg-[#762CC0] cursor-pointer text-white border py-3 px-5 space-x-2 rounded-md flex justify-center">
+          <svg width="20" height="20" viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M13 22.5H6.59087C5.04549 22.5 3.81631 21.748 2.71266 20.6966C0.453366 18.5441 4.1628 16.824 5.57757 15.9816C7.97679 14.553 10.8425 14.1575 13.5 14.7952" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M16.5 7C16.5 9.48528 14.4853 11.5 12 11.5C9.51472 11.5 7.5 9.48528 7.5 7C7.5 4.51472 9.51472 2.5 12 2.5C14.4853 2.5 16.5 4.51472 16.5 7Z" stroke="white" stroke-width="2"/>
+<path d="M19 23.7426V19.5M19 19.5V15.2574M19 19.5H14.7574M19 19.5H23.2427" stroke="white" stroke-width="2" stroke-linecap="round"/>
+</svg>
+<span>Add employee</span>
+        </div>
+      </div>
+
+     
     </div>
     <div class="mt-8 md:mt-20">
+      <XSummary />
       <XTable
         :columns="columns"
         :items-generator="items"

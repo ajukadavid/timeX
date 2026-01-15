@@ -27,10 +27,8 @@ export default defineNuxtConfig({
   },
   modules: [
     "@nuxt/ui",
-    "@nuxtjs/eslint-module",
     "@nuxt/devtools",
     "@pinia/nuxt",
-    "@nuxt/fonts",
   ],
   ui: {
     global: true,
@@ -38,9 +36,6 @@ export default defineNuxtConfig({
     // icons: "all",
   },
   pages: true,
-  eslint: {
-    lintOnStart: false,
-  },
   devtools: {
     // Enable devtools (default: true)
     enabled: true,

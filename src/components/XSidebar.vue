@@ -110,12 +110,12 @@ onMounted(() => {
       <UIcon
         v-else
         name="i-heroicons-bars-3-20-solid"
-        class="text-[28px] cursor-pointer hover:scale-110 dark:text-white text-slate-800 md:block hidden"
+        class="text-[28px] cursor-pointer hover:scale-110 dark:text-white text-white md:block hidden"
         @click="toggleSidebar"
       />
     </div>
     <div
-      class="space-y-5 overflow-y-scroll flex-1"
+      class="space-y-5 overflow-y-scroll flex-1 cursor-pointer"
       :class="showNav ? 'px-6' : 'px-2'"
     >
       <h3
@@ -127,7 +127,7 @@ onMounted(() => {
         :ui="{
           base: 'group relative flex py-2.5 px-3 items-center dark:text-white text-slate-800 gap-[10px] mb-2 text-[15px] focus:outline-none focus-visible:outline-none dark:focus-visible:outline-none focus-visible:before:ring-inset focus-visible:before:ring-1 focus-visible:before:ring-primary-500 dark:focus-visible:before:ring-primary-400 before:absolute before:inset-px before:rounded-md disabled:cursor-not-allowed disabled:opacity-75',
           active:
-            'text-primary dark:text-white bg-gray-100 before:bg-gray-100  dark:bg-[#2D2F39] dark:before:bg-[#2D2F39]',
+            'text-white dark:text-white bg-[#762CC0] before:bg-[#762CC0]  dark:bg-[#2D2F39] dark:before:bg-[#2D2F39]',
           inactive:
             'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:before:bg-gray-100 dark:hover:before:bg-[#2D2F39] dark:hover:bg-[#2D2F39]',
         }"
@@ -135,7 +135,7 @@ onMounted(() => {
         <template #icon="{ link }">
           <UIcon
             :name="link.icon"
-            class="text-[20px] shrink-0 hover:scale-110 dark:text-white text-slate-800"
+            class="text-[20px] shrink-0 hover:scale-110 dark:text-white text-white"
           />
         </template>
       </UVerticalNavigation>
