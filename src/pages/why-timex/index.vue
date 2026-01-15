@@ -33,7 +33,7 @@
           </div>
           <div class="w-full lg:w-1/2 px-4">
             <div class="relative">
-              <img src="~/assets/hero_art.svg" alt="Why TimeX" class="w-full h-auto"/>
+              <img src="/hero_art.svg" alt="Why TimeX" class="w-full h-auto"/>
             </div>
           </div>
         </div>
@@ -261,7 +261,7 @@
               "TimeX has completely transformed how we manage our workforce. The AI-powered features and real-time analytics have given us unprecedented visibility and control."
             </blockquote>
             <div class="flex items-center">
-              <img src="~/assets/review.svg" alt="Client" class="w-12 h-12 rounded-full mr-4"/>
+              <img src="/review.svg" alt="Client" class="w-12 h-12 rounded-full mr-4"/>
               <div>
                 <p class="font-semibold">Robert Chen</p>
                 <p class="text-gray-600">CEO, TechCorp Inc.</p>
@@ -294,7 +294,7 @@
               "The accuracy and reliability of TimeX's attendance tracking have significantly reduced our administrative overhead. Their customer support is exceptional."
             </blockquote>
             <div class="flex items-center">
-              <img src="~/assets/review.svg" alt="Client" class="w-12 h-12 rounded-full mr-4"/>
+              <img src="/review.svg" alt="Client" class="w-12 h-12 rounded-full mr-4"/>
               <div>
                 <p class="font-semibold">Sarah Williams</p>
                 <p class="text-gray-600">HR Director, Global Manufacturing</p>
@@ -327,7 +327,7 @@
               "Implementing TimeX was seamless, and the ROI was immediate. Their mobile app has made it incredibly easy for our employees to manage their time."
             </blockquote>
             <div class="flex items-center">
-              <img src="~/assets/review.svg" alt="Client" class="w-12 h-12 rounded-full mr-4"/>
+              <img src="/review.svg" alt="Client" class="w-12 h-12 rounded-full mr-4"/>
               <div>
                 <p class="font-semibold">Michael Thompson</p>
                 <p class="text-gray-600">Operations Manager, Retail Chain</p>
