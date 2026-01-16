@@ -1,6 +1,6 @@
 import axios from "axios";
 import { setupInterceptors } from "../../helpers/axios-interceptor";
-import { StaffRegister } from "@/types/auth";
+import type { StaffRegister } from "@/types/auth";
 
 const axiosInstance = setupInterceptors(axios.create());
 

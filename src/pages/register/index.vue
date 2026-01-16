@@ -73,26 +73,6 @@ const showPassword = ref(false);
         </p>
       </div>
 
-      <!-- <UForm
-        :validate="useSignUpValidate"
-        :state="state"
-        :validate-on="['submit']"
-        @submit.prevent="createEmployer"
-      >
-        <div class="space-y-5">
-          <UFormGroup
-            label="First Name"
-            name="given_name"
-            size="xl"
-            class="space-y-2 text-black dark:text-white"
-          >
-            Don't have a timeX account? Let's fix that.
-          </p>
-          <p class="my-5 font-medium text-lg">
-            Fill out the form below to have full access of the platform.
-          </p>
-        </div> -->
-
       <UForm
         :validate="useSignUpValidate"
         :state="state"
@@ -101,78 +81,71 @@ const showPassword = ref(false);
         @submit.prevent="createEmployer"
       >
         <div class="space-y-5">
-          <UFormGroup
+          <UFormField
             label="First Name"
             name="given_name"
-            size="xl"
             class="space-y-2"
           >
             <UInput
               v-model="state.firstName"
               placeholder="Enter your first name"
-              size="xl"
+              size="lg"
               class="autofill:bg-transparent"
             />
-          </UFormGroup>
-          <UFormGroup
+          </UFormField>
+          <UFormField
             label="Last Name"
             name="family_name"
-            size="xl"
             class="space-y-2"
           >
             <UInput
               v-model="state.lastName"
               placeholder="Enter your last name"
-              size="xl"
+              size="lg"
             />
-          </UFormGroup>
-          <UFormGroup label="Email" name="email" size="xl" class="space-y-2">
+          </UFormField>
+          <UFormField label="Email" name="email" class="space-y-2">
             <UInput
               v-model="state.email"
               placeholder="Email Address"
-              size="xl"
+              size="lg"
             />
-          </UFormGroup>
-          <UFormGroup
+          </UFormField>
+          <UFormField
             label="Company Name"
             name="company_name"
-            size="xl"
             class="space-y-2"
           >
             <UInput
               v-model="state.companyName"
               placeholder="Enter your company name"
-              size="xl"
+              size="lg"
             />
-          </UFormGroup>
+          </UFormField>
 
-          <UFormGroup
+          <UFormField
             label="Password"
             name="password"
-            size="xl"
             class="space-y-2"
           >
             <UInput
               v-model="state.password"
               :type="showPassword ? 'text' : 'password'"
               placeholder="Password"
-              size="xl"
-              :ui="{ icon: { trailing: { pointer: '' } } }"
+              size="lg"
             >
               <template #trailing>
                 <UButton
-                  color="primary"
-                  variant="link"
+                  color="neutral"
+                  variant="ghost"
                   :icon="
                     showPassword ? 'i-heroicons-eye-slash' : 'i-heroicons-eye'
                   "
-                  :padded="false"
-                  :ui="{ color: 'primary' }"
                   @click="showPassword = !showPassword"
                 />
               </template>
             </UInput>
-          </UFormGroup>
+          </UFormField>
         </div>
         <UButton
           type="submit"

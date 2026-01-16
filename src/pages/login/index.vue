@@ -87,96 +87,130 @@ console.log(store.userRole)
       </div>
     </div>
     <div
-      class="px-6 pb-6 lg:flex-[0.4] flex-1 flex flex-col w-full justify-center bg-white overflow-auto dark:bg-primary-800"
+      class="px-6 pb-6 lg:flex-[0.4] flex-1 flex flex-col w-full justify-center bg-gray-50 overflow-auto dark:bg-gray-900"
     >
-      <div class="max-w-md mx-auto space-y-5 w-full">
-        <div>
-          <p
-            class="text-3xl font-bold selection:bg-indigo-700 selection:text-white"
-          >
+      <div class="max-w-md mx-auto space-y-8 w-full">
+        <div class="text-center lg:text-left">
+          <h1 class="text-4xl font-bold text-gray-900 dark:text-white mb-2">
             Welcome Back
-          </p>
-          <p class="text-gray-500 dark:text-gray-400">
-            Login to your account to continue
+          </h1>
+          <p class="text-gray-600 dark:text-gray-400">
+            Sign in to your account to continue
           </p>
         </div>
 
-        <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-          <span class="text-sm font-medium text-gray-900 dark:text-gray-200">
-            {{ isStaffLogin ? 'Staff Login' : 'Employer Login' }}
-          </span>
-          <UToggle
-            v-model="isStaffLogin"
-            size="lg"
-            color="primary"
-            :ui="{
-              container: 'w-[52px]',
-              active: 'bg-primary-500',
-              inactive: 'bg-gray-200 dark:bg-gray-700'
-            }"
-          />
+        <div class="flex gap-3 p-1.5 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+          <button
+            @click="isStaffLogin = false"
+            :class="[
+              'flex-1 flex items-center justify-center gap-2 py-3.5 px-4 rounded-lg font-semibold text-sm transition-all duration-200',
+              !isStaffLogin
+                ? 'bg-primary-500 text-white shadow-md'
+                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+            ]"
+          >
+            <UIcon name="i-heroicons-building-office-2" class="w-5 h-5" />
+            <span>Employer</span>
+          </button>
+          <button
+            @click="isStaffLogin = true"
+            :class="[
+              'flex-1 flex items-center justify-center gap-2 py-3.5 px-4 rounded-lg font-semibold text-sm transition-all duration-200',
+              isStaffLogin
+                ? 'bg-primary-500 text-white shadow-md'
+                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+            ]"
+          >
+            <UIcon name="i-heroicons-user-group" class="w-5 h-5" />
+            <span>Staff</span>
+          </button>
         </div>
 
-        <UForm
-          :validate="useLoginValidate"
-          :state="state"
-          class="space-y-4 justify-center flex items-center flex-col"
-          :validate-on="['submit']"
-          @submit.prevent="login"
-        >
-          <div class="space-y-5 w-full">
-            <UFormGroup label="Email" name="email" size="xl" class="space-y-2">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-8">
+          <UForm
+            :validate="useLoginValidate"
+            :state="state"
+            class="space-y-5 w-full"
+            :validate-on="['submit']"
+            @submit.prevent="login"
+          >
+            <UFormField label="Email" name="email" class="space-y-2">
               <UInput
                 v-model="state.email"
-                placeholder="Email Address"
-                size="xl"
+                placeholder="Enter your email"
+                size="lg"
+                color="primary"
+                variant="outline"
+                :ui="{
+                  base: 'relative block w-full disabled:cursor-not-allowed disabled:opacity-75 focus:outline-none border-0',
+                  rounded: 'rounded-lg',
+                  placeholder: 'placeholder-gray-400 dark:placeholder-gray-500',
+                  size: {
+                    lg: 'text-base'
+                  },
+                  gap: {
+                    lg: 'gap-3'
+                  },
+                  variant: {
+                    outline: 'bg-white dark:bg-gray-900 text-gray-900 dark:text-white ring-1 ring-inset ring-gray-300 dark:ring-gray-700 focus:ring-2 focus:ring-primary-500 dark:focus:ring-primary-400'
+                  }
+                }"
               />
-            </UFormGroup>
+            </UFormField>
 
-            <UFormGroup
-              label="Password"
-              name="password"
-              size="xl"
-              class="space-y-2"
-            >
+            <UFormField label="Password" name="password" class="space-y-2">
               <UInput
                 v-model="state.password"
                 :type="showPassword ? 'text' : 'password'"
-                placeholder="Password"
-                size="xl"
-                :ui="{ icon: { trailing: { pointer: '' } } }"
+                placeholder="Enter your password"
+                size="lg"
+                color="primary"
+                variant="outline"
+                :ui="{
+                  base: 'relative block w-full disabled:cursor-not-allowed disabled:opacity-75 focus:outline-none border-0',
+                  rounded: 'rounded-lg',
+                  placeholder: 'placeholder-gray-400 dark:placeholder-gray-500',
+                  size: {
+                    lg: 'text-base'
+                  },
+                  gap: {
+                    lg: 'gap-3'
+                  },
+                  variant: {
+                    outline: 'bg-white dark:bg-gray-900 text-gray-900 dark:text-white ring-1 ring-inset ring-gray-300 dark:ring-gray-700 focus:ring-2 focus:ring-primary-500 dark:focus:ring-primary-400'
+                  }
+                }"
               >
                 <template #trailing>
                   <UButton
-                    color="primary"
-                    variant="link"
+                    color="gray"
+                    variant="ghost"
+                    size="sm"
                     :icon="
                       showPassword ? 'i-heroicons-eye-slash' : 'i-heroicons-eye'
                     "
-                    :padded="false"
-                    :ui="{ color: 'primary' }"
                     @click="showPassword = !showPassword"
                   />
                 </template>
               </UInput>
-            </UFormGroup>
-          </div>
-          <UButton
-            type="submit"
-            size="lg"
-            color="white"
-            variant="solid"
-            class="self-start"
-            :loading="loading"
-          >
-            Submit
-          </UButton>
-        </UForm>
+            </UFormField>
 
-        <p class="text-sm text-center my-3">
+            <UButton
+              type="submit"
+              size="lg"
+              color="primary"
+              class="w-full mt-6"
+              :loading="loading"
+            >
+              Sign In
+            </UButton>
+          </UForm>
+        </div>
+
+        <p class="text-sm text-center text-gray-600 dark:text-gray-400">
           Don't have an account?
-          <nuxt-link to="/register" class="text-primary font-bold">
-            Register
+          <nuxt-link to="/register" class="text-primary-600 dark:text-primary-400 font-semibold hover:underline">
+            Sign up
           </nuxt-link>
         </p>
       </div>

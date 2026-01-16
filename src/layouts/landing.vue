@@ -161,12 +161,12 @@ const isMobileMenuOpen = ref(false);
 
     <!-- Desktop CTA Buttons -->
     <div class="hidden md:flex gap-3">
-      <button class="px-6 py-2.5 text-gray-700 hover:text-primary font-medium rounded-lg hover:bg-gray-50 transition-all duration-200">
+      <NuxtLink to="/login" class="px-6 py-2.5 text-gray-700 hover:text-primary font-medium rounded-lg hover:bg-gray-50 transition-all duration-200">
         Log in
-      </button>
-      <button class="px-6 py-2.5 bg-primary hover:bg-primary/90 text-white font-medium rounded-lg transition-all duration-200 shadow-sm hover:shadow-md">
+      </NuxtLink>
+      <NuxtLink to="/register" class="px-6 py-2.5 bg-primary hover:bg-primary/90 text-white font-medium rounded-lg transition-all duration-200 shadow-sm hover:shadow-md">
         Get Started Free
-      </button>
+      </NuxtLink>
     </div>
 
     <!-- Mobile Menu Button -->
@@ -191,6 +191,10 @@ const isMobileMenuOpen = ref(false);
         <NuxtLink to="/why-timex" class="text-gray-700 hover:text-primary font-medium px-3 py-2 rounded-lg hover:bg-gray-50 transition-all" @click="isMobileMenuOpen = false">Why TimeX</NuxtLink>
         <NuxtLink to="/pricing" class="text-gray-700 hover:text-primary font-medium px-3 py-2 rounded-lg hover:bg-gray-50 transition-all" @click="isMobileMenuOpen = false">Pricing</NuxtLink>
         <NuxtLink to="/resources" class="text-gray-700 hover:text-primary font-medium px-3 py-2 rounded-lg hover:bg-gray-50 transition-all" @click="isMobileMenuOpen = false">Resources</NuxtLink>
+        <div class="pt-4 border-t border-gray-200 space-y-2">
+          <NuxtLink to="/login" class="block text-gray-700 hover:text-primary font-medium px-3 py-2 rounded-lg hover:bg-gray-50 transition-all" @click="isMobileMenuOpen = false">Log in</NuxtLink>
+          <NuxtLink to="/register" class="block bg-primary text-white font-medium px-3 py-2 rounded-lg hover:bg-primary/90 transition-all text-center" @click="isMobileMenuOpen = false">Get Started Free</NuxtLink>
+        </div>
       </div>
     </div>
   </div>
@@ -230,9 +234,9 @@ const isMobileMenuOpen = ref(false);
         <!-- Enhanced CTAs with metrics -->
         <div class="space-y-4">
           <div class="flex flex-col sm:flex-row gap-4">
-            <button class="bg-primary hover:bg-primary/90 text-white text-lg font-semibold px-8 py-4 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200">
+            <NuxtLink to="/register" class="bg-primary hover:bg-primary/90 text-white text-lg font-semibold px-8 py-4 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200">
               Start Free Trial
-            </button>
+            </NuxtLink>
             <button class="border-2 border-gray-200 text-gray-700 hover:border-primary hover:text-primary text-lg font-semibold px-8 py-4 rounded-xl hover:bg-gray-50 transition-all duration-200">
               <UIcon name="i-heroicons-play" class="w-5 h-5 inline mr-2" />
               Watch Demo
@@ -403,9 +407,9 @@ const isMobileMenuOpen = ref(false);
       </p>
       
       <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
-        <button class="bg-white text-primary hover:bg-gray-50 text-lg font-semibold px-8 py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200">
+        <NuxtLink to="/register" class="bg-white text-primary hover:bg-gray-50 text-lg font-semibold px-8 py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200">
           Start Free Trial
-        </button>
+        </NuxtLink>
         <button class="border-2 border-white text-white hover:bg-white/10 text-lg font-semibold px-8 py-4 rounded-xl transition-all duration-200">
           Schedule Demo
         </button>
@@ -496,6 +500,7 @@ const isMobileMenuOpen = ref(false);
       </div>
     </div>
   </footer>
+  <slot />
 </template>
 
 <style scoped>

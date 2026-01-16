@@ -295,6 +295,8 @@ definePageMeta({
 </script>
 
 <style scoped>
+@reference "tailwindcss";
+
 .quick-link-card {
   @apply bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow duration-300 cursor-pointer;
 }
@@ -312,14 +314,23 @@ definePageMeta({
 }
 
 .icon-wrapper {
-  @apply p-3 bg-primary bg-opacity-10 rounded-lg inline-block;
+  @apply p-3 rounded-lg inline-block;
+  background-color: color-mix(in srgb, var(--color-primary-500) 10%, transparent);
 }
 
 .btn-primary {
-  @apply px-6 py-2 bg-primary text-white rounded-lg font-semibold hover:opacity-90 transition-colors duration-300;
+  @apply px-6 py-2 text-white rounded-lg font-semibold hover:opacity-90 transition-colors duration-300;
+  background-color: var(--color-primary-500);
 }
 
 .btn-outline-primary {
-  @apply px-6 py-2 bg-transparent text-primary border-2 border-primary rounded-lg font-semibold hover:bg-primary hover:text-white transition-colors duration-300;
+  @apply px-6 py-2 bg-transparent border-2 rounded-lg font-semibold transition-colors duration-300;
+  color: var(--color-primary-500);
+  border-color: var(--color-primary-500);
+}
+
+.btn-outline-primary:hover {
+  background-color: var(--color-primary-500);
+  color: white;
 }
 </style> 

@@ -159,9 +159,9 @@ onMounted(() => {
       <UForm :state="state" class="space-y-4 justify-center flex items-center flex-col" :validate-on="['submit']"
         @submit.prevent="handleCreateDepartment">
         <div class="space-y-5 w-full">
-          <UFormGroup label="Department Name" name="deptName" size="xl" class="space-y-2">
-            <UInput v-model="state.deptName" placeholder="Please Enter name of department" size="xl" />
-          </UFormGroup>
+          <UFormField label="Department Name" name="deptName" class="space-y-2">
+            <UInput v-model="state.deptName" placeholder="Please Enter name of department" size="lg" />
+          </UFormField>
         </div>
       </UForm>
     </div>

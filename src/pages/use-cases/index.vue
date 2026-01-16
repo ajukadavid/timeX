@@ -190,6 +190,8 @@ definePageMeta({
 </script>
 
 <style scoped>
+@reference "tailwindcss";
+
 .case-card {
   @apply p-8 bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300;
 }
@@ -199,18 +201,26 @@ definePageMeta({
 }
 
 .btn-primary {
-  @apply px-8 py-3 bg-primary text-white rounded-lg font-semibold hover:opacity-90 transition-colors duration-300;
+  @apply px-8 py-3 text-white rounded-lg font-semibold hover:opacity-90 transition-colors duration-300;
+  background-color: var(--color-primary-500);
 }
 
 .btn-white {
-  @apply px-8 py-3 bg-white text-primary rounded-lg font-semibold hover:bg-gray-100 transition-colors duration-300;
+  @apply px-8 py-3 bg-white rounded-lg font-semibold hover:bg-gray-100 transition-colors duration-300;
+  color: var(--color-primary-500);
 }
 
 .btn-outline-white {
-  @apply px-8 py-3 bg-transparent text-white border-2 border-white rounded-lg font-semibold hover:bg-white hover:text-primary transition-colors duration-300;
+  @apply px-8 py-3 bg-transparent border-2 border-white rounded-lg font-semibold hover:bg-white transition-colors duration-300;
+  color: white;
+}
+
+.btn-outline-white:hover {
+  color: var(--color-primary-500);
 }
 
 .icon-wrapper {
-  @apply p-3 bg-primary bg-opacity-10 rounded-lg inline-block;
+  @apply p-3 rounded-lg inline-block;
+  background-color: color-mix(in srgb, var(--color-primary-500) 10%, transparent);
 }
 </style> 

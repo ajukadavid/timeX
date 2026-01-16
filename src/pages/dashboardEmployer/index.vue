@@ -8,7 +8,7 @@ import {
   deleteStaff,
 } from "@/composables/services/data/data";
 import { userToast } from "@/composables/helpers/notifications";
-import { StaffData } from "@/types/data";
+import type { StaffData } from "@/types/data";
 import XDropdown from "@/components/XDropdown.vue";
 import XModal from '@/components/XModal.vue';
 import XSummary from "@/components/XSummary.vue";
@@ -297,21 +297,21 @@ onMounted( async () => {
       :validate-on="['submit']"
     >
       <div class="space-y-5 w-full">
-        <UFormGroup label="First Name" name="firstName" size="xl" class="space-y-2">
-          <UInput v-model="state.firstName" placeholder="First Name" size="xl" />
-        </UFormGroup>
+        <UFormField label="First Name" name="firstName" class="space-y-2">
+          <UInput v-model="state.firstName" placeholder="First Name" size="lg" />
+        </UFormField>
 
-        <UFormGroup label="Last Name" name="lastName" size="xl" class="space-y-2">
-          <UInput v-model="state.lastName" placeholder="Last Name" size="xl" />
-        </UFormGroup>
+        <UFormField label="Last Name" name="lastName" class="space-y-2">
+          <UInput v-model="state.lastName" placeholder="Last Name" size="lg" />
+        </UFormField>
 
-        <UFormGroup label="Email" name="email" size="xl" class="space-y-2">
-          <UInput v-model="state.email" placeholder="Email Address" size="xl" />
-        </UFormGroup>
+        <UFormField label="Email" name="email" class="space-y-2">
+          <UInput v-model="state.email" placeholder="Email Address" size="lg" />
+        </UFormField>
 
-        <UFormGroup label="Role" name="role" size="xl" class="space-y-2">
-          <UInput v-model="state.role" placeholder="Role" size="xl" />
-        </UFormGroup>
+        <UFormField label="Role" name="role" class="space-y-2">
+          <UInput v-model="state.role" placeholder="Role" size="lg" />
+        </UFormField>
 
         <div class="flex flex-col space-y-2">
           <label for="department">Department</label>
@@ -363,7 +363,7 @@ onMounted( async () => {
         </div>
 
         <!-- Password Fields -->
-        <UFormGroup
+        <UFormField
           label="New Password"
           name="password"
           class="space-y-2"
@@ -375,9 +375,9 @@ onMounted( async () => {
             size="lg"
             autocomplete="new-password"
           />
-        </UFormGroup>
+        </UFormField>
 
-        <UFormGroup
+        <UFormField
           label="Confirm Password"
           name="confirmPassword"
           class="space-y-2"
@@ -389,7 +389,7 @@ onMounted( async () => {
             size="lg"
             autocomplete="new-password"
           />
-        </UFormGroup>
+        </UFormField>
       </div>
     </UForm>
 
