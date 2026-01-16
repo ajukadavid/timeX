@@ -1,10 +1,5 @@
 {
   "framework": "nuxtjs",
   "buildCommand": "yarn build",
-  "installCommand": "yarn install",
-  "functions": {
-    "**": {
-      "maxDuration": 30
-    }
-  }
+  "installCommand": "yarn install"
 }
