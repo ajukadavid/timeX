@@ -298,12 +298,15 @@ definePageMeta({
 </script>
 
 <style scoped>
+@reference "tailwindcss";
+
 .pricing-card {
   @apply bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300 relative;
 }
 
 .pricing-card-featured {
-  @apply bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 relative border-2 border-primary;
+  @apply bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 relative border-2;
+  border-color: var(--color-primary-500);
 }
 
 .faq-item {
@@ -311,18 +314,32 @@ definePageMeta({
 }
 
 .btn-primary {
-  @apply px-8 py-3 bg-primary text-white rounded-lg font-semibold hover:opacity-90 transition-colors duration-300;
+  @apply px-8 py-3 text-white rounded-lg font-semibold hover:opacity-90 transition-colors duration-300;
+  background-color: var(--color-primary-500);
 }
 
 .btn-outline-primary {
-  @apply px-8 py-3 bg-transparent text-primary border-2 border-primary rounded-lg font-semibold hover:bg-primary hover:text-white transition-colors duration-300;
+  @apply px-8 py-3 bg-transparent border-2 rounded-lg font-semibold transition-colors duration-300;
+  color: var(--color-primary-500);
+  border-color: var(--color-primary-500);
+}
+
+.btn-outline-primary:hover {
+  background-color: var(--color-primary-500);
+  color: white;
 }
 
 .btn-white {
-  @apply px-8 py-3 bg-white text-primary rounded-lg font-semibold hover:bg-gray-100 transition-colors duration-300;
+  @apply px-8 py-3 bg-white rounded-lg font-semibold hover:bg-gray-100 transition-colors duration-300;
+  color: var(--color-primary-500);
 }
 
 .btn-outline-white {
-  @apply px-8 py-3 bg-transparent text-white border-2 border-white rounded-lg font-semibold hover:bg-white hover:text-primary transition-colors duration-300;
+  @apply px-8 py-3 bg-transparent border-2 border-white rounded-lg font-semibold hover:bg-white transition-colors duration-300;
+  color: white;
+}
+
+.btn-outline-white:hover {
+  color: var(--color-primary-500);
 }
 </style> 

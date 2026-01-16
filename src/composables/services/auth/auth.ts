@@ -1,6 +1,6 @@
 import axios from "axios";
 import { setupInterceptors } from "../../helpers/axios-interceptor";
-import { EmployerRegister, Login } from "@/types/auth";
+import type { EmployerRegister, Login } from "@/types/auth";
 const axiosInstance = setupInterceptors(axios.create());
 
 export const loginEmployer = async (data: Login) => {
