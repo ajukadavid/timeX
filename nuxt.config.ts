@@ -30,20 +30,29 @@ export default defineNuxtConfig({
     "@pinia/nuxt",
   ],
   pages: true,
+  compatibilityDate: "2026-01-16",
   devtools: {
     // Disable devtools in production to save memory
-    enabled: true,
-    // VS Code Server options
-    vscode: {},
-    // ...other options
+    enabled: import.meta.dev,
+  },
+  icon: {
+    serverBundle: {
+      collections: ["heroicons", "simple-icons"],
+    },
   },
   nitro: {
     compressPublicAssets: true,
     minify: true,
+    prerender: {
+      crawlLinks: false,
+    },
   },
   vite: {
     build: {
       chunkSizeWarningLimit: 1000,
     },
+  },
+  build: {
+    transpile: ["@nuxt/ui"],
   },
 });
