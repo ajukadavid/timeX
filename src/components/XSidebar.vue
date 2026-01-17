@@ -6,17 +6,17 @@ const store = useUserStore();
 const iconLinks = [
   {
     label: "",
-    icon: "i-heroicons-squares-2x2",
+    icon: "squares",
     to: "/dashboard",
   },
   {
     label: "",
-    icon: "i-heroicons-user-plus-20-solid",
+    icon: "user-plus",
     to: "/user-management",
   },
   {
     label: "",
-    icon: "i-heroicons-arrow-left-on-rectangle-20-solid",
+    icon: "logout",
     to: "/login",
   },
 ];
@@ -30,32 +30,21 @@ const handleLogout = () => {
 const links = [
   {
     label: "Dashboard",
-    icon: "i-heroicons-squares-2x2",
+    icon: "squares",
     to: "/dashboardEmployer",
   },
   {
     label: "User Management",
-    icon: "i-heroicons-user-plus-20-solid",
+    icon: "user-plus",
     to: "/user-management",
   },
   {
     label: "Log out",
-    icon: "i-heroicons-arrow-left-on-rectangle-20-solid",
+    icon: "logout",
     to: "/login",
     onClick: handleLogout
   },
 ];
-
-const colorMode = useColorMode();
-
-const isDark = computed({
-  get() {
-    return colorMode.value === "dark";
-  },
-  set() {
-    colorMode.preference = colorMode.value === "dark" ? "light" : "dark";
-  },
-});
 
 const toggleSidebar = () => {
   showNav.value = !showNav.value;
@@ -81,15 +70,33 @@ const filteredIconLinks = computed(() => {
   return iconLinks;
 });
 
-onMounted(() => {
-  console.log(store.$state)
-})
+const route = useRoute();
 
+const isActive = (link: { to: string }) => {
+  return route.path === link.to || route.path.startsWith(link.to + '/');
+};
+
+const getIcon = (iconName: string) => {
+  const icons: Record<string, string> = {
+    squares: 'M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z',
+    'user-plus': 'M18 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zM3 19.235v-.11a6.375 6.375 0 0112.75 0v.109A12.318 12.318 0 019.374 21c-2.331 0-4.512-.645-6.374-1.766z',
+    logout: 'M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75'
+  };
+  return icons[iconName] || icons.squares;
+};
+
+const handleLinkClick = (link: typeof links[0]) => {
+  if (link.onClick) {
+    link.onClick();
+  } else {
+    navigateTo(link.to);
+  }
+};
 </script>
 
 <template>
   <aside
-    class="h-screen fixed bg-white dark:bg-primary-800 border border-gray-400 flex flex-col transition-all duration-300 z-50"
+    class="h-screen fixed bg-white border-r border-gray-300 flex flex-col transition-all duration-300 z-50"
     :class="[
       showNav ? 'w-64' : 'w-0 md:w-16',
       'md:translate-x-0',
@@ -97,77 +104,81 @@ onMounted(() => {
     ]"
   >
     <div
-      class="py-4 border-b flex items-center justify-center border-gray-400 dark:bg-[#2D2F39] bg-gray-100"
+      class="py-4 border-b flex items-center justify-center border-gray-300 bg-gray-50"
       :class="showNav ? 'px-6' : 'px-2'"
     >
       <h2
         v-if="showNav"
-        class="font-sans text-2xl cursor-pointer font-bold text-blueZodiac dark:text-white"
+        class="font-sans text-2xl cursor-pointer font-bold text-primary-700"
         @click="toggleSidebar"
       >
-        <span> TimeX </span>
+        <span>TimeX</span>
       </h2>
-      <UIcon
+      <button
         v-else
-        name="i-heroicons-bars-3-20-solid"
-        class="text-[28px] cursor-pointer hover:scale-110 dark:text-white text-white md:block hidden"
         @click="toggleSidebar"
-      />
-    </div>
-    <div
-      class="space-y-5 overflow-y-scroll flex-1 cursor-pointer"
-      :class="showNav ? 'px-6' : 'px-2'"
-    >
-      <h3
-        class="text-xs mt-4 mb-2 font-medium"
-        :class="{ 'hidden': !showNav, 'md:block': true }"
-      ></h3>
-      <UVerticalNavigation
-        :links="showNav ? filteredLinks : filteredIconLinks"
-        :ui="{
-          base: 'group relative flex py-2.5 px-3 items-center dark:text-white text-slate-800 gap-[10px] mb-2 text-[15px] focus:outline-none focus-visible:outline-none dark:focus-visible:outline-none focus-visible:before:ring-inset focus-visible:before:ring-1 focus-visible:before:ring-primary-500 dark:focus-visible:before:ring-primary-400 before:absolute before:inset-px before:rounded-md disabled:cursor-not-allowed disabled:opacity-75',
-          active:
-            'text-white dark:text-white bg-[#762CC0] before:bg-[#762CC0]  dark:bg-[#2D2F39] dark:before:bg-[#2D2F39]',
-          inactive:
-            'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:before:bg-gray-100 dark:hover:before:bg-[#2D2F39] dark:hover:bg-[#2D2F39]',
-        }"
+        class="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+        aria-label="Toggle sidebar"
       >
-        <template #icon="{ link }">
-          <UIcon
-            :name="link.icon"
-            class="text-[20px] shrink-0 hover:scale-110 dark:text-white text-white"
-          />
-        </template>
-      </UVerticalNavigation>
+        <svg class="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+        </svg>
+      </button>
     </div>
     <div
-      class="flex-start flex items-center py-6 justify-center w-full dark:bg-[#2D2F39] bg-gray-100"
+      class="space-y-2 overflow-y-auto flex-1 py-4"
+      :class="showNav ? 'px-4' : 'px-2'"
     >
-      <ClientOnly>
-        <UButton
-          :icon="isDark ? 'i-heroicons-moon-20-solid' : 'i-heroicons-sun-20-solid'"
-          color="gray"
-          variant="ghost"
-          aria-label="Toggle dark mode"
-          @click="isDark = !isDark"
-        />
-      </ClientOnly>
+      <button
+        v-for="link in (showNav ? filteredLinks : filteredIconLinks)"
+        :key="link.to"
+        @click="handleLinkClick(link)"
+        :class="[
+          'group relative flex items-center gap-3 py-2.5 px-3 rounded-lg text-sm font-medium transition-all duration-200 w-full',
+          isActive(link)
+            ? 'text-white bg-primary-600 shadow-sm'
+            : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
+        ]"
+      >
+        <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="getIcon(link.icon)" />
+        </svg>
+        <span v-if="showNav" class="flex-1 text-left">{{ link.label }}</span>
+      </button>
     </div>
   </aside>
-  <div
-    class="fixed top-4 left-4 z-50 md:hidden"
+  <button
+    class="fixed top-4 left-4 z-50 md:hidden p-2 bg-white rounded-lg shadow-md border border-gray-300"
     @click="toggleSidebar"
+    aria-label="Toggle sidebar"
   >
-    <UIcon
+    <svg
       v-if="!showNav"
-      name="i-heroicons-bars-3-20-solid"
-      class="text-[28px] cursor-pointer hover:scale-110 dark:text-white text-slate-800"
-    />
-  </div>
+      class="w-6 h-6 text-gray-700"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+    </svg>
+  </button>
 </template>
 
 <style scoped>
 ::-webkit-scrollbar {
   width: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }
 </style>

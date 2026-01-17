@@ -1,4 +1,3 @@
-<!-- eslint-disable vue/no-multiple-template-root -->
 <script lang="ts" setup>
 import {
   getDepartments,
@@ -7,6 +6,10 @@ import {
 } from "@/composables/services/data/data";
 import { userToast } from "@/composables/helpers/notifications";
 import XDropdown from "@/components/XDropdown.vue";
+import XModal from "@/components/XModal.vue";
+import Button from "@/components/ui/Button.vue";
+import Input from "@/components/ui/Input.vue";
+import FormField from "@/components/ui/FormField.vue";
 
 const isModalOpen = ref(false);
 const state = reactive({
@@ -21,53 +24,64 @@ const columns = [
   {
     key: "name",
     label: "Department Name",
+    id: "name",
   },
   {
     key: "_id",
     label: "Department ID",
+    id: "_id",
   },
   {
     key: "actions",
+    label: "Actions",
+    id: "actions",
   },
 ];
 
 const items = (row: any) => [
-  {
-    id: "update-time",
-    name: "Update Time",
-    icon: "i-heroicons-clock"
-  }
+  [
+    {
+      label: "Update Time",
+      icon: "i-heroicons-clock",
+      click: () => {
+        showUpdateTime.value = true;
+      }
+    }
+  ]
 ];
 
 const morningTimes = [
-  { value: "06:00", name: "6:00 AM" },
-  { value: "07:00", name: "7:00 AM" },
-  { value: "08:00", name: "8:00 AM" },
-  { value: "09:00", name: "9:00 AM" }
+  { value: "06:00", name: "6:00 AM", id: "06:00" },
+  { value: "07:00", name: "7:00 AM", id: "07:00" },
+  { value: "08:00", name: "8:00 AM", id: "08:00" },
+  { value: "09:00", name: "9:00 AM", id: "09:00" }
 ];
 
 const handleCreateDepartment = async () => {
+  if (!state.deptName.trim()) {
+    userToast(["Department name is required"], 400);
+    return;
+  }
+  
   loading.value = true;
   try {
     const response = await createDepartment(state.deptName);
-
     loading.value = false;
     userToast(["Department Successfully Created!"], 200);
     isModalOpen.value = false;
     state.deptName = "";
-
     getData();
   } catch (error: any) {
     loading.value = false;
-    const err = [error.response.data.message];
+    const err = [error.response?.data?.message || "Failed to create department"];
     isModalOpen.value = false;
-    userToast(err, error.response.data.code);
+    userToast(err, error.response?.data?.code || 400);
   }
 };
 
 interface PaginationData {
   page: number;
-  count: string;
+  count: number;
   total: number;
   next: string;
   prev: string;
@@ -75,7 +89,7 @@ interface PaginationData {
 
 const pageData = reactive<PaginationData>({
   page: 1,
-  count: "5",
+  count: 5,
   total: 0,
   next: "",
   prev: "",
@@ -83,11 +97,12 @@ const pageData = reactive<PaginationData>({
 
 const getData = async (pageNum?: number) => {
   const data = await getDepartments(pageNum);
-  pageData.page = 1;
-  pageData.prev = data.previous;
-  pageData.next = data.next;
-  pageData.total = data.count;
-  deptData.value = data.data;
+  pageData.page = data.currentPage || 1;
+  pageData.count = data.totalPages || 1;
+  pageData.prev = data.previous || "";
+  pageData.next = data.next || "";
+  pageData.total = data.count || 0;
+  deptData.value = data.data || [];
 };
 
 const getPage = (page: any) => {
@@ -100,17 +115,20 @@ const getPage = (page: any) => {
 };
 
 const handleSaveTime = async () => {
+  if (!signInTime.value) {
+    userToast(["Please select a time"], 400);
+    return;
+  }
+  
   try {
     const response = await updateTime(signInTime.value);
     showUpdateTime.value = false;
     userToast(["Login time Successfully Updated!"], 200);
-
     getData();
   } catch (error: any) {
     loading.value = false;
-    const err = [error.response.data.message];
-    isModalOpen.value = false;
-    userToast(err, error.response.data.code);
+    const err = [error.response?.data?.message || "Failed to update time"];
+    userToast(err, error.response?.data?.code || 400);
   }
 }
 
@@ -124,53 +142,64 @@ onMounted(() => {
     <div class="flex flex-col md:flex-row md:items-center md:justify-between">
       <div class="flex flex-col mb-4 md:mb-0">
         <span class="text-xl md:text-2xl font-bold">User Management</span>
-        <span class="text-sm font-light">Manage your company's users & departments</span>
+        <span class="text-sm font-light text-gray-600">Manage your company's users & departments</span>
       </div>
       <div class="flex flex-col space-y-3 md:flex-row md:space-y-0 md:space-x-3">
-        <UButton @click="showUpdateTime = !showUpdateTime" type="submit" size="xl" color="white" variant="solid" class="self-start dark:bg-white dark:text-primary-800 hover:dark:bg-white hover:dark:text-primary-800 dark:border-primary-800">
+        <Button @click="showUpdateTime = !showUpdateTime" color="primary" size="lg">
           Update Time
-        </UButton>
-
-        <UButton class="dark:bg-white dark:text-primary-800 self-start hover:dark:bg-white hover:dark:text-primary-800 dark:border-primary-800" type="submit" size="xl" color="white" variant="solid" @click="isModalOpen = true">
+        </Button>
+        <Button color="primary" size="lg" @click="isModalOpen = true">
           Create Department
-        </UButton>
+        </Button>
       </div>
     </div>
 
     <div v-if="showUpdateTime" class="flex flex-col md:flex-row space-y-3 md:space-y-0 md:space-x-3 mt-4">
       <XDropdown placeholder="Select Time" :items="morningTimes" @select="((val: any) => signInTime = val.value)" class="w-full md:w-auto" />
-
-      <UButton type="submit" size="xl" color="white" variant="solid" class="self-start dark:bg-white dark:text-primary hover:dark:bg-white hover:dark:text-primary" @click="handleSaveTime">
+      <Button color="primary" size="lg" @click="handleSaveTime">
         Save
-      </UButton>
+      </Button>
     </div>
 
     <div class="mt-8 md:mt-20">
-      <XTable :columns="columns" :items-generator="items" :table-data="deptData" :pagination-data="pageData"
-        @prevPage="getPage" @nextPage="getPage">
-      </XTable>
+      <XTable 
+        :columns="columns" 
+        :items-generator="items" 
+        :table-data="deptData" 
+        :pagination-data="pageData"
+        @prevPage="getPage" 
+        @nextPage="getPage"
+      />
     </div>
   </main>
-  <XModal v-model="isModalOpen" show-header show-footer modalId="create-department">
-    <template #header>
-      <div>Create Department</div>
-    </template>
-    <div>
-      <UForm :state="state" class="space-y-4 justify-center flex items-center flex-col" :validate-on="['submit']"
-        @submit.prevent="handleCreateDepartment">
-        <div class="space-y-5 w-full">
-          <UFormField label="Department Name" name="deptName" class="space-y-2">
-            <UInput v-model="state.deptName" placeholder="Please Enter name of department" size="lg" />
-          </UFormField>
-        </div>
-      </UForm>
-    </div>
+  
+  <XModal 
+    v-model="isModalOpen" 
+    modal-id="create-department"
+    title="Create Department"
+    @close="isModalOpen = false"
+  >
+    <form @submit.prevent="handleCreateDepartment" class="space-y-5 w-full">
+      <FormField label="Department Name" name="deptName">
+        <Input 
+          v-model="state.deptName" 
+          placeholder="Please Enter name of department" 
+          size="lg" 
+        />
+      </FormField>
+    </form>
+    
     <template #footer>
       <div class="flex justify-end">
-        <UButton type="submit" size="lg" color="white" variant="solid" class="self-start" :loading="loading"
-          @click="handleCreateDepartment">
+        <Button 
+          type="submit" 
+          size="lg" 
+          color="primary" 
+          :loading="loading"
+          @click="handleCreateDepartment"
+        >
           Submit
-        </UButton>
+        </Button>
       </div>
     </template>
   </XModal>

@@ -38,30 +38,40 @@ onMounted(() => {
 // Enhanced features data with more detailed information
 const features = [
   {
-    icon: 'i-heroicons-user-group',
+    icon: 'user-group',
     title: 'Smart User Management',
     description: 'Intuitive dashboard to manage your entire workforce with role-based permissions and automated workflows.',
     highlight: 'Save 5+ hours weekly'
   },
   {
-    icon: 'i-heroicons-envelope',
+    icon: 'envelope',
     title: 'Automated Invitations',
     description: 'Streamlined onboarding with smart sign-in invitations and customizable welcome sequences.',
     highlight: '90% faster onboarding'
   },
   {
-    icon: 'i-heroicons-clock',
+    icon: 'clock',
     title: 'Precision Time Tracking',
     description: 'AI-powered automatic time logging with GPS verification and real-time attendance monitoring.',
     highlight: '99.9% accuracy'
   },
   {
-    icon: 'i-heroicons-bell-alert',
+    icon: 'bell-alert',
     title: 'Smart Notifications',
     description: 'Intelligent alerts for attendance exceptions with customizable notification preferences.',
     highlight: 'Instant alerts'
   }
 ];
+
+const getFeatureIconPath = (iconName: string) => {
+  const icons: Record<string, string> = {
+    'user-group': 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z',
+    'envelope': 'M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z',
+    'clock': 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z',
+    'bell-alert': 'M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9'
+  };
+  return icons[iconName] || icons['user-group'];
+};
 
 // New testimonials section
 const testimonials = [
@@ -91,30 +101,40 @@ const testimonials = [
 // Enhanced benefits with metrics
 const benefits = [
   {
-    icon: 'i-heroicons-chart-bar',
+    icon: 'chart-bar',
     metric: '40%',
     title: 'Productivity Increase',
     description: 'Teams report significant productivity gains within the first month'
   },
   {
-    icon: 'i-heroicons-clock',
+    icon: 'clock',
     metric: '15hrs',
     title: 'Time Saved Weekly',
     description: 'Reduce administrative overhead with automated processes'
   },
   {
-    icon: 'i-heroicons-currency-dollar',
+    icon: 'currency-dollar',
     metric: '$50K+',
     title: 'Annual Savings',
     description: 'Average cost savings per organization using TimeX'
   },
   {
-    icon: 'i-heroicons-face-smile',
+    icon: 'face-smile',
     metric: '98%',
     title: 'Employee Satisfaction',
     description: 'Employees love the simplified time management experience'
   }
 ];
+
+const getIconPath = (iconName: string) => {
+  const icons: Record<string, string> = {
+    'chart-bar': 'M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z',
+    'clock': 'M12 6v6l4 2m6-2a9 9 0 11-18 0 9 9 0 0118 0z',
+    'currency-dollar': 'M12 6c-5.523 0-10 4.477-10 10s4.477 10 10 10 10-4.477 10-10S17.523 6 12 6zm1 2.5a1 1 0 00-1 1v.5h-1a1 1 0 100 2h1v1h-1a1 1 0 100 2h1v.5a1 1 0 001 1h1a1 1 0 100-2h-1v-1h1a1 1 0 100-2h-1v-.5a1 1 0 00-1-1h-1z',
+    'face-smile': 'M15.182 15.182a4.5 4.5 0 01-6.364 0M21 12a9 9 0 11-18 0 9 9 0 0118 0zM9.75 9.75c0 .414-.168.75-.375.75S9 10.164 9 9.75 9.168 9 9.375 9s.375.336.375.75zm-.375-3h.008v.008H9.375V6.75zm5.625 0h.008v.008H15V6.75z'
+  };
+  return icons[iconName] || icons['chart-bar'];
+};
 
 // FAQ section
 const faqs = [
@@ -171,7 +191,9 @@ const isMobileMenuOpen = ref(false);
 
     <!-- Mobile Menu Button -->
     <button @click="isMobileMenuOpen = !isMobileMenuOpen" class="lg:hidden">
-      <UIcon name="i-heroicons-bars-3" class="w-6 h-6 text-gray-700" />
+      <svg class="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+      </svg>
     </button>
   </nav>
 
@@ -181,7 +203,9 @@ const isMobileMenuOpen = ref(false);
       <div class="flex justify-between items-center mb-8">
         <span class="text-xl font-bold text-primary">Menu</span>
         <button @click="isMobileMenuOpen = false">
-          <UIcon name="i-heroicons-x-mark" class="w-6 h-6" />
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
         </button>
       </div>
       <!-- Mobile menu items -->
@@ -237,8 +261,10 @@ const isMobileMenuOpen = ref(false);
             <NuxtLink to="/register" class="bg-primary hover:bg-primary/90 text-white text-lg font-semibold px-8 py-4 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200">
               Start Free Trial
             </NuxtLink>
-            <button class="border-2 border-gray-200 text-gray-700 hover:border-primary hover:text-primary text-lg font-semibold px-8 py-4 rounded-xl hover:bg-gray-50 transition-all duration-200">
-              <UIcon name="i-heroicons-play" class="w-5 h-5 inline mr-2" />
+            <button class="border-2 border-gray-200 text-gray-700 hover:border-primary hover:text-primary text-lg font-semibold px-8 py-4 rounded-xl hover:bg-gray-50 transition-all duration-200 flex items-center">
+              <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M8 5v14l11-7z" />
+              </svg>
               Watch Demo
             </button>
           </div>
@@ -278,7 +304,9 @@ const isMobileMenuOpen = ref(false);
       <div class="grid md:grid-cols-4 gap-8">
         <div v-for="benefit in benefits" :key="benefit.title" 
           class="text-center p-6 rounded-2xl bg-gray-50 hover:bg-white hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-          <UIcon :name="benefit.icon" class="text-5xl text-primary mb-4 mx-auto" />
+          <svg class="w-12 h-12 text-primary mb-4 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="getIconPath(benefit.icon)" />
+          </svg>
           <div class="text-3xl font-bold text-primary mb-2">{{ benefit.metric }}</div>
           <h3 class="text-lg font-semibold text-gray-900 mb-2">{{ benefit.title }}</h3>
           <p class="text-gray-600 text-sm">{{ benefit.description }}</p>
@@ -320,19 +348,25 @@ const isMobileMenuOpen = ref(false);
       <!-- Enhanced employee types grid -->
       <div class="grid md:grid-cols-3 gap-8">
         <div class="text-center p-8 bg-white rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300">
-          <UIcon name="i-heroicons-globe-americas" class="text-primary text-6xl mx-auto mb-4" />
+          <svg class="w-16 h-16 text-primary mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
           <h3 class="text-primary text-xl font-bold mb-3">International Teams</h3>
           <p class="text-gray-600 leading-relaxed">Effortlessly manage remote workers across different time zones with automated compliance and localized features</p>
         </div>
         
         <div class="text-center p-8 bg-white rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300">
-          <UIcon name="i-heroicons-document-check" class="text-primary text-6xl mx-auto mb-4" />
+          <svg class="w-16 h-16 text-primary mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
           <h3 class="text-primary text-xl font-bold mb-3">Contract Workers</h3>
           <p class="text-gray-600 leading-relaxed">Streamlined time tracking and project management for freelancers and contractors with flexible billing options</p>
         </div>
         
         <div class="text-center p-8 bg-white rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300">
-          <UIcon name="i-heroicons-building-office" class="text-primary text-6xl mx-auto mb-4" />
+          <svg class="w-16 h-16 text-primary mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+          </svg>
           <h3 class="text-primary text-xl font-bold mb-3">Office Teams</h3>
           <p class="text-gray-600 leading-relaxed">Comprehensive attendance monitoring and performance analytics for your in-house workforce</p>
         </div>
@@ -352,7 +386,9 @@ const isMobileMenuOpen = ref(false);
         <div v-for="feature in features" :key="feature.title" 
           class="group p-8 rounded-2xl bg-gradient-to-br from-gray-50 to-white border border-gray-100 hover:border-primary/20 hover:shadow-xl transition-all duration-300 hover:-translate-y-2">
           <div class="p-3 bg-primary/10 rounded-xl w-fit mb-6 group-hover:bg-primary/20 transition-colors">
-            <UIcon :name="feature.icon" class="text-3xl text-primary" />
+            <svg class="w-8 h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="getFeatureIconPath(feature.icon)" />
+            </svg>
           </div>
           
           <div class="space-y-3">
@@ -379,7 +415,9 @@ const isMobileMenuOpen = ref(false);
         <div v-for="testimonial in testimonials" :key="testimonial.name"
           class="bg-white p-8 rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300">
           <div class="flex items-center space-x-1 mb-4">
-            <UIcon v-for="i in 5" :key="i" name="i-heroicons-star" class="w-5 h-5 text-yellow-400 fill-current" />
+            <svg v-for="i in 5" :key="i" class="w-5 h-5 text-yellow-400 fill-current" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+            </svg>
           </div>
           
           <p class="text-gray-700 mb-6 leading-relaxed">"{{ testimonial.quote }}"</p>
@@ -451,10 +489,14 @@ const isMobileMenuOpen = ref(false);
           <!-- Social links -->
           <div class="flex space-x-4">
             <a href="#" class="w-10 h-10 bg-gray-800 rounded-lg flex items-center justify-center hover:bg-gray-700 transition-colors">
-              <UIcon name="i-simple-icons-twitter" class="w-5 h-5" />
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
+              </svg>
             </a>
             <a href="#" class="w-10 h-10 bg-gray-800 rounded-lg flex items-center justify-center hover:bg-gray-700 transition-colors">
-              <UIcon name="i-simple-icons-linkedin" class="w-5 h-5" />
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+              </svg>
             </a>
           </div>
         </div>

@@ -12,6 +12,9 @@ import type { StaffData } from "@/types/data";
 import XDropdown from "@/components/XDropdown.vue";
 import XModal from '@/components/XModal.vue';
 import XSummary from "@/components/XSummary.vue";
+import Button from "@/components/ui/Button.vue";
+import Input from "@/components/ui/Input.vue";
+import FormField from "@/components/ui/FormField.vue";
 
 const isModalOpen = useState("showModal");
 const $route = useRoute();
@@ -26,29 +29,35 @@ const state = reactive({
 });
 
 const columns = [
-
   {
     key: "firstName",
     label: "First Name",
+    id: "firstName",
   },
   {
     key: "lastName",
     label: "Last Name",
+    id: "lastName",
   },
   {
     key: "role",
     label: "Staff Role",
+    id: "role",
   },
   {
     key: "email",
     label: "Email",
+    id: "email",
   },
   {
     key: "lastEntryTime",
-    label: "Last login time"
+    label: "Last login time",
+    id: "lastEntryTime",
   },
   {
     key: "actions",
+    label: "Actions",
+    id: "actions",
   },
 ];
 
@@ -103,7 +112,7 @@ const createStaff = async () => {
 
 const pageData = reactive({
   page: 1,
-  count: "5",
+  count: 5,
   total: 0,
   next: "",
   prev: "",
@@ -122,11 +131,12 @@ const getData = async (pageNum?: number) => {
       });
       })
 
-  pageData.page = 1;
+  pageData.page = data.currentPage || 1;
+  pageData.count = data.totalPages || 1;
   pageData.prev = data.previous;
   pageData.next = data.next;
-  pageData.total = data.count;
-  staffData.value = data.staff;
+  pageData.total = data.count || data.staff?.length || 0;
+  staffData.value = data.staff || [];
 };
 
 const getPage = (page: any) => {
@@ -244,7 +254,7 @@ onMounted( async () => {
 </script>
 
 <template>
-  <main class="min-h-full bg-white dark:bg-primary-800 p-4 md:p-10">
+  <main class="min-h-full bg-white p-4 md:p-10">
     <div class="flex flex-col md:flex-row md:items-center md:justify-between">
       <div class="flex flex-col mb-4 md:mb-0">
         <span class="text-xl md:text-2xl font-bold">Welcome Admin</span> 
@@ -270,7 +280,12 @@ onMounted( async () => {
      
     </div>
     <div class="mt-8 md:mt-20">
-      <XSummary />
+      <XSummary 
+        :total-employees="staffData.length"
+        :present-today="staffData.length"
+        :late-today="0"
+        :absent-today="0"
+      />
       <XTable
         :columns="columns"
         :items-generator="items"
@@ -291,54 +306,47 @@ onMounted( async () => {
     size="2xl"
     @close="handleModalClose"
   >
-    <UForm
-      :state="state"
-      class="space-y-4 justify-center flex items-center flex-col"
-      :validate-on="['submit']"
-    >
-      <div class="space-y-5 w-full">
-        <UFormField label="First Name" name="firstName" class="space-y-2">
-          <UInput v-model="state.firstName" placeholder="First Name" size="lg" />
-        </UFormField>
+    <form @submit.prevent="createStaff" class="space-y-5 w-full">
+      <FormField label="First Name" name="firstName">
+        <Input v-model="state.firstName" placeholder="First Name" size="lg" />
+      </FormField>
 
-        <UFormField label="Last Name" name="lastName" class="space-y-2">
-          <UInput v-model="state.lastName" placeholder="Last Name" size="lg" />
-        </UFormField>
+      <FormField label="Last Name" name="lastName">
+        <Input v-model="state.lastName" placeholder="Last Name" size="lg" />
+      </FormField>
 
-        <UFormField label="Email" name="email" class="space-y-2">
-          <UInput v-model="state.email" placeholder="Email Address" size="lg" />
-        </UFormField>
+      <FormField label="Email" name="email">
+        <Input v-model="state.email" type="email" placeholder="Email Address" size="lg" />
+      </FormField>
 
-        <UFormField label="Role" name="role" class="space-y-2">
-          <UInput v-model="state.role" placeholder="Role" size="lg" />
-        </UFormField>
+      <FormField label="Role" name="role">
+        <Input v-model="state.role" placeholder="Role" size="lg" />
+      </FormField>
 
-        <div class="flex flex-col space-y-2">
-          <label for="department">Department</label>
-          <XDropdown 
-            :items="departmentItems" 
-            @select="((val: any) => state.department = val.id)" 
-          />
-        </div>
-      </div>
-    </UForm>
+      <FormField label="Department" name="department">
+        <XDropdown 
+          :items="departmentItems" 
+          @select="((val: any) => state.department = val.id)" 
+        />
+      </FormField>
+    </form>
 
     <template #footer>
       <div class="flex justify-end gap-3">
-        <UButton
+        <Button
           color="gray"
           variant="soft"
           @click="showAddEmployeeModal = false"
         >
           Cancel
-        </UButton>
-        <UButton
+        </Button>
+        <Button
           type="submit"
           :loading="loading"
           @click="createStaff"
         >
           Create Employee
-        </UButton>
+        </Button>
       </div>
     </template>
   </XModal>
@@ -351,64 +359,57 @@ onMounted( async () => {
     size="md"
     @close="handleModalClose"
   >
-    <UForm
-      :state="passwordState"
-      class="space-y-6"
-    >
+    <form @submit.prevent="handlePasswordSubmit" class="space-y-6">
       <div class="space-y-4">
         <!-- User Info Section -->
-        <div class="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
-          <div class="text-sm text-gray-600 dark:text-gray-300">Setting password for:</div>
-          <div class="font-medium text-gray-900 dark:text-white">{{ selectedUser.email }}</div>
+        <div class="bg-gray-50 p-4 rounded-lg">
+          <div class="text-sm text-gray-600">Setting password for:</div>
+          <div class="font-medium text-gray-900">{{ selectedUser.email }}</div>
         </div>
 
         <!-- Password Fields -->
-        <UFormField
+        <FormField
           label="New Password"
           name="password"
-          class="space-y-2"
         >
-          <UInput
+          <Input
             v-model="passwordState.password"
             type="password"
             placeholder="Enter new password"
             size="lg"
-            autocomplete="new-password"
           />
-        </UFormField>
+        </FormField>
 
-        <UFormField
+        <FormField
           label="Confirm Password"
           name="confirmPassword"
-          class="space-y-2"
         >
-          <UInput
+          <Input
             v-model="passwordState.confirmPassword"
             type="password"
             placeholder="Confirm new password"
             size="lg"
-            autocomplete="new-password"
           />
-        </UFormField>
+        </FormField>
       </div>
-    </UForm>
+    </form>
 
     <template #footer>
       <div class="flex justify-end gap-3">
-        <UButton
+        <Button
           color="gray"
           variant="soft"
           @click="showAddPasswordModal = false"
         >
           Cancel
-        </UButton>
-        <UButton
+        </Button>
+        <Button
           :loading="loading"
           color="primary"
           @click="handlePasswordSubmit"
         >
           Set Password
-        </UButton>
+        </Button>
       </div>
     </template>
   </XModal>
@@ -430,20 +431,20 @@ onMounted( async () => {
 
     <template #footer>
       <div class="flex justify-end gap-3">
-        <UButton
+        <Button
           color="gray"
           variant="soft"
           @click="showDeleteModal = false"
         >
           Cancel
-        </UButton>
-        <UButton
+        </Button>
+        <Button
           color="red"
           :loading="loading"
           @click="confirmDelete"
         >
           Delete Employee
-        </UButton>
+        </Button>
       </div>
     </template>
   </XModal>

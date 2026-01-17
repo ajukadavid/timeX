@@ -19,16 +19,19 @@ export default defineNuxtConfig({
       ],
     },
   },
-  css: ["~/assets/css/main.css"],
+  css: ["@/assets/css/main.css"],
   srcDir: "src/",
   alias: {
     "class-validator": "class-validator/cjs/index.js",
   },
   modules: [
-    "@nuxt/ui",
     "@nuxt/devtools",
     "@pinia/nuxt",
   ],
+  colorMode: {
+    preference: "light",
+    fallback: "light",
+  },
   pages: true,
   compatibilityDate: "2026-01-16",
   devtools: {
@@ -52,7 +55,9 @@ export default defineNuxtConfig({
       chunkSizeWarningLimit: 1000,
     },
   },
-  build: {
-    transpile: ["@nuxt/ui"],
+  postcss: {
+    plugins: {
+      '@tailwindcss/postcss': {},
+    },
   },
 });

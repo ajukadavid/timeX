@@ -1,5 +1,9 @@
-import type { FormError } from "@nuxt/ui/dist/runtime/types";
 import { userToast, userRegistrationToast } from "./notifications";
+
+interface FormError {
+  path: string;
+  message: string;
+}
 
 function containsSpecialCharacter(str: string): boolean {
   const specialCharacters = /[!@#$%^&*()_+{}\[\]:;<>,.?~\\|-]/;
