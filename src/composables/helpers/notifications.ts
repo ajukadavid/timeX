@@ -15,42 +15,22 @@ function concatenateValues(input: any[]): string {
 export const userRegistrationToast = (errArr: any[], code?: number) => {
   const msg = concatenateValues(errArr);
   const toast = useToast();
-  const props = {
-    timeout: 2000,
-    ui: {
-      progress: {
-        background: "",
-      },
-    },
-  };
+  const timeout = 2000;
 
-  const removeError = () => {
-    toast.remove("error");
-  };
-
-  const removeSuccess = () => {
-    toast.remove("success");
-  };
   if (msg === "success" || code === 200) {
     toast.add({
       id: "success",
       title: msg,
-      color: "green",
-      icon: "i-heroicons-check-circle",
-      timeout: props.timeout,
-      ui: props.ui,
-      callback: removeSuccess,
+      type: "success",
+      timeout: timeout,
     });
   } else if (msg === "error" || code !== 200) {
     toast.add({
       id: "error",
       title: msg,
       description: "Registration failed!",
-      color: "red",
-      icon: "i-heroicons-x-circle",
-      timeout: props.timeout,
-      ui: props.ui,
-      callback: removeError,
+      type: "error",
+      timeout: timeout,
     });
   }
 };
@@ -58,42 +38,22 @@ export const userRegistrationToast = (errArr: any[], code?: number) => {
 export const userToast = (errArr: any[], code?: number) => {
   const msg = concatenateValues(errArr);
   const toast = useToast();
-  const props = {
-    timeout: 2000,
-    ui: {
-      progress: {
-        background: "",
-      },
-    },
-  };
+  const timeout = 2000;
 
-  const removeError = () => {
-    toast.remove("error");
-  };
-
-  const removeSuccess = () => {
-    toast.remove("success");
-  };
   if (msg === "success" || code === 200) {
     toast.add({
       id: "success",
       title: msg,
-      color: "green",
-      icon: "i-heroicons-check-circle",
-      timeout: props.timeout,
-      ui: props.ui,
-      callback: removeSuccess,
+      type: "success",
+      timeout: timeout,
     });
   } else if (msg === "error" || code !== 200) {
     toast.add({
       id: "error",
       title: msg,
       description: "Please try again.",
-      color: "red",
-      icon: "i-heroicons-x-circle",
-      timeout: props.timeout,
-      ui: props.ui,
-      callback: removeError,
+      type: "error",
+      timeout: timeout,
     });
   }
 };

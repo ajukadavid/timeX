@@ -36,8 +36,10 @@ const selectItem = (item: DropdownItem) => {
       @click="toggleDropdown"
       class="w-full bg-white text-left px-4 py-2 border border-gray-300 rounded-lg flex justify-between items-center"
     >
-      <span class=" dark:text-primary ">{{ selectedItem?.name || props.placeholder || 'Select an option' }}</span>
-      <i class="i-heroicons-chevron-down-20-solid"></i>
+      <span class="text-gray-700">{{ selectedItem?.name || props.placeholder || 'Select an option' }}</span>
+      <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+      </svg>
     </button>
 
     <div
@@ -49,7 +51,7 @@ const selectItem = (item: DropdownItem) => {
           v-for="item in props.items"
           :key="item.id"
           @click="selectItem(item)"
-          class="cursor-pointer px-4 py-2 hover:bg-gray-100 dark:text-primary"
+          class="cursor-pointer px-4 py-2 hover:bg-gray-100 text-gray-700"
         >
           {{ item.name }}
         </li>

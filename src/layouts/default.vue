@@ -3,7 +3,7 @@ const showNav = useState("showNav");
 </script>
 
 <template>
-  <div class="bg-white dark:bg-primary-800 min-h-screen w-full flex overflow-hidden">
+  <div class="bg-white min-h-screen w-full flex overflow-hidden">
     <XSidebar />
     <div
       class="flex flex-col w-full flex-1 overflow-hidden transition-all duration-300"

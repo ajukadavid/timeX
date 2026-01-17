@@ -1,35 +1,35 @@
 <script setup lang="ts">
 import { useUserStore } from "@/store/userStore";
-
+import Button from "@/components/ui/Button.vue";
 
 const store = useUserStore();
+const router = useRouter();
 
 // Get role from localStorage instead of store
 const role = localStorage.getItem('userType')
 </script>
 <template>
-  <div class="flex bg-white h-screen dark:bg-primary-800 flex-col p-20">
-  
-    <UButton v-if="role !== 'employer'"
-            type="submit"
-            size="lg"
-            color="white"
-            variant="solid"
+  <div class="flex bg-white h-screen flex-col p-20">
+    <Button 
+      v-if="role !== 'employer'"
+      type="button"
+      size="lg"
+      color="primary"
       class="self-start"
-      @click="$router.push('/login')"
+      @click="router.push('/login')"
     >
       Save & Exit
-      </UButton>
-    <UButton v-else
-            type="submit"
-            size="lg"
-            color="white"
-            variant="solid"
+    </Button>
+    <Button 
+      v-else
+      type="button"
+      size="lg"
+      color="primary"
       class="self-start"
-      @click="$router.push('/dashboardEmployer')"
+      @click="router.push('/dashboardEmployer')"
     >
       Go Back
-      </UButton>
+    </Button>
      
     <div class="flex items-center justify-between">
      
