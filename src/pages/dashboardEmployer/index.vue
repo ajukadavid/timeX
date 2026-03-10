@@ -267,7 +267,10 @@ onMounted( async () => {
 </svg>
 <span>Send Invite</span>
         </div>
-        <div class="bg-[#762CC0] cursor-pointer text-white border py-3 px-5 space-x-2 rounded-md flex justify-center">
+        <div
+          class="bg-[#762CC0] cursor-pointer text-white border py-3 px-5 space-x-2 rounded-md flex justify-center"
+          @click="handleAddEmployees"
+        >
           <svg width="20" height="20" viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path d="M13 22.5H6.59087C5.04549 22.5 3.81631 21.748 2.71266 20.6966C0.453366 18.5441 4.1628 16.824 5.57757 15.9816C7.97679 14.553 10.8425 14.1575 13.5 14.7952" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
 <path d="M16.5 7C16.5 9.48528 14.4853 11.5 12 11.5C9.51472 11.5 7.5 9.48528 7.5 7C7.5 4.51472 9.51472 2.5 12 2.5C14.4853 2.5 16.5 4.51472 16.5 7Z" stroke="white" stroke-width="2"/>
