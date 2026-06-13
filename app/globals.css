@@ -1,0 +1,89 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary-50: #61B5D9;
+  --color-primary-100: #53ACD5;
+  --color-primary-200: #3697CE;
+  --color-primary-300: #2C7DB5;
+  --color-primary-400: #256498;
+  --color-primary-500: #1E4D7B;
+  --color-primary-600: #17385F;
+  --color-primary-700: #102542;
+  --color-primary-800: #070F1D;
+  --color-primary-900: #070F1D;
+  --color-primary-950: #070F1D;
+  --color-primary: #102542;
+
+  --color-blueZodiac: #102542;
+  --color-carnation: #F87060;
+  --color-amazon: #4a7c59;
+
+  --font-sans: "Open Sans", sans-serif;
+  --font-raleway: "Raleway", sans-serif;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0) rotate(0); }
+  50% { transform: translateY(-20px) rotate(1deg); }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+/* Marketing page utilities */
+.btn-primary {
+  @apply px-8 py-3 text-white rounded-lg font-semibold hover:opacity-90 transition-colors duration-300 bg-primary;
+}
+
+.btn-secondary {
+  @apply px-8 py-3 bg-white border-2 border-primary text-primary rounded-lg font-semibold hover:bg-gray-50 transition-colors duration-300;
+}
+
+.btn-white {
+  @apply px-8 py-3 bg-white text-primary rounded-lg font-semibold hover:bg-gray-100 transition-colors duration-300 inline-block;
+}
+
+.btn-outline-white {
+  @apply px-8 py-3 bg-transparent border-2 border-white text-white rounded-lg font-semibold hover:bg-white hover:text-primary transition-colors duration-300;
+}
+
+.btn-outline-primary {
+  @apply px-8 py-3 bg-transparent border-2 border-primary text-primary rounded-lg font-semibold hover:bg-primary hover:text-white transition-colors duration-300;
+}
+
+.feature-card {
+  @apply p-8 bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300;
+}
+
+.case-card {
+  @apply p-8 bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300;
+}
+
+.pricing-card {
+  @apply bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300 relative;
+}
+
+.pricing-card-featured {
+  @apply bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 relative border-2 border-primary;
+}
+
+.resource-card {
+  @apply bg-white rounded-xl p-8 shadow-sm hover:shadow-md transition-shadow duration-300;
+}
+
+.quick-link-card {
+  @apply bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow duration-300 cursor-pointer;
+}
+
+.support-card {
+  @apply bg-white rounded-xl p-8 shadow-sm hover:shadow-md transition-shadow duration-300;
+}
+
+.video-card {
+  @apply bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow duration-300;
+}
+
+.integration-logo {
+  @apply flex items-center justify-center p-6 bg-white rounded-lg shadow-sm;
+}

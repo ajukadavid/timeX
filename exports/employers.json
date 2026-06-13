@@ -1,0 +1,171 @@
+[{
+  "_id": {
+    "$oid": "6520eb8cdad00f84bcd9f693"
+  },
+  "firstName": "Second",
+  "lastName": "Test",
+  "companyName": "Test 2 Company",
+  "email": "test2@yopmail.com",
+  "phone": "",
+  "password": "$2b$10$7E22xiud10J7F4EQ9UY1VO5LlpcSXtwUa9kcl05OhWUV6ua66OHMC",
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6596e0301240d7f7d738f4e7"
+  },
+  "firstName": "David",
+  "lastName": "Ajuka",
+  "companyName": "TimeX",
+  "email": "ajukadavid883@gmail.com",
+  "phone": "",
+  "password": "$2b$10$tYlaYnBXE0iwyW0SQk.YBuy1znFkYvc/rmmXlsCHWhrM5psLUTYnS",
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "651ca8a6c9c5e2d6407c218e"
+  },
+  "firstName": "Kenechukwu",
+  "lastName": "Joseph",
+  "companyName": "Triton Inc.",
+  "email": "test@gmail.com",
+  "password": "$2b$10$ZraO7VRXTWfHT7iTBQF7c.AXBOFxf2r4whp.rvL.lyaZJbg3zRXoq",
+  "__v": 0,
+  "loginTime": "07:00"
+},
+{
+  "_id": {
+    "$oid": "6520e7f9dad00f84bcd9f689"
+  },
+  "firstName": "first",
+  "lastName": "test",
+  "companyName": "First Test Company",
+  "email": "test1@yopmail.com",
+  "phone": "",
+  "password": "$2b$10$zIFqkNb57wsOKIMf5lJGMerf5HnGENTl5NrGaBhlFP060DqUy9KPu",
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "65968d2d3bd272b285c00b8b"
+  },
+  "firstName": "jayer",
+  "lastName": "okocha",
+  "companyName": "JayandSons",
+  "email": "okochajay@gmail.com",
+  "phone": "",
+  "password": "$2b$10$/wUCmAqNP0Nh1krHQsQEP.xrvQgdJHXStLaTpKHseul804kW8Q8Pm",
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "668e82a26d527360278cfeb1"
+  },
+  "firstName": "Ajuka",
+  "lastName": "Mercy",
+  "companyName": "Info@sunnysidetealtd.vom",
+  "email": "Info@sunnysidetealtd.com",
+  "phone": "",
+  "password": "$2b$10$bTXfPd/STRU/IgB3cyg3/uHNKDRsFNA5f.c/LdlZY71iCoVPkfqAS",
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "66e2a9b2a131f049ae0b6864"
+  },
+  "firstName": "Enyi",
+  "lastName": "Lawrence ",
+  "companyName": "enyiDSGN",
+  "email": "enyilawz@gmail.com",
+  "phone": "",
+  "password": "$2b$10$XVmeqPKQB9FSERyQVStnK.20cn53T4YNEzKOItL1MWwSpkC.wWJCq",
+  "loginTime": "08:00",
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "674628ab6b8f9da8f7e5ba47"
+  },
+  "firstName": "Joseph",
+  "lastName": "Kenechukwu",
+  "companyName": "VON Ltd",
+  "email": "nwogujoseph1111@gmail.com",
+  "password": "$2b$10$F.jUqc0YVXTcgZL4bBPsouq2NAAKNWoYJ8mePKtNxh6Jde0tVIN2K",
+  "loginTime": "08:00",
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6597bed45d5a2571ad393d15"
+  },
+  "firstName": "David",
+  "lastName": "Ajuka",
+  "companyName": "TimeX",
+  "email": "ajuka.zephiniah@gmail.com",
+  "phone": "",
+  "password": "$2b$10$URCuihHc03Qh7S8rTeSVqeifB3NCsei9u7EypZkuGpTRuCNANhJ/a",
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "66db1655241159ecd1d8f3fc"
+  },
+  "firstName": "Mercy ",
+  "lastName": "Ajuka",
+  "companyName": "SunnySideTeaLtd",
+  "email": "info@sunnysidetealtd.com",
+  "phone": "",
+  "password": "$2b$10$5u9BOEhDZTcr7e.guxaF6uQma7WpF2qtGGueAxMy/twu1hJ8F7.kC",
+  "loginTime": "08:00",
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "651d4cc98e20c1a1efe38759"
+  },
+  "firstName": "david",
+  "lastName": "ajuka",
+  "companyName": "ajukscompany",
+  "email": "ajuka@ajuka.com",
+  "phone": "344421144",
+  "password": "$2b$10$DNeuYNdb6G4RYMESsGr2L.joXLMr2SbIsWcY9gO7VtJ7gMb9TWhH.",
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "65a1df5c9765215e7e6c9a9c"
+  },
+  "firstName": "Fred",
+  "lastName": "King",
+  "companyName": "Fred Motors",
+  "email": "fred@yopmail.com",
+  "phone": "",
+  "password": "$2b$10$0CMNHLE9tFuBtN.zbZ4IjOqRymefiMoPg3nHc4I0jCsSJM.ru.NC.",
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "67f2824936a0a4209019e75b"
+  },
+  "firstName": "Bucket",
+  "lastName": "outline",
+  "companyName": "NewCompanyTest",
+  "email": "info12@sunnysidetealtd.com",
+  "phone": "",
+  "password": "$2b$10$upWjbwQqLgduzq91xqTmBeVhKlpCIuOaJt6sFTsBeKE0U09fE8eYi",
+  "loginTime": "08:00",
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "67f3d3ee16088e240b73de08"
+  },
+  "firstName": "first",
+  "lastName": "last",
+  "companyName": "company",
+  "email": "mymail@gmail.com",
+  "password": "$2b$10$1mwMITv4IlERb778WS0t0.cg7rCPzDW0VWQw3pwJQbjkVhowJceT6",
+  "loginTime": "08:00",
+  "__v": 0
+}]
