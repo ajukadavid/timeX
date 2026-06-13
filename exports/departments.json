@@ -1,0 +1,100 @@
+[{
+  "_id": {
+    "$oid": "6599a1a0b423aa079c3afa74"
+  },
+  "name": "Tech Department",
+  "employer": {
+    "$oid": "65968d2d3bd272b285c00b8b"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "66e686218788f13067337df6"
+  },
+  "name": "Executive",
+  "employer": {
+    "$oid": "66db1655241159ecd1d8f3fc"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "669824c4bcb0ae02d05a7b85"
+  },
+  "name": "Tech dept",
+  "employer": {
+    "$oid": "651ca8a6c9c5e2d6407c218e"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "66d6b71d1d43b1ef3bba0b3a"
+  },
+  "name": "new deptt",
+  "employer": {
+    "$oid": "651ca8a6c9c5e2d6407c218e"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "66df854ff4d24ca25af49664"
+  },
+  "name": "Human Resources ",
+  "employer": {
+    "$oid": "66db1655241159ecd1d8f3fc"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "66e686118788f13067337def"
+  },
+  "name": "Social",
+  "employer": {
+    "$oid": "66db1655241159ecd1d8f3fc"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "66dc2da45de087411b894415"
+  },
+  "name": "HR Department",
+  "employer": {
+    "$oid": "651ca8a6c9c5e2d6407c218e"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "67468cf4d04595fd8904c10e"
+  },
+  "name": "Finance",
+  "employer": {
+    "$oid": "674628ab6b8f9da8f7e5ba47"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "66e6862e8788f13067337dfd"
+  },
+  "name": "Sales",
+  "employer": {
+    "$oid": "66db1655241159ecd1d8f3fc"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "66e686388788f13067337e04"
+  },
+  "name": "Technical Support",
+  "employer": {
+    "$oid": "66db1655241159ecd1d8f3fc"
+  },
+  "__v": 0
+}]

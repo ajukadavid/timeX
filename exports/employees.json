@@ -1,0 +1,23 @@
+[{
+  "_id": {
+    "$oid": "651d4cc98e20c1a1efe38759"
+  },
+  "firstName": "david",
+  "lastName": "ajuka",
+  "companyName": "ajukscompany",
+  "email": "ajuka@ajuka.com",
+  "phone": "344421144",
+  "password": "$2b$10$DNeuYNdb6G4RYMESsGr2L.joXLMr2SbIsWcY9gO7VtJ7gMb9TWhH.",
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "651ca8a6c9c5e2d6407c218e"
+  },
+  "firstName": "Kenechukwu",
+  "lastName": "Joseph",
+  "companyName": "Triton Inc.",
+  "email": "nwogujoseph1111@gmail.com",
+  "password": "$2b$10$ZraO7VRXTWfHT7iTBQF7c.AXBOFxf2r4whp.rvL.lyaZJbg3zRXoq",
+  "__v": 0
+}]

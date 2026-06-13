@@ -1,0 +1,119 @@
+[{
+  "_id": {
+    "$oid": "67468d18d04595fd8904c112"
+  },
+  "firstName": "Kcee",
+  "lastName": "Doe",
+  "email": "ken@centenum.com",
+  "password": "$2b$10$oqW9V9KzYIIQOBIeE2px7O2Poah/vr0KBvUNVIXs44TB2sB1qz5Sa",
+  "employer": {
+    "$oid": "674628ab6b8f9da8f7e5ba47"
+  },
+  "role": "Engineer",
+  "department": {
+    "$oid": "67468cf4d04595fd8904c10e"
+  },
+  "authToken": "67468d18d04595fd8904c112-37e02167-374b-43ab-85a7-0804aa266262",
+  "__v": 0,
+  "lastEntryTime": {
+    "$date": "2024-11-27T03:11:42.979Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "66e7f7bcb7022bac10d0333e"
+  },
+  "firstName": "Peace",
+  "lastName": "Romaine",
+  "email": "rhomainepee@gmail.com",
+  "employer": {
+    "$oid": "66db1655241159ecd1d8f3fc"
+  },
+  "role": "Executive Assistant",
+  "department": {
+    "$oid": "66e686218788f13067337df6"
+  },
+  "authToken": "66e7f7bcb7022bac10d0333e-f2e14013-6802-4497-aff8-1ce33c89a747",
+  "__v": 0,
+  "lastEntryTime": {
+    "$date": "2026-04-27T07:34:01.511Z"
+  },
+  "password": "$2b$10$KWOj/08lSj5lHtlClcfWRuug8DfipD4kkBVbAQcM9dL/u2YwKIjoW"
+},
+{
+  "_id": {
+    "$oid": "66ebe703afa474f653e27c87"
+  },
+  "firstName": "David",
+  "lastName": "Ajuka",
+  "email": "ajukadavid883@gmail.com",
+  "employer": {
+    "$oid": "66db1655241159ecd1d8f3fc"
+  },
+  "role": "Technical Support",
+  "department": {
+    "$oid": "66e686388788f13067337e04"
+  },
+  "authToken": "66ebe703afa474f653e27c87-541ea00d-3fe1-4e96-bb76-8c4037600cb9",
+  "__v": 0,
+  "lastEntryTime": {
+    "$date": "2025-09-15T08:18:00.000Z"
+  },
+  "password": "$2b$10$3/WKQajFbGXa.QHNS415u.5P1d3SNfcz/9VHxYa4APldqAmJahsbO"
+},
+{
+  "_id": {
+    "$oid": "67496a24ff405a031d4d2621"
+  },
+  "firstName": "Bakare",
+  "lastName": "Mariam",
+  "email": "bakare.a.mariam@gmail.com",
+  "password": "$2b$10$z0Q37AXqjyf6lISZDGjavOJ21fkaMPwQk/NuUZSWSG6UeigBJLtAO",
+  "employer": {
+    "$oid": "66db1655241159ecd1d8f3fc"
+  },
+  "role": "Virtual Assistant",
+  "department": {
+    "$oid": "66e686218788f13067337df6"
+  },
+  "authToken": "67496a24ff405a031d4d2621-f5ab90cb-2651-44cb-8300-6107b6393901",
+  "__v": 0,
+  "lastEntryTime": {
+    "$date": "2026-04-24T07:47:09.160Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "67f3dac8ef8a6e5a8d8e4e1d"
+  },
+  "firstName": "newName",
+  "lastName": "last",
+  "email": "test@mail.com",
+  "employer": {
+    "$oid": "67f3d3ee16088e240b73de08"
+  },
+  "role": "deeede",
+  "__v": 0,
+  "authToken": "65371c20205c276bb3cc183e-423bcd01-1665-463b-8a16-1de409402ca0"
+},
+{
+  "_id": {
+    "$oid": "69b11ebe87517ad4ccb33ddf"
+  },
+  "firstName": "Chidinma",
+  "lastName": "Mordi",
+  "email": "fumzy223@gmail.com",
+  "password": "$2b$10$TQQtxLwv.5lkKtS0ZbZR4e27/n2Nzt4t/VHYLtoaogmksOPjuSr7m",
+  "employer": {
+    "$oid": "66db1655241159ecd1d8f3fc"
+  },
+  "role": "Social Media Manager",
+  "department": {
+    "$oid": "66e686118788f13067337def"
+  },
+  "authToken": "69b11ebe87517ad4ccb33ddf-39ba6c84-0e1d-4e1a-9866-7409da1b1191",
+  "__v": 0,
+  "lastEntryTime": {
+    "$date": "2026-04-27T06:32:13.895Z"
+  }
+}]
