@@ -14,7 +14,12 @@
     "sync:clerk-to-convex": "node scripts/sync-clerk-users-to-convex.mjs",
     "sync:clerk-to-convex:dry": "node scripts/sync-clerk-users-to-convex.mjs --dry-run",
     "provision:users:clerk": "node scripts/provision-convex-users-to-clerk.mjs",
-    "provision:users:clerk:dry": "node scripts/provision-convex-users-to-clerk.mjs --dry-run"
+    "provision:users:clerk:dry": "node scripts/provision-convex-users-to-clerk.mjs --dry-run",
+    "provision:all:clerk": "node scripts/provision-all-users-to-clerk.mjs",
+    "provision:all:clerk:dry": "node scripts/provision-all-users-to-clerk.mjs --dry-run",
+    "provision:all:clerk:prod": "node scripts/provision-all-users-to-clerk.mjs --prod",
+    "provision:all:clerk:prod:dry": "node scripts/provision-all-users-to-clerk.mjs --prod --dry-run",
+    "prod:wipe": "npx convex run reset:wipeApplicationData '{\"confirm\":\"WIPE_ALL_APPLICATION_DATA\"}' --prod"
   },
   "husky": {
     "hooks": {

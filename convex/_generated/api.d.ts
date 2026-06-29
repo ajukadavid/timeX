@@ -15,6 +15,7 @@ import type * as invites from "../invites.js";
 import type * as lib_attendanceHelpers from "../lib/attendanceHelpers.js";
 import type * as lib_auth from "../lib/auth.js";
 import type * as migrations from "../migrations.js";
+import type * as reset from "../reset.js";
 import type * as roles from "../roles.js";
 import type * as settings from "../settings.js";
 import type * as staff from "../staff.js";
@@ -34,6 +35,7 @@ declare const fullApi: ApiFromModules<{
   "lib/attendanceHelpers": typeof lib_attendanceHelpers;
   "lib/auth": typeof lib_auth;
   migrations: typeof migrations;
+  reset: typeof reset;
   roles: typeof roles;
   settings: typeof settings;
   staff: typeof staff;
