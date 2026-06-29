@@ -137,7 +137,13 @@ export const upsertFromClerk = mutation({
     };
 
     if (existing) {
-      await ctx.db.patch(existing._id, payload);
+      // Webhooks often omit role in public_metadata — never downgrade Convex roles.
+      await ctx.db.patch(existing._id, {
+        ...payload,
+        role: args.role ?? existing.role,
+        organizationName:
+          args.organizationName ?? existing.organizationName,
+      });
       return existing._id;
     }
 
@@ -250,11 +256,31 @@ export const deduplicateUsers = internalMutation({
     for (const [, group] of byEmail) {
       if (group.length <= 1) continue;
 
-      // Prefer the row with a real Clerk ID; among equals keep latest _creationTime
+      const profileCountByUserId = new Map(
+        await Promise.all(
+          group.map(async (u) => {
+            const profiles = await ctx.db
+              .query("staffProfiles")
+              .withIndex("by_employer", (q) => q.eq("employerId", u._id))
+              .collect();
+            return [u._id, profiles.length] as const;
+          })
+        )
+      );
+
+      // Prefer the row staff data points at, then real Clerk ID, then admin role.
       group.sort((a, b) => {
+        const aProfiles = profileCountByUserId.get(a._id) ?? 0;
+        const bProfiles = profileCountByUserId.get(b._id) ?? 0;
+        if (aProfiles !== bProfiles) return bProfiles - aProfiles;
+
         const aReal = !a.clerkId.startsWith("legacy:");
         const bReal = !b.clerkId.startsWith("legacy:");
         if (aReal !== bReal) return aReal ? -1 : 1;
+
+        if (a.role === ROLE.ADMIN && b.role !== ROLE.ADMIN) return -1;
+        if (b.role === ROLE.ADMIN && a.role !== ROLE.ADMIN) return 1;
+
         return b._creationTime - a._creationTime;
       });
 
@@ -294,23 +320,42 @@ export const setUserRole = internalMutation({
   },
 });
 
+const provisionUserValidator = v.object({
+  _id: v.id("users"),
+  clerkId: v.string(),
+  email: v.string(),
+  firstName: v.optional(v.string()),
+  lastName: v.optional(v.string()),
+  role: v.union(
+    v.literal(ROLE.ADMIN),
+    v.literal(ROLE.MANAGER),
+    v.literal(ROLE.STAFF)
+  ),
+});
+
+/** All users for bulk Clerk provisioning scripts. */
+export const listAllUsersForProvisioning = internalQuery({
+  args: {},
+  returns: v.array(provisionUserValidator),
+  handler: async (ctx) => {
+    const all = await ctx.db.query("users").collect();
+    return all
+      .filter((u) => u.email.includes("@"))
+      .map((u) => ({
+        _id: u._id,
+        clerkId: u.clerkId,
+        email: u.email.trim().toLowerCase(),
+        firstName: u.firstName,
+        lastName: u.lastName,
+        role: u.role,
+      }));
+  },
+});
+
 /** Returns all users whose clerkId starts with "legacy:" — used by bulk sync scripts. */
 export const listLegacyUsers = internalQuery({
   args: {},
-  returns: v.array(
-    v.object({
-      _id: v.id("users"),
-      clerkId: v.string(),
-      email: v.string(),
-      firstName: v.optional(v.string()),
-      lastName: v.optional(v.string()),
-      role: v.union(
-        v.literal(ROLE.ADMIN),
-        v.literal(ROLE.MANAGER),
-        v.literal(ROLE.STAFF)
-      ),
-    })
-  ),
+  returns: v.array(provisionUserValidator),
   handler: async (ctx) => {
     const all = await ctx.db.query("users").collect();
     return all
@@ -336,5 +381,186 @@ export const setClerkId = internalMutation({
   handler: async (ctx, { userId, clerkId }) => {
     await ctx.db.patch(userId, { clerkId, updatedAt: Date.now() });
     return null;
+  },
+});
+
+/** Inspect employer ↔ staff links (run after dedup / prod migration). */
+export const diagnoseEmployerData = internalQuery({
+  args: {
+    adminEmail: v.optional(v.string()),
+  },
+  returns: v.object({
+    adminUser: v.union(
+      v.object({
+        _id: v.id("users"),
+        email: v.string(),
+        role: v.string(),
+        clerkId: v.string(),
+      }),
+      v.null()
+    ),
+    staffProfileCountForAdmin: v.number(),
+    distinctEmployerIdsOnProfiles: v.array(v.string()),
+    orphanedEmployerIds: v.array(v.string()),
+    totalStaffProfiles: v.number(),
+    totalDepartments: v.number(),
+    departmentsForAdmin: v.number(),
+  }),
+  handler: async (ctx, args) => {
+    const email = args.adminEmail?.trim().toLowerCase();
+    let adminUser = null;
+
+    if (email) {
+      adminUser = await ctx.db
+        .query("users")
+        .withIndex("by_email", (q) => q.eq("email", email))
+        .unique();
+    } else {
+      const admins = await ctx.db
+        .query("users")
+        .withIndex("by_role", (q) => q.eq("role", ROLE.ADMIN))
+        .collect();
+      adminUser = admins[0] ?? null;
+    }
+
+    const profiles = await ctx.db.query("staffProfiles").collect();
+    const departments = await ctx.db.query("departments").collect();
+
+    const employerIds = [...new Set(profiles.map((p) => p.employerId))];
+    const orphanedEmployerIds: string[] = [];
+
+    for (const employerId of employerIds) {
+      const employer = await ctx.db.get(employerId);
+      if (!employer) orphanedEmployerIds.push(employerId);
+    }
+
+    const staffProfileCountForAdmin = adminUser
+      ? profiles.filter((p) => p.employerId === adminUser._id).length
+      : 0;
+
+    const departmentsForAdmin = adminUser
+      ? departments.filter((d) => d.employerId === adminUser._id).length
+      : 0;
+
+    return {
+      adminUser: adminUser
+        ? {
+            _id: adminUser._id,
+            email: adminUser.email,
+            role: adminUser.role,
+            clerkId: adminUser.clerkId,
+          }
+        : null,
+      staffProfileCountForAdmin,
+      distinctEmployerIdsOnProfiles: employerIds,
+      orphanedEmployerIds,
+      totalStaffProfiles: profiles.length,
+      totalDepartments: departments.length,
+      departmentsForAdmin,
+    };
+  },
+});
+
+/**
+ * Re-point staff/departments/attendance/settings from deleted employer rows
+ * to the surviving admin user (fixes dedup + webhook duplicate fallout).
+ */
+export const repairEmployerLinks = internalMutation({
+  args: {
+    adminEmail: v.string(),
+    dryRun: v.optional(v.boolean()),
+  },
+  returns: v.object({
+    adminId: v.id("users"),
+    repairedStaffProfiles: v.number(),
+    repairedDepartments: v.number(),
+    repairedAttendanceLogs: v.number(),
+    repairedSettings: v.number(),
+    dryRun: v.boolean(),
+  }),
+  handler: async (ctx, args) => {
+    const admin = await ctx.db
+      .query("users")
+      .withIndex("by_email", (q) =>
+        q.eq("email", args.adminEmail.trim().toLowerCase())
+      )
+      .unique();
+    if (!admin) {
+      throw new Error(`No user found with email: ${args.adminEmail}`);
+    }
+    if (admin.role !== ROLE.ADMIN) {
+      throw new Error(`${args.adminEmail} is not an admin user`);
+    }
+
+    const dryRun = args.dryRun ?? false;
+    let repairedStaffProfiles = 0;
+    let repairedDepartments = 0;
+    let repairedAttendanceLogs = 0;
+    let repairedSettings = 0;
+
+    const profiles = await ctx.db.query("staffProfiles").collect();
+    for (const profile of profiles) {
+      if (profile.employerId === admin._id) continue;
+      const employer = await ctx.db.get(profile.employerId);
+      if (employer) continue;
+      repairedStaffProfiles++;
+      if (!dryRun) {
+        await ctx.db.patch(profile._id, {
+          employerId: admin._id,
+          updatedAt: Date.now(),
+        });
+      }
+    }
+
+    const departments = await ctx.db.query("departments").collect();
+    for (const dept of departments) {
+      if (dept.employerId === admin._id) continue;
+      const employer = await ctx.db.get(dept.employerId);
+      if (employer) continue;
+      repairedDepartments++;
+      if (!dryRun) {
+        await ctx.db.patch(dept._id, {
+          employerId: admin._id,
+          updatedAt: Date.now(),
+        });
+      }
+    }
+
+    const logs = await ctx.db.query("attendanceLogs").collect();
+    for (const log of logs) {
+      if (log.employerId === admin._id) continue;
+      const employer = await ctx.db.get(log.employerId);
+      if (employer) continue;
+      repairedAttendanceLogs++;
+      if (!dryRun) {
+        await ctx.db.patch(log._id, {
+          employerId: admin._id,
+          updatedAt: Date.now(),
+        });
+      }
+    }
+
+    const settings = await ctx.db.query("employerSettings").collect();
+    for (const setting of settings) {
+      if (setting.employerId === admin._id) continue;
+      const employer = await ctx.db.get(setting.employerId);
+      if (employer) continue;
+      repairedSettings++;
+      if (!dryRun) {
+        await ctx.db.patch(setting._id, {
+          employerId: admin._id,
+          updatedAt: Date.now(),
+        });
+      }
+    }
+
+    return {
+      adminId: admin._id,
+      repairedStaffProfiles,
+      repairedDepartments,
+      repairedAttendanceLogs,
+      repairedSettings,
+      dryRun,
+    };
   },
 });

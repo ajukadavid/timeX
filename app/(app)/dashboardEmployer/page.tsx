@@ -99,11 +99,23 @@ export default function DashboardEmployerPage() {
         role: form.role,
         departmentId: (form.department || undefined) as Id<"departments"> | undefined,
       });
-      toast("Employee Successfully Created!", "success");
+
+      // Automatically send Clerk invite so staff shows up immediately
+      try {
+        const invite = await inviteByEmail({ email: form.email.trim() });
+        if (invite.success) {
+          toast(`Employee created and invitation sent to ${form.email}`, "success");
+        } else {
+          toast(`Employee created, but invite failed: ${invite.message}`, "error");
+        }
+      } catch {
+        toast("Employee created, but invite email failed — use Send Invite to retry", "error");
+      }
+
       setShowAddModal(false);
       setForm({ firstName: "", lastName: "", email: "", role: "", department: "" });
-    } catch {
-      toast("Failed to create employee", "error");
+    } catch (e) {
+      toast(e instanceof Error ? e.message : "Failed to create employee", "error");
     } finally {
       setLoading(false);
     }

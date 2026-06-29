@@ -16,10 +16,15 @@ async function sendClerkInvite(email: string, role: string) {
     throw new Error("CLERK_SECRET_KEY is not configured");
   }
 
-  const redirectUrl =
+  const siteUrl = (
     process.env.CLERK_INVITE_REDIRECT_URL ||
     process.env.NEXT_PUBLIC_SITE_URL ||
-    "http://localhost:3000/dashboardStaff";
+    "http://localhost:3000"
+  ).replace(/\/$/, "");
+
+  // Send new staff to /login so Clerk handles sign-in/sign-up before routing.
+  // This avoids the issue where an already-logged-in admin session intercepts the link.
+  const redirectUrl = `${siteUrl}/login`;
 
   const res = await fetch("https://api.clerk.com/v1/invitations", {
     method: "POST",

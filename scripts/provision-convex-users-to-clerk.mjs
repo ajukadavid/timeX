@@ -93,7 +93,9 @@ async function sendPasswordReset(clerkUserId) {
 
 async function main() {
   console.log("Fetching legacy users from Convex...");
-  const legacyUsers = convexRun("internal/users:listLegacyUsers", {});
+  const legacyUsers = convexRun("internal/users:listLegacyUsers", {}, {
+    prod: process.argv.includes("--prod"),
+  });
   console.log(`Found ${legacyUsers.length} users with legacy clerkIds.\n`);
 
   if (legacyUsers.length === 0) {
@@ -135,10 +137,14 @@ async function main() {
     }
 
     // Patch Convex row with the real Clerk ID.
-    convexRun("internal/users:setClerkId", {
-      userId: u._id,
-      clerkId: clerkUser.id,
-    });
+    convexRun(
+      "internal/users:setClerkId",
+      {
+        userId: u._id,
+        clerkId: clerkUser.id,
+      },
+      { prod: process.argv.includes("--prod") }
+    );
 
     linked++;
     console.log(`✓  Clerk ID: ${clerkUser.id}`);
