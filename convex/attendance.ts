@@ -89,6 +89,19 @@ async function getOrgConfig(
   };
 }
 
+// ─── Geofence helper ──────────────────────────────────────────
+
+function haversineMeters(lat1: number, lng1: number, lat2: number, lng2: number): number {
+  const R = 6_371_000;
+  const toRad = (d: number) => (d * Math.PI) / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLng = toRad(lng2 - lng1);
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
 // ─── Clock In ─────────────────────────────────────────────────
 
 /** Staff signs in for today. Date is computed server-side using org timezone. */
@@ -108,6 +121,27 @@ export const clockIn = mutation({
     if (!profile) throw new Error("No staff profile found for your account");
 
     const { timezone, defaultSignInTime } = await getOrgConfig(ctx, profile);
+
+    // ── Geofence enforcement (only when entitled + enabled) ──
+    if (profile.organizationId) {
+      const org = await ctx.db.get(profile.organizationId);
+      const geoActive =
+        org?.featuresGeoFenceAllowed && org.geoFenceEnabled && org.geoFenceLat != null && org.geoFenceLng != null;
+      if (geoActive && org) {
+        if (args.latitude == null || args.longitude == null) {
+          throw new Error(
+            "Location required: your organisation uses geofenced clock-in. Please allow location access and try again."
+          );
+        }
+        const dist = haversineMeters(args.latitude, args.longitude, org.geoFenceLat!, org.geoFenceLng!);
+        const radius = org.geoFenceRadiusMeters ?? 100;
+        if (dist > radius) {
+          throw new Error(
+            `You are ${Math.round(dist)}m from the work zone (limit: ${radius}m). Move closer and try again.`
+          );
+        }
+      }
+    }
 
     const now = Date.now();
     const today = getDateInTimezone(now, timezone);
@@ -470,6 +504,72 @@ export const getOrgDailySummaryInternal = internalQuery({
       onTime: logs.length - late,
       late,
     };
+  },
+});
+
+// ─── Offline sync ─────────────────────────────────────────────
+
+/** Sync a queued offline clock-in. Uses the original offline timestamp. */
+export const clockInOffline = mutation({
+  args: {
+    entryTime: v.number(),
+    latitude: v.optional(v.number()),
+    longitude: v.optional(v.number()),
+  },
+  returns: v.id("attendanceLogs"),
+  handler: async (ctx, args) => {
+    const user = await requireCurrentUser(ctx);
+
+    if (Date.now() - args.entryTime > 24 * 60 * 60 * 1_000) {
+      throw new Error("Cannot sync entries older than 24 hours");
+    }
+
+    const profile = await ctx.db
+      .query("staffProfiles")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .unique();
+    if (!profile) throw new Error("No staff profile found");
+
+    if (profile.organizationId) {
+      const org = await ctx.db.get(profile.organizationId);
+      const offlineActive = org?.featuresOfflineSyncAllowed && org.offlineSyncEnabled;
+      if (!offlineActive) {
+        throw new Error("Offline sync is not enabled for your organization");
+      }
+    }
+
+    const { timezone, defaultSignInTime } = await getOrgConfig(ctx, profile);
+    const entryDate = getDateInTimezone(args.entryTime, timezone);
+
+    const existing = await ctx.db
+      .query("attendanceLogs")
+      .withIndex("by_staff_date", (q) =>
+        q.eq("staffUserId", user._id).eq("entryDate", entryDate)
+      )
+      .first();
+    if (existing) throw new Error(`Entry already exists for ${entryDate}`);
+
+    const late = isLateEntry(args.entryTime, defaultSignInTime, timezone);
+    const now = Date.now();
+
+    const logId = await ctx.db.insert("attendanceLogs", {
+      employerId: profile.employerId,
+      organizationId: profile.organizationId,
+      staffUserId: user._id,
+      staffProfileId: profile._id,
+      entryTime: args.entryTime,
+      entryDate,
+      late,
+      latitude: args.latitude,
+      longitude: args.longitude,
+      source: "mobile",
+      notes: "Synced from offline queue",
+      createdAt: now,
+      updatedAt: now,
+    });
+
+    await ctx.db.patch(profile._id, { lastEntryTime: args.entryTime, updatedAt: now });
+    return logId;
   },
 });
 

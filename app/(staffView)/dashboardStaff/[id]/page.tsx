@@ -1,7 +1,11 @@
 "use client";
 
-import { use, useEffect, useState } from "react";
+import { use, useCallback, useEffect, useState } from "react";
 import { useConvexAuth, useMutation, useQuery } from "convex/react";
+import { useRouter } from "next/navigation";
+import { useUser } from "@clerk/nextjs";
+import { useBiometricAuth } from "@/hooks/useBiometricAuth";
+import { useOfflineQueue } from "@/hooks/useOfflineQueue";
 import { Line } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -29,11 +33,22 @@ const ITEMS_PER_PAGE = 30;
 const chartOptions = {
   responsive: true,
   scales: {
-    y: { beginAtZero: true, ticks: { stepSize: 1, font: { family: "JetBrains Mono, monospace", size: 11 }, color: "#707974" }, grid: { color: "#ebefec" } },
-    x: { ticks: { font: { family: "JetBrains Mono, monospace", size: 11 }, color: "#707974" }, grid: { display: false } },
+    y: {
+      beginAtZero: true,
+      ticks: { stepSize: 1, font: { family: "JetBrains Mono, monospace", size: 11 }, color: "#707974" },
+      grid: { color: "#ebefec" },
+    },
+    x: {
+      ticks: { font: { family: "JetBrains Mono, monospace", size: 11 }, color: "#707974" },
+      grid: { display: false },
+    },
   },
   plugins: {
-    legend: { display: true, position: "top" as const, labels: { font: { family: "Hanken Grotesk, sans-serif", size: 12 }, color: "#404944" } },
+    legend: {
+      display: true,
+      position: "top" as const,
+      labels: { font: { family: "Hanken Grotesk, sans-serif", size: 12 }, color: "#404944" },
+    },
     title: { display: false },
     tooltip: {
       backgroundColor: "#003527",
@@ -115,7 +130,9 @@ function ProfileCard({
       setShowEdit(false);
     } catch (e) {
       toast(e instanceof Error ? e.message : "Failed to update profile", "error");
-    } finally { setSaving(false); }
+    } finally {
+      setSaving(false);
+    }
   }
 
   async function handleToggleRole() {
@@ -127,7 +144,9 @@ function ProfileCard({
       toast(`Role updated to ${newRole}`, "success");
     } catch (e) {
       toast(e instanceof Error ? e.message : "Failed to update role", "error");
-    } finally { setPromotingRole(false); }
+    } finally {
+      setPromotingRole(false);
+    }
   }
 
   const canEdit = isAdmin || isOwnDashboard;
@@ -145,14 +164,14 @@ function ProfileCard({
         <div className="flex flex-col sm:flex-row sm:items-center gap-5">
           <div
             className="w-16 h-16 rounded-xl flex items-center justify-center text-2xl font-bold shrink-0"
-            style={{ backgroundColor: "#064e3b", color: "#b0f0d6", fontFamily: "var(--font-hanken, sans-serif)" }}
+            style={{ backgroundColor: "#064e3b", color: "#b0f0d6", fontFamily: "Hanken Grotesk, sans-serif" }}
           >
             {initials}
           </div>
 
           <div className="flex-1 min-w-0">
-            <h2 className="text-xl font-bold" style={{ color: "#003527", fontFamily: "var(--font-hanken, sans-serif)" }}>{fullName}</h2>
-            <p className="text-sm mt-0.5" style={{ fontFamily: "var(--font-jetbrains, monospace)", color: "#707974" }}>{staff.email}</p>
+            <h2 className="text-xl font-bold" style={{ color: "#003527", fontFamily: "Hanken Grotesk, sans-serif" }}>{fullName}</h2>
+            <p className="text-sm mt-0.5" style={{ fontFamily: "JetBrains Mono, monospace", color: "#707974" }}>{staff.email}</p>
             <div className="flex flex-wrap gap-2 mt-3">
               {profile?.jobTitle && (
                 <span className="text-xs px-2.5 py-0.5 rounded-full font-mono" style={{ backgroundColor: "#b0f0d6", color: "#0b513d" }}>
@@ -160,25 +179,23 @@ function ProfileCard({
                 </span>
               )}
               {profile?.orgRole && (
-                <span className="text-xs px-2.5 py-0.5 rounded-full font-mono" style={
-                  profile.orgRole === "admin"
-                    ? { backgroundColor: "#064e3b", color: "#80bea6" }
-                    : { backgroundColor: "#ebefec", color: "#404944" }
-                }>
+                <span
+                  className="text-xs px-2.5 py-0.5 rounded-full font-mono"
+                  style={profile.orgRole === "admin" ? { backgroundColor: "#064e3b", color: "#80bea6" } : { backgroundColor: "#ebefec", color: "#404944" }}
+                >
                   {profile.orgRole === "admin" ? "Admin" : "Staff"}
                 </span>
               )}
               {profile?.employmentStatus && (
-                <span className="text-xs px-2.5 py-0.5 rounded-full font-mono" style={
-                  profile.employmentStatus === "active"
-                    ? { backgroundColor: "#bbf37c", color: "#1c3400" }
-                    : { backgroundColor: "#ebefec", color: "#707974" }
-                }>
+                <span
+                  className="text-xs px-2.5 py-0.5 rounded-full font-mono"
+                  style={profile.employmentStatus === "active" ? { backgroundColor: "#bbf37c", color: "#1c3400" } : { backgroundColor: "#ebefec", color: "#707974" }}
+                >
                   {profile.employmentStatus}
                 </span>
               )}
               {profile?.startDate && (
-                <span className="text-xs" style={{ fontFamily: "var(--font-jetbrains, monospace)", color: "#707974" }}>
+                <span className="text-xs" style={{ fontFamily: "JetBrains Mono, monospace", color: "#707974" }}>
                   Since {new Date(profile.startDate).toLocaleDateString("en-GB", { month: "short", year: "numeric" })}
                 </span>
               )}
@@ -258,7 +275,19 @@ function ProfileCard({
 
 // ─── Leave section ────────────────────────────────────────────
 
-function LeaveSection({ staffUserId, isAdmin, isOwnDashboard }: { staffUserId: Id<"users">; isAdmin: boolean; isOwnDashboard: boolean; }) {
+function LeaveSection({
+  staffUserId,
+  isAdmin,
+  isOwnDashboard,
+  autoOpen = false,
+  onAutoOpenHandled,
+}: {
+  staffUserId: Id<"users">;
+  isAdmin: boolean;
+  isOwnDashboard: boolean;
+  autoOpen?: boolean;
+  onAutoOpenHandled?: () => void;
+}) {
   const leaveRequests = useQuery(api.leave.listStaffLeaveRequests, { staffUserId });
   const requestLeave = useMutation(api.leave.requestLeave);
   const cancelLeave = useMutation(api.leave.cancelLeave);
@@ -270,6 +299,13 @@ function LeaveSection({ staffUserId, isAdmin, isOwnDashboard }: { staffUserId: I
   const [leaveForm, setLeaveForm] = useState({ type: "annual" as "annual" | "sick" | "other", startDate: "", endDate: "", reason: "" });
   const [reviewNote, setReviewNote] = useState("");
 
+  useEffect(() => {
+    if (autoOpen && !showRequest) {
+      setShowRequest(true);
+      onAutoOpenHandled?.();
+    }
+  }, [autoOpen, showRequest, onAutoOpenHandled]);
+
   async function handleRequestLeave() {
     if (!leaveForm.startDate || !leaveForm.endDate) { toast("Select start and end dates", "error"); return; }
     setSubmitting(true);
@@ -280,7 +316,9 @@ function LeaveSection({ staffUserId, isAdmin, isOwnDashboard }: { staffUserId: I
       setLeaveForm({ type: "annual", startDate: "", endDate: "", reason: "" });
     } catch (e) {
       toast(e instanceof Error ? e.message : "Failed to submit request", "error");
-    } finally { setSubmitting(false); }
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   async function handleCancel(reqId: Id<"leaveRequests">) {
@@ -298,10 +336,13 @@ function LeaveSection({ staffUserId, isAdmin, isOwnDashboard }: { staffUserId: I
     try {
       await reviewLeave({ requestId: showReview, decision, reviewNote: reviewNote || undefined });
       toast(`Request ${decision}`, "success");
-      setShowReview(null); setReviewNote("");
+      setShowReview(null);
+      setReviewNote("");
     } catch (e) {
       toast(e instanceof Error ? e.message : "Failed to review", "error");
-    } finally { setSubmitting(false); }
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   const STATUS_STYLE: Record<string, { bg: string; color: string }> = {
@@ -319,7 +360,7 @@ function LeaveSection({ staffUserId, isAdmin, isOwnDashboard }: { staffUserId: I
   return (
     <div className="rounded-xl border overflow-hidden mt-8" style={{ backgroundColor: "#ffffff", borderColor: "rgba(191,201,195,0.3)" }}>
       <div className="px-6 py-4 border-b flex items-center justify-between" style={{ borderColor: "rgba(191,201,195,0.2)", backgroundColor: "#f6faf7" }}>
-        <h3 className="font-bold" style={{ color: "#003527", fontFamily: "var(--font-hanken, sans-serif)" }}>Leave Requests</h3>
+        <h3 className="font-bold" style={{ color: "#003527", fontFamily: "Hanken Grotesk, sans-serif" }}>Leave Requests</h3>
         {isOwnDashboard && (
           <button
             onClick={() => setShowRequest(true)}
@@ -347,16 +388,19 @@ function LeaveSection({ staffUserId, isAdmin, isOwnDashboard }: { staffUserId: I
             <thead>
               <tr style={{ backgroundColor: "rgba(241,245,242,0.6)", borderBottom: "1px solid rgba(191,201,195,0.2)" }}>
                 {["Type", "From", "To", "Days", "Status", "Actions"].map((h) => (
-                  <th key={h} className="px-5 py-3" style={{ fontFamily: "var(--font-jetbrains, monospace)", fontSize: "11px", letterSpacing: "0.06em", color: "#707974", textTransform: "uppercase" }}>{h}</th>
+                  <th key={h} className="px-5 py-3" style={{ fontFamily: "JetBrains Mono, monospace", fontSize: "11px", letterSpacing: "0.06em", color: "#707974", textTransform: "uppercase" }}>{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {leaveRequests.map((req) => {
-                const ss = STATUS_STYLE[req.status] ?? STATUS_STYLE.pending;
-                const ts = TYPE_STYLE[req.type] ?? TYPE_STYLE.other;
+                const ss = STATUS_STYLE[req.status] ?? STATUS_STYLE.pending!;
+                const ts = TYPE_STYLE[req.type] ?? TYPE_STYLE.other!;
                 return (
-                  <tr key={req._id} className="border-b transition-colors" style={{ borderColor: "rgba(191,201,195,0.15)" }}
+                  <tr
+                    key={req._id}
+                    className="border-b transition-colors"
+                    style={{ borderColor: "rgba(191,201,195,0.15)" }}
                     onMouseEnter={(e) => { (e.currentTarget as HTMLTableRowElement).style.backgroundColor = "rgba(241,245,242,0.5)"; }}
                     onMouseLeave={(e) => { (e.currentTarget as HTMLTableRowElement).style.backgroundColor = "transparent"; }}
                   >
@@ -392,9 +436,17 @@ function LeaveSection({ staffUserId, isAdmin, isOwnDashboard }: { staffUserId: I
         </div>
       )}
 
-      {/* Request Leave Modal */}
-      <XModal open={showRequest} onClose={() => setShowRequest(false)} title="Request Leave" size="md"
-        footer={<div className="flex justify-end gap-3"><Button color="gray" variant="soft" onClick={() => setShowRequest(false)}>Cancel</Button><Button loading={submitting} onClick={handleRequestLeave}>Submit Request</Button></div>}
+      <XModal
+        open={showRequest}
+        onClose={() => setShowRequest(false)}
+        title="Request Leave"
+        size="md"
+        footer={
+          <div className="flex justify-end gap-3">
+            <Button color="gray" variant="soft" onClick={() => setShowRequest(false)}>Cancel</Button>
+            <Button loading={submitting} onClick={handleRequestLeave}>Submit Request</Button>
+          </div>
+        }
       >
         <div className="space-y-4 p-1">
           <FormField label="Leave Type" name="type">
@@ -418,25 +470,42 @@ function LeaveSection({ staffUserId, isAdmin, isOwnDashboard }: { staffUserId: I
             </FormField>
           </div>
           <FormField label="Reason (optional)" name="reason">
-            <textarea value={leaveForm.reason} onChange={(e) => setLeaveForm({ ...leaveForm, reason: e.target.value })} rows={3}
+            <textarea
+              value={leaveForm.reason}
+              onChange={(e) => setLeaveForm({ ...leaveForm, reason: e.target.value })}
+              rows={3}
               className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none resize-none"
               style={{ borderColor: "rgba(191,201,195,0.5)", backgroundColor: "#f6faf7", color: "#181d1b" }}
-              placeholder="Brief reason for leave…" />
+              placeholder="Brief reason for leave…"
+            />
           </FormField>
         </div>
       </XModal>
 
-      {/* Review Modal */}
-      <XModal open={!!showReview} onClose={() => setShowReview(null)} title="Review Leave Request" size="sm"
-        footer={<div className="flex justify-end gap-3"><Button color="gray" variant="soft" onClick={() => setShowReview(null)}>Cancel</Button><Button color="red" loading={submitting} onClick={() => handleReview("rejected")}>Reject</Button><Button loading={submitting} onClick={() => handleReview("approved")}>Approve</Button></div>}
+      <XModal
+        open={!!showReview}
+        onClose={() => setShowReview(null)}
+        title="Review Leave Request"
+        size="sm"
+        footer={
+          <div className="flex justify-end gap-3">
+            <Button color="gray" variant="soft" onClick={() => setShowReview(null)}>Cancel</Button>
+            <Button color="red" loading={submitting} onClick={() => handleReview("rejected")}>Reject</Button>
+            <Button loading={submitting} onClick={() => handleReview("approved")}>Approve</Button>
+          </div>
+        }
       >
         <div className="space-y-4 p-1">
           <p className="text-sm" style={{ color: "#707974" }}>Add an optional note for the staff member.</p>
           <FormField label="Review Note (optional)" name="reviewNote">
-            <textarea value={reviewNote} onChange={(e) => setReviewNote(e.target.value)} rows={3}
+            <textarea
+              value={reviewNote}
+              onChange={(e) => setReviewNote(e.target.value)}
+              rows={3}
               className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none resize-none"
               style={{ borderColor: "rgba(191,201,195,0.5)", backgroundColor: "#f6faf7", color: "#181d1b" }}
-              placeholder="e.g. Approved, enjoy your time off!" />
+              placeholder="e.g. Approved, enjoy your time off!"
+            />
           </FormField>
         </div>
       </XModal>
@@ -449,17 +518,35 @@ function LeaveSection({ staffUserId, isAdmin, isOwnDashboard }: { staffUserId: I
 export default function StaffDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const { isAuthenticated } = useConvexAuth();
+  const { user: clerkUser } = useUser();
+  const router = useRouter();
+
   const me = useQuery(api.users.getCurrentUser, isAuthenticated ? {} : "skip");
   const isAdmin = me?.role === "admin" || me?.platformRole === "superAdmin";
   const isOwnDashboard = me?._id === id;
 
   const staffData = useQuery(api.staff.getStaffDetail, { staffUserId: id as Id<"users"> });
   const todayEntry = useQuery(api.attendance.getTodayEntry, isOwnDashboard ? { staffUserId: id as Id<"users"> } : "skip");
+  const myCredential = useQuery(api.biometric.getMyCredential, isOwnDashboard ? {} : "skip");
+  const orgFeatures = useQuery(api.organizations.getMyOrgFeatures, isOwnDashboard ? {} : "skip");
+  const saveCredential = useMutation(api.biometric.saveCredential);
+  const removeCredentialMutation = useMutation(api.biometric.removeCredential);
   const clockInMutation = useMutation(api.attendance.clockIn);
+  const clockInOfflineMutation = useMutation(api.attendance.clockInOffline);
   const clockOutMutation = useMutation(api.attendance.clockOut);
+
+  const { isSupported: isBiometricSupported, register: registerBiometric, authenticate: authenticateBiometric } = useBiometricAuth();
+  const { isOnline, queue: offlineQueue, enqueue, dequeue } = useOfflineQueue();
   const adminAddAttendance = useMutation(api.attendance.adminAddAttendance);
   const adminDeleteAttendance = useMutation(api.attendance.adminDeleteAttendance);
 
+  // Mobile home state
+  type Tab = "home" | "schedule" | "messages" | "profile";
+  const [activeTab, setActiveTab] = useState<Tab>("home");
+  const [liveTime, setLiveTime] = useState(() => new Date());
+  const [triggerLeaveOpen, setTriggerLeaveOpen] = useState(false);
+
+  // Shared state
   const [allLogs, setAllLogs] = useState<LogEntry[]>([]);
   const [filtered, setFiltered] = useState<LogEntry[]>([]);
   const [displayCount, setDisplayCount] = useState(ITEMS_PER_PAGE);
@@ -476,6 +563,12 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
   const [showAddEntry, setShowAddEntry] = useState(false);
   const [addEntryForm, setAddEntryForm] = useState({ entryDate: "", entryTimeStr: "09:00" });
   const [addingEntry, setAddingEntry] = useState(false);
+
+  // Live clock for mobile
+  useEffect(() => {
+    const interval = setInterval(() => setLiveTime(new Date()), 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     const today = new Date();
@@ -524,8 +617,8 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
     for (const log of filtered) {
       const month = (log._rawDate as string)?.slice(0, 7) ?? "";
       if (!stats[month]) stats[month] = { onTime: 0, late: 0 };
-      if (log.late) stats[month].late++;
-      else stats[month].onTime++;
+      if (log.late) stats[month].late!++;
+      else stats[month].onTime!++;
     }
     const sortedMonths = Object.keys(stats).sort();
     setChartData({
@@ -543,37 +636,114 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
   const staffName = staffData
     ? `${staffData.staff.firstName ?? ""} ${staffData.staff.lastName ?? ""}`.trim() || staffData.staff.email
     : "";
+  const staffFirstName = staffData?.staff.firstName || staffName.split(" ")[0] || "there";
 
-  const handleClockIn = async () => {
+  // Sync any queued offline clock-ins when we come back online
+  useEffect(() => {
+    if (!isOnline || offlineQueue.length === 0) return;
+    (async () => {
+      let synced = 0;
+      for (const action of offlineQueue) {
+        try {
+          await clockInOfflineMutation({
+            entryTime: action.timestamp,
+            latitude: action.latitude,
+            longitude: action.longitude,
+          });
+          dequeue(action.id);
+          synced++;
+        } catch {
+          // Leave in queue — could be a duplicate or expired entry
+          dequeue(action.id);
+        }
+      }
+      if (synced > 0) toast(`Synced ${synced} offline clock-in${synced > 1 ? "s" : ""}`, "success");
+    })();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOnline]);
+
+  const biometricActive = !!(orgFeatures?.biometric.active && isBiometricSupported);
+  const offlineSyncActive = !!orgFeatures?.offlineSync.active;
+
+  const handleClockIn = useCallback(async () => {
     setSigningIn(true);
     try {
+      // ── 1. Geolocation ──────────────────────────────────────
       let latitude: number | undefined;
       let longitude: number | undefined;
       if (typeof navigator !== "undefined" && "geolocation" in navigator) {
         try {
-          const pos = await new Promise<GeolocationPosition>((resolve, reject) => {
-            navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 5000, maximumAge: 60000 });
-          });
+          const pos = await new Promise<GeolocationPosition>((resolve, reject) =>
+            navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 6000, maximumAge: 30000 })
+          );
           latitude = pos.coords.latitude;
           longitude = pos.coords.longitude;
-        } catch { /* Location denied — proceed anyway */ }
+        } catch { /* Location denied — server will decide if it's required */ }
       }
+
+      // ── 2. Offline path (premium, org-enabled) ───────────────
+      if (!isOnline) {
+        if (!offlineSyncActive) {
+          toast("Offline sign-in is not enabled for your organization.", "error");
+          setSigningIn(false);
+          return;
+        }
+        enqueue({ type: "clockIn", timestamp: Date.now(), latitude, longitude });
+        if (navigator.vibrate) navigator.vibrate([50, 30, 50]);
+        toast("You're offline — clock-in queued and will sync when you reconnect.", "success");
+        setSigningIn(false);
+        return;
+      }
+
+      // ── 3. Biometric verification (premium, org-enabled) ────
+      if (biometricActive) {
+        if (!myCredential) {
+          toast("Setting up biometric for future sign-ins…", "success");
+          const email = staffData?.staff.email ?? "";
+          const result = await registerBiometric(id, email);
+          if (result) {
+            await saveCredential({
+              credentialId: result.credentialId,
+              publicKeyBase64: result.publicKeyBase64,
+              deviceName: result.deviceName,
+            });
+          }
+        } else {
+          const passed = await authenticateBiometric(myCredential.credentialId);
+          if (!passed) {
+            toast("Biometric verification failed. Please try again.", "error");
+            setSigningIn(false);
+            return;
+          }
+        }
+      }
+
+      // ── 4. Clock in ─────────────────────────────────────────
       await clockInMutation({ latitude, longitude });
+      if (navigator.vibrate) navigator.vibrate(50);
       toast("Signed in successfully!", "success");
     } catch (e) {
       toast(e instanceof Error ? e.message : "Failed to sign in", "error");
-    } finally { setSigningIn(false); }
-  };
+    } finally {
+      setSigningIn(false);
+    }
+  }, [
+    clockInMutation, isOnline, biometricActive, offlineSyncActive, myCredential,
+    registerBiometric, authenticateBiometric, saveCredential, enqueue,
+    id, staffData,
+  ]);
 
-  const handleClockOut = async () => {
+  const handleClockOut = useCallback(async () => {
     setClockingOut(true);
     try {
       await clockOutMutation();
       toast("Clocked out successfully!", "success");
     } catch (e) {
       toast(e instanceof Error ? e.message : "Failed to clock out", "error");
-    } finally { setClockingOut(false); }
-  };
+    } finally {
+      setClockingOut(false);
+    }
+  }, [clockOutMutation]);
 
   const handleAddEntry = async () => {
     if (!addEntryForm.entryDate) { toast("Select a date", "error"); return; }
@@ -585,7 +755,9 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
       setAddEntryForm({ entryDate: "", entryTimeStr: "09:00" });
     } catch (e) {
       toast(e instanceof Error ? e.message : "Failed to add entry", "error");
-    } finally { setAddingEntry(false); }
+    } finally {
+      setAddingEntry(false);
+    }
   };
 
   const handleDeleteLog = async (logId: string) => {
@@ -596,7 +768,9 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
       toast("Entry deleted", "success");
     } catch (e) {
       toast(e instanceof Error ? e.message : "Failed to delete", "error");
-    } finally { setDeletingLog(null); }
+    } finally {
+      setDeletingLog(null);
+    }
   };
 
   const exportToCSV = () => {
@@ -607,15 +781,17 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
         .map((f) => (String(f).includes(",") ? `"${f}"` : f)).join(",")
     );
     const csv = [headers.join(","), ...rows].join("\n");
-    saveAs(new Blob([csv], { type: "text/csv;charset=utf-8;" }), `${staffName.replace(/\s+/g, "_")}_attendance_${startDate || "all"}_to_${endDate || "all"}.csv`);
+    saveAs(new Blob([csv], { type: "text/csv;charset=utf-8;" }), `${staffName.replace(/\s+/g, "_")}_attendance.csv`);
   };
+
+  // ─── Loading / Error states ────────────────────────────────
 
   if (staffData === undefined) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "#f6faf7" }}>
         <div className="flex flex-col items-center gap-3">
           <span className="material-symbols-outlined text-[48px] animate-spin" style={{ color: "#003527" }}>progress_activity</span>
-          <p style={{ fontFamily: "var(--font-jetbrains, monospace)", fontSize: "12px", color: "#707974" }}>Loading profile…</p>
+          <p style={{ fontFamily: "JetBrains Mono, monospace", fontSize: "12px", color: "#707974" }}>Loading profile…</p>
         </div>
       </div>
     );
@@ -635,108 +811,35 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
   const displayedLogs = filtered.slice(0, displayCount);
   const hasMore = displayCount < filtered.length;
 
-  return (
-    <div className="min-h-screen" style={{ backgroundColor: "#f6faf7" }}>
-      {/* Header */}
-      <header className="sticky top-0 z-40 border-b" style={{ backgroundColor: "#f6faf7", borderColor: "rgba(191,201,195,0.4)", boxShadow: "0 1px 12px rgba(6,78,59,0.04)" }}>
-        <div className="flex items-center justify-between h-16 px-4 md:px-6">
-          <div>
-            <h1 className="font-bold text-xl leading-none" style={{ color: "#003527", fontFamily: "var(--font-hanken, sans-serif)" }}>
-              {staffName}
-            </h1>
-            <p className="text-xs mt-0.5" style={{ fontFamily: "var(--font-jetbrains, monospace)", color: "#707974" }}>Attendance & Profile</p>
-          </div>
-          <div className="flex items-center gap-2 flex-wrap justify-end">
-            {/* Clock in / out for own dashboard */}
-            {isOwnDashboard && todayEntry !== undefined && (
-              todayEntry ? (
-                <>
-                  <div
-                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm"
-                    style={todayEntry.late ? { backgroundColor: "#ffdbd0", color: "#832600" } : { backgroundColor: "#b0f0d6", color: "#0b513d" }}
-                  >
-                    <span className="material-symbols-outlined text-[16px]">{todayEntry.late ? "alarm_on" : "check_circle"}</span>
-                    <span className="font-mono text-xs">
-                      In {new Date(todayEntry.entryTime).toLocaleTimeString("en-US", { hour: "numeric", minute: "numeric", hour12: true })}
-                      {todayEntry.late ? " · Late" : " · On Time"}
-                    </span>
-                  </div>
-                  {!todayEntry.clockOutTime && (
-                    <button
-                      onClick={handleClockOut}
-                      disabled={clockingOut}
-                      className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-bold disabled:opacity-60 transition-all"
-                      style={{ backgroundColor: "#ebefec", color: "#003527", border: "1px solid rgba(191,201,195,0.5)" }}
-                    >
-                      <span className="material-symbols-outlined text-[16px]">logout</span>
-                      {clockingOut ? "…" : "Clock Out"}
-                    </button>
-                  )}
-                  {todayEntry.clockOutTime && (
-                    <span className="text-xs px-3 py-1.5 rounded-lg font-mono" style={{ backgroundColor: "#ebefec", color: "#707974" }}>
-                      Out {new Date(todayEntry.clockOutTime).toLocaleTimeString("en-US", { hour: "numeric", minute: "numeric", hour12: true })}
-                      {todayEntry.hoursWorked !== undefined ? ` · ${todayEntry.hoursWorked}h` : ""}
-                    </span>
-                  )}
-                </>
-              ) : (
-                <button
-                  onClick={handleClockIn}
-                  disabled={signingIn}
-                  className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-bold disabled:opacity-60"
-                  style={{ backgroundColor: "#003527", color: "#ffffff" }}
-                >
-                  <span className="material-symbols-outlined text-[16px]">fingerprint</span>
-                  {signingIn ? "Signing in…" : "Sign In Now"}
-                </button>
-              )
-            )}
+  // ─── Mobile staff own-dashboard ───────────────────────────
 
-            {/* Admin add entry */}
-            {isAdmin && !isOwnDashboard && (
-              <button
-                onClick={() => setShowAddEntry(true)}
-                className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-bold border transition-all"
-                style={{ color: "#003527", borderColor: "rgba(191,201,195,0.5)" }}
-                onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = "#ebefec"; }}
-                onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = "transparent"; }}
-              >
-                <span className="material-symbols-outlined text-[16px]">add</span>
-                Add Entry
-              </button>
-            )}
+  if (isOwnDashboard) {
+    const timeStr = liveTime.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: true });
+    const dateStr = liveTime.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "short" });
 
-            <button
-              onClick={exportToCSV}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-bold transition-all"
-              style={{ backgroundColor: "#ac3400", color: "#ffffff" }}
-            >
-              <span className="material-symbols-outlined text-[16px]">file_download</span>
-              Export CSV
-            </button>
-          </div>
-        </div>
-      </header>
+    const isClockedIn = todayEntry !== undefined && todayEntry !== null;
+    const isClockedOut = isClockedIn && !!todayEntry?.clockOutTime;
 
-      <div className="p-4 md:p-6 space-y-6">
-        {/* Profile card */}
-        <ProfileCard staffData={staffData} isAdmin={isAdmin} isOwnDashboard={isOwnDashboard} staffUserId={id as Id<"users">} />
+    // ── Profile tab content ──
+    const profileTabContent = (
+      <div className="p-4 space-y-6">
+        <ProfileCard staffData={staffData} isAdmin={isAdmin} isOwnDashboard={true} staffUserId={id as Id<"users">} />
 
         {/* Date filter */}
         <div className="rounded-xl border p-5" style={{ backgroundColor: "#ffffff", borderColor: "rgba(191,201,195,0.3)" }}>
           <div className="flex flex-col sm:flex-row gap-4 items-end">
             <div className="flex-1">
-              <p className="text-xs uppercase tracking-wider mb-1.5" style={{ fontFamily: "var(--font-jetbrains, monospace)", color: "#707974" }}>Start Date</p>
+              <p className="text-xs uppercase tracking-wider mb-1.5" style={{ fontFamily: "JetBrains Mono, monospace", color: "#707974" }}>Start Date</p>
               <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)}
                 className="w-full rounded-lg border px-3 py-2 text-sm outline-none"
-                style={{ borderColor: "rgba(191,201,195,0.5)", backgroundColor: "#f6faf7", color: "#181d1b", fontFamily: "var(--font-jetbrains, monospace)" }}
+                style={{ borderColor: "rgba(191,201,195,0.5)", backgroundColor: "#f6faf7", color: "#181d1b", fontFamily: "JetBrains Mono, monospace" }}
               />
             </div>
             <div className="flex-1">
-              <p className="text-xs uppercase tracking-wider mb-1.5" style={{ fontFamily: "var(--font-jetbrains, monospace)", color: "#707974" }}>End Date</p>
+              <p className="text-xs uppercase tracking-wider mb-1.5" style={{ fontFamily: "JetBrains Mono, monospace", color: "#707974" }}>End Date</p>
               <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)}
                 className="w-full rounded-lg border px-3 py-2 text-sm outline-none"
-                style={{ borderColor: "rgba(191,201,195,0.5)", backgroundColor: "#f6faf7", color: "#181d1b", fontFamily: "var(--font-jetbrains, monospace)" }}
+                style={{ borderColor: "rgba(191,201,195,0.5)", backgroundColor: "#f6faf7", color: "#181d1b", fontFamily: "JetBrains Mono, monospace" }}
               />
             </div>
             <button
@@ -750,7 +853,488 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
             </button>
           </div>
           {filtered.length > 0 && (
-            <p className="text-xs mt-3" style={{ fontFamily: "var(--font-jetbrains, monospace)", color: "#707974" }}>
+            <p className="text-xs mt-3" style={{ fontFamily: "JetBrains Mono, monospace", color: "#707974" }}>
+              Showing {Math.min(displayCount, filtered.length)} of {filtered.length} record{filtered.length !== 1 ? "s" : ""}
+            </p>
+          )}
+        </div>
+
+        {/* Attendance history */}
+        <div className="rounded-xl border overflow-hidden" style={{ backgroundColor: "#ffffff", borderColor: "rgba(191,201,195,0.3)" }}>
+          <div className="px-6 py-4 border-b" style={{ borderColor: "rgba(191,201,195,0.2)", backgroundColor: "#f6faf7" }}>
+            <h3 className="font-bold" style={{ color: "#003527", fontFamily: "Hanken Grotesk, sans-serif" }}>Attendance History</h3>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left">
+              <thead>
+                <tr style={{ backgroundColor: "rgba(241,245,242,0.6)", borderBottom: "1px solid rgba(191,201,195,0.2)" }}>
+                  {["Date", "Sign In", "Clock Out", "Hours", "Status"].map((h) => (
+                    <th key={h} className="px-5 py-3" style={{ fontFamily: "JetBrains Mono, monospace", fontSize: "11px", letterSpacing: "0.06em", color: "#707974", textTransform: "uppercase" }}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {displayedLogs.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="text-center py-12" style={{ color: "#707974", fontFamily: "JetBrains Mono, monospace", fontSize: "13px" }}>
+                      No records found for this period.
+                    </td>
+                  </tr>
+                ) : (
+                  displayedLogs.map((row) => (
+                    <tr key={row._id as string} className="border-b transition-colors" style={{ borderColor: "rgba(191,201,195,0.15)" }}
+                      onMouseEnter={(e) => { (e.currentTarget as HTMLTableRowElement).style.backgroundColor = "rgba(241,245,242,0.5)"; }}
+                      onMouseLeave={(e) => { (e.currentTarget as HTMLTableRowElement).style.backgroundColor = "transparent"; }}
+                    >
+                      <td className="px-5 py-4 text-sm" style={{ color: "#181d1b" }}>{row.entryDate}</td>
+                      <td className="px-5 py-4 text-sm font-mono" style={{ color: "#404944" }}>{row.entryTime}</td>
+                      <td className="px-5 py-4 text-sm font-mono" style={{ color: "#707974" }}>{row.clockOutStr}</td>
+                      <td className="px-5 py-4 text-sm font-mono" style={{ color: "#707974" }}>{row.hoursWorked}</td>
+                      <td className="px-5 py-4">
+                        <span className="text-xs px-2.5 py-0.5 rounded-full font-mono" style={
+                          row.late ? { backgroundColor: "#ffdbd0", color: "#832600" } : { backgroundColor: "#b0f0d6", color: "#0b513d" }
+                        }>
+                          {row.late ? "Late" : "On Time"}
+                        </span>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+          {hasMore && (
+            <div className="px-6 py-4 border-t flex items-center justify-between" style={{ borderColor: "rgba(191,201,195,0.2)", backgroundColor: "rgba(241,245,242,0.4)" }}>
+              <span className="text-xs" style={{ fontFamily: "JetBrains Mono, monospace", color: "#707974" }}>
+                {filtered.length - displayCount} more records
+              </span>
+              <button onClick={() => setDisplayCount((c) => c + ITEMS_PER_PAGE)} className="flex items-center gap-1.5 text-xs font-bold" style={{ color: "#003527" }}>
+                <span className="material-symbols-outlined text-[16px]">expand_more</span>
+                Show more
+              </button>
+            </div>
+          )}
+        </div>
+
+        <LeaveSection
+          staffUserId={id as Id<"users">}
+          isAdmin={isAdmin}
+          isOwnDashboard={true}
+          autoOpen={triggerLeaveOpen}
+          onAutoOpenHandled={() => setTriggerLeaveOpen(false)}
+        />
+      </div>
+    );
+
+    return (
+      <div className="min-h-screen pb-20" style={{ backgroundColor: "#f6faf7", fontFamily: "Hanken Grotesk, sans-serif" }}>
+        {/* Sticky top navigation */}
+        <header className="sticky top-0 z-50" style={{ backgroundColor: "#f6faf7", boxShadow: "0 1px 8px rgba(6,78,59,0.06)" }}>
+          <div className="flex items-center justify-between h-16 px-6 max-w-lg mx-auto">
+            <h1 className="text-2xl font-bold" style={{ color: "#003527", fontFamily: "Hanken Grotesk, sans-serif" }}>Logasiko</h1>
+            <div className="flex items-center gap-3">
+              {/* Offline badge */}
+              {!isOnline && (
+                <span className="flex items-center gap-1 text-xs px-2 py-1 rounded-full font-bold" style={{ fontFamily: "JetBrains Mono, monospace", backgroundColor: "#ffdbd0", color: "#832600" }}>
+                  <span className="material-symbols-outlined text-[12px]">wifi_off</span>
+                  Offline{offlineSyncActive && offlineQueue.length > 0 ? ` · ${offlineQueue.length} queued` : ""}
+                </span>
+              )}
+              {/* Online + queue badge */}
+              {isOnline && offlineQueue.length > 0 && (
+                <span className="flex items-center gap-1 text-xs px-2 py-1 rounded-full font-bold" style={{ fontFamily: "JetBrains Mono, monospace", backgroundColor: "#bbf37c", color: "#1c3400" }}>
+                  <span className="material-symbols-outlined text-[12px]">sync</span>
+                  Syncing…
+                </span>
+              )}
+              <button style={{ color: "#404944" }}>
+                <span className="material-symbols-outlined">notifications</span>
+              </button>
+              <div className="w-8 h-8 rounded-full overflow-hidden border" style={{ borderColor: "#bfc9c3" }}>
+                {clerkUser?.imageUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={clerkUser.imageUrl} alt="profile" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-sm font-bold" style={{ backgroundColor: "#064e3b", color: "#b0f0d6" }}>
+                    {(staffFirstName[0] ?? "?").toUpperCase()}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </header>
+
+        {/* Tab: Home */}
+        {activeTab === "home" && (
+          <main className="px-6 pt-4 space-y-6 max-w-lg mx-auto">
+            {/* Welcome header */}
+            <section className="space-y-1">
+              <p className="text-xs uppercase tracking-widest" style={{ fontFamily: "JetBrains Mono, monospace", color: "#404944", letterSpacing: "0.08em" }}>
+                Welcome back, {staffFirstName}
+              </p>
+              <div className="flex items-baseline justify-between">
+                <h2 className="text-3xl font-semibold leading-tight" style={{ color: "#003527", letterSpacing: "-0.01em" }}>
+                  {dateStr}
+                </h2>
+                <span className="text-xs px-2 py-1 rounded font-bold" style={{ fontFamily: "JetBrains Mono, monospace", backgroundColor: "#b0f0d6", color: "#064e3b" }}>
+                  {timeStr}
+                </span>
+              </div>
+            </section>
+
+            {/* Shift status banner */}
+            <div
+              className="rounded-xl p-4 flex items-center justify-between border"
+              style={{ backgroundColor: "#e5e9e6", borderColor: "rgba(255,255,255,0.5)", boxShadow: "0 10px 30px -5px rgba(6,78,59,0.08)" }}
+            >
+              <div className="flex items-center gap-3">
+                <div
+                  className="w-2 h-2 rounded-full animate-pulse shrink-0"
+                  style={{ backgroundColor: isClockedIn && !isClockedOut ? "#064e3b" : "#ac3400" }}
+                />
+                <div>
+                  {isClockedOut ? (
+                    <>
+                      <p className="font-semibold text-base" style={{ color: "#003527" }}>Shift Complete</p>
+                      <p className="text-xs" style={{ fontFamily: "JetBrains Mono, monospace", color: "#404944" }}>
+                        {todayEntry?.hoursWorked !== undefined ? `${todayEntry.hoursWorked}h worked today` : "Clocked out for today"}
+                      </p>
+                    </>
+                  ) : isClockedIn ? (
+                    <>
+                      <p className="font-semibold text-base" style={{ color: "#003527" }}>Shift In Progress</p>
+                      <p className="text-xs" style={{ fontFamily: "JetBrains Mono, monospace", color: "#404944" }}>
+                        Clocked in at {new Date(todayEntry!.entryTime).toLocaleTimeString("en-US", { hour: "numeric", minute: "numeric", hour12: true })}
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <p className="font-semibold text-base" style={{ color: "#003527" }}>Not Yet Signed In</p>
+                      <p className="text-xs" style={{ fontFamily: "JetBrains Mono, monospace", color: "#404944" }}>Tap the button below to start</p>
+                    </>
+                  )}
+                </div>
+              </div>
+              <span className="material-symbols-outlined text-[18px]" style={{ color: "#003527" }}>arrow_forward_ios</span>
+            </div>
+
+            {/* Large circular sign-in button */}
+            <section className="flex flex-col items-center justify-center py-8 relative">
+              {/* Ambient glow */}
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none" style={{ zIndex: 0 }}>
+                <div className="w-64 h-64 rounded-full blur-3xl opacity-20" style={{ backgroundColor: "#b0f0d6" }} />
+              </div>
+
+              {isClockedOut ? (
+                <div
+                  className="relative w-48 h-48 rounded-full flex flex-col items-center justify-center gap-2 border-4"
+                  style={{ backgroundColor: "#ebefec", borderColor: "rgba(191,201,195,0.3)", zIndex: 1 }}
+                >
+                  <span className="material-symbols-outlined text-5xl" style={{ color: "#bfc9c3", fontVariationSettings: "'FILL' 1" }}>check_circle</span>
+                  <span className="text-2xl font-bold" style={{ color: "#707974" }}>Done</span>
+                </div>
+              ) : isClockedIn ? (
+                <button
+                  onClick={handleClockOut}
+                  disabled={clockingOut}
+                  className="relative w-48 h-48 rounded-full flex flex-col items-center justify-center gap-2 shadow-2xl transition-all duration-300 active:scale-95 border-4 overflow-hidden disabled:opacity-70"
+                  style={{ backgroundColor: "#fd6b36", color: "#ffffff", borderColor: "rgba(255,219,208,0.3)", zIndex: 1 }}
+                >
+                  <span className="material-symbols-outlined text-5xl" style={{ fontVariationSettings: "'FILL' 1" }}>
+                    {clockingOut ? "progress_activity" : "logout"}
+                  </span>
+                  <span className="text-2xl font-bold tracking-tight">{clockingOut ? "…" : "Clock Out"}</span>
+                </button>
+              ) : (
+                <button
+                  onClick={handleClockIn}
+                  disabled={signingIn}
+                  className="relative w-48 h-48 rounded-full flex flex-col items-center justify-center gap-2 shadow-2xl transition-all duration-300 active:scale-95 border-4 overflow-hidden disabled:opacity-70"
+                  style={{ backgroundColor: "#064e3b", color: "#80bea6", borderColor: "rgba(176,240,214,0.2)", zIndex: 1 }}
+                >
+                  <span className="material-symbols-outlined text-5xl" style={{ fontVariationSettings: "'FILL' 1" }}>
+                    {signingIn ? "progress_activity" : "fingerprint"}
+                  </span>
+                  <span className="text-2xl font-bold tracking-tight">{signingIn ? "Signing in…" : "Sign In"}</span>
+                </button>
+              )}
+
+              <p className="mt-6 text-base italic" style={{ color: "#404944" }}>
+                {isClockedOut
+                  ? "You've completed your shift"
+                  : isClockedIn
+                  ? "Tap to clock out"
+                  : !isOnline && offlineSyncActive
+                  ? "Offline — tap to queue clock-in"
+                  : !isOnline
+                  ? "Offline — sign-in unavailable"
+                  : biometricActive && !myCredential
+                  ? "Tap to set up biometric sign-in"
+                  : biometricActive
+                  ? "Tap to verify identity"
+                  : "Tap to authenticate identity"}
+              </p>
+              {/* Feature chips */}
+              {!isClockedOut && !isClockedIn && (
+                <div className="flex gap-2 mt-3 flex-wrap justify-center">
+                  {biometricActive && (
+                    <span className="flex items-center gap-1 text-xs px-2.5 py-1 rounded-full" style={{ fontFamily: "JetBrains Mono, monospace", backgroundColor: myCredential ? "#b0f0d6" : "#ebefec", color: myCredential ? "#0b513d" : "#707974" }}>
+                      <span className="material-symbols-outlined text-[13px]">fingerprint</span>
+                      {myCredential ? `Biometric: ${myCredential.deviceName ?? "On"}` : "Biometric: Setup on first tap"}
+                    </span>
+                  )}
+                  {!isOnline && offlineSyncActive && (
+                    <span className="flex items-center gap-1 text-xs px-2.5 py-1 rounded-full" style={{ fontFamily: "JetBrains Mono, monospace", backgroundColor: "#ffdbd0", color: "#832600" }}>
+                      <span className="material-symbols-outlined text-[13px]">cloud_off</span>
+                      Offline mode
+                    </span>
+                  )}
+                </div>
+              )}
+            </section>
+
+            {/* Quick actions bento */}
+            <section className="grid grid-cols-2 gap-4">
+              <button
+                onClick={() => { setActiveTab("profile"); setTriggerLeaveOpen(true); }}
+                className="flex flex-col items-start p-5 rounded-xl text-left transition-colors border active:scale-95"
+                style={{ backgroundColor: "#ffffff", borderColor: "rgba(191,201,195,0.3)", boxShadow: "0 10px 30px -5px rgba(6,78,59,0.08)", transition: "all 0.15s" }}
+                onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = "#f6faf7"; }}
+                onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = "#ffffff"; }}
+              >
+                <div className="w-10 h-10 rounded-lg flex items-center justify-center mb-4 transition-transform active:scale-90" style={{ backgroundColor: "#b0f0d6", color: "#0b513d" }}>
+                  <span className="material-symbols-outlined">event_busy</span>
+                </div>
+                <span className="font-bold text-base" style={{ color: "#003527" }}>Request Leave</span>
+                <span className="text-xs" style={{ fontFamily: "JetBrains Mono, monospace", color: "#707974" }}>Vacation/Medical</span>
+              </button>
+
+              <button
+                onClick={() => setActiveTab("profile")}
+                className="flex flex-col items-start p-5 rounded-xl text-left transition-colors border active:scale-95"
+                style={{ backgroundColor: "#ffffff", borderColor: "rgba(191,201,195,0.3)", boxShadow: "0 10px 30px -5px rgba(6,78,59,0.08)", transition: "all 0.15s" }}
+                onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = "#f6faf7"; }}
+                onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = "#ffffff"; }}
+              >
+                <div className="w-10 h-10 rounded-lg flex items-center justify-center mb-4 transition-transform active:scale-90" style={{ backgroundColor: "#ffdbd0", color: "#832600" }}>
+                  <span className="material-symbols-outlined">history</span>
+                </div>
+                <span className="font-bold text-base" style={{ color: "#003527" }}>View History</span>
+                <span className="text-xs" style={{ fontFamily: "JetBrains Mono, monospace", color: "#707974" }}>Past 30 Days</span>
+              </button>
+            </section>
+
+            {/* Recent Activity */}
+            <section className="space-y-4 pb-4">
+              <div className="flex items-center justify-between px-1">
+                <h3 className="font-bold text-lg" style={{ color: "#003527" }}>Recent Activity</h3>
+                <button
+                  onClick={() => setActiveTab("profile")}
+                  className="text-xs font-bold"
+                  style={{ fontFamily: "JetBrains Mono, monospace", color: "#ac3400" }}
+                >
+                  See All
+                </button>
+              </div>
+
+              <div className="rounded-xl overflow-hidden border" style={{ backgroundColor: "#ffffff", borderColor: "rgba(191,201,195,0.2)", boxShadow: "0 10px 30px -5px rgba(6,78,59,0.08)" }}>
+                {allLogs.length === 0 ? (
+                  <div className="py-10 text-center" style={{ color: "#707974", fontSize: "13px", fontFamily: "JetBrains Mono, monospace" }}>
+                    No activity yet
+                  </div>
+                ) : (
+                  allLogs.slice(0, 3).map((log, idx, arr) => {
+                    const isLast = idx === arr.length - 1;
+                    return (
+                      <div
+                        key={log._id as string}
+                        className={`flex items-center justify-between p-4 ${!isLast ? "border-b" : ""}`}
+                        style={{ borderColor: "rgba(229,233,230,0.5)" }}
+                      >
+                        <div className="flex items-center gap-4">
+                          <div
+                            className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
+                            style={{
+                              backgroundColor: log.late ? "rgba(255,219,208,0.3)" : "rgba(176,240,214,0.3)",
+                              color: log.late ? "#ac3400" : "#003527",
+                            }}
+                          >
+                            <span className="material-symbols-outlined">login</span>
+                          </div>
+                          <div>
+                            <p className="font-semibold text-sm" style={{ color: "#003527" }}>Clock In</p>
+                            <p className="text-xs" style={{ fontFamily: "JetBrains Mono, monospace", color: "#404944" }}>
+                              {log.entryDate}, {log.entryTime}
+                            </p>
+                          </div>
+                        </div>
+                        <span
+                          className="text-xs px-2 py-1 rounded-full border shrink-0"
+                          style={{
+                            fontFamily: "JetBrains Mono, monospace",
+                            backgroundColor: "#ebefec",
+                            color: "#181d1b",
+                            borderColor: "rgba(191,201,195,0.3)",
+                          }}
+                        >
+                          {log.late ? "Late" : "On Time"}
+                        </span>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            </section>
+          </main>
+        )}
+
+        {/* Tab: Schedule */}
+        {activeTab === "schedule" && (
+          <div className="flex flex-col items-center justify-center py-20 px-6">
+            <span className="material-symbols-outlined text-[64px] mb-4" style={{ color: "#bfc9c3", fontVariationSettings: "'FILL' 1" }}>calendar_month</span>
+            <h3 className="text-xl font-bold mb-2" style={{ color: "#003527" }}>Schedule</h3>
+            <p className="text-sm text-center max-w-xs" style={{ color: "#707974" }}>Shift scheduling is coming soon. Your employer will be able to assign shifts here.</p>
+          </div>
+        )}
+
+        {/* Tab: Messages */}
+        {activeTab === "messages" && (
+          <div className="flex flex-col items-center justify-center py-20 px-6">
+            <span className="material-symbols-outlined text-[64px] mb-4" style={{ color: "#bfc9c3", fontVariationSettings: "'FILL' 1" }}>chat</span>
+            <h3 className="text-xl font-bold mb-2" style={{ color: "#003527" }}>Messages</h3>
+            <p className="text-sm text-center max-w-xs" style={{ color: "#707974" }}>Team messaging is coming soon. Stay tuned for updates.</p>
+          </div>
+        )}
+
+        {/* Tab: Profile / History */}
+        {activeTab === "profile" && (
+          <div className="max-w-lg mx-auto">
+            {profileTabContent}
+          </div>
+        )}
+
+        {/* Fixed bottom navigation */}
+        <nav
+          className="fixed bottom-0 left-0 right-0 z-50"
+          style={{ backgroundColor: "#f6faf7", boxShadow: "0 -4px 12px rgba(0,0,0,0.05)" }}
+        >
+          <div className="flex justify-around items-center h-16 max-w-lg mx-auto">
+            {([
+              { id: "home", icon: "dashboard", label: "Home" },
+              { id: "schedule", icon: "calendar_month", label: "Schedule" },
+              { id: "messages", icon: "chat", label: "Messages" },
+              { id: "profile", icon: "person", label: "Profile" },
+            ] as { id: Tab; icon: string; label: string }[]).map((tab) => {
+              const isActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className="flex flex-col items-center justify-center gap-0.5"
+                  style={{ color: isActive ? "#003527" : "#707974", opacity: isActive ? 1 : 0.6 }}
+                >
+                  <span
+                    className="material-symbols-outlined"
+                    style={{ fontVariationSettings: isActive ? "'FILL' 1" : "'FILL' 0" }}
+                  >
+                    {tab.icon}
+                  </span>
+                  <span className="text-[10px]" style={{ fontFamily: "JetBrains Mono, monospace" }}>{tab.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </nav>
+      </div>
+    );
+  }
+
+  // ─── Admin / Staff detail view ─────────────────────────────
+
+  return (
+    <div className="min-h-screen" style={{ backgroundColor: "#f6faf7" }}>
+      {/* Admin header */}
+      <header
+        className="sticky top-0 z-40 border-b"
+        style={{ backgroundColor: "#f6faf7", borderColor: "rgba(191,201,195,0.4)", boxShadow: "0 1px 12px rgba(6,78,59,0.04)" }}
+      >
+        <div className="flex items-center justify-between h-16 px-4 md:px-6">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => router.push("/dashboardEmployer")}
+              className="flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-lg border transition-all"
+              style={{ color: "#003527", borderColor: "rgba(191,201,195,0.5)", backgroundColor: "transparent" }}
+              onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = "#ebefec"; }}
+              onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = "transparent"; }}
+            >
+              <span className="material-symbols-outlined text-[16px]">arrow_back</span>
+              Back
+            </button>
+            <div>
+              <h1 className="font-bold text-xl leading-none" style={{ color: "#003527", fontFamily: "Hanken Grotesk, sans-serif" }}>
+                {staffName}
+              </h1>
+              <p className="text-xs mt-0.5" style={{ fontFamily: "JetBrains Mono, monospace", color: "#707974" }}>Attendance & Profile</p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 flex-wrap justify-end">
+            {isAdmin && (
+              <button
+                onClick={() => setShowAddEntry(true)}
+                className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-bold border transition-all"
+                style={{ color: "#003527", borderColor: "rgba(191,201,195,0.5)" }}
+                onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = "#ebefec"; }}
+                onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = "transparent"; }}
+              >
+                <span className="material-symbols-outlined text-[16px]">add</span>
+                Add Entry
+              </button>
+            )}
+            <button
+              onClick={exportToCSV}
+              className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-bold transition-all"
+              style={{ backgroundColor: "#ac3400", color: "#ffffff" }}
+            >
+              <span className="material-symbols-outlined text-[16px]">file_download</span>
+              Export CSV
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <div className="p-4 md:p-6 space-y-6">
+        <ProfileCard staffData={staffData} isAdmin={isAdmin} isOwnDashboard={false} staffUserId={id as Id<"users">} />
+
+        {/* Date filter */}
+        <div className="rounded-xl border p-5" style={{ backgroundColor: "#ffffff", borderColor: "rgba(191,201,195,0.3)" }}>
+          <div className="flex flex-col sm:flex-row gap-4 items-end">
+            <div className="flex-1">
+              <p className="text-xs uppercase tracking-wider mb-1.5" style={{ fontFamily: "JetBrains Mono, monospace", color: "#707974" }}>Start Date</p>
+              <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)}
+                className="w-full rounded-lg border px-3 py-2 text-sm outline-none"
+                style={{ borderColor: "rgba(191,201,195,0.5)", backgroundColor: "#f6faf7", color: "#181d1b", fontFamily: "JetBrains Mono, monospace" }}
+              />
+            </div>
+            <div className="flex-1">
+              <p className="text-xs uppercase tracking-wider mb-1.5" style={{ fontFamily: "JetBrains Mono, monospace", color: "#707974" }}>End Date</p>
+              <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)}
+                className="w-full rounded-lg border px-3 py-2 text-sm outline-none"
+                style={{ borderColor: "rgba(191,201,195,0.5)", backgroundColor: "#f6faf7", color: "#181d1b", fontFamily: "JetBrains Mono, monospace" }}
+              />
+            </div>
+            <button
+              onClick={() => { setStartDate(""); setEndDate(""); }}
+              className="px-4 py-2 rounded-lg text-sm border transition-all"
+              style={{ color: "#707974", borderColor: "rgba(191,201,195,0.5)" }}
+              onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = "#ebefec"; }}
+              onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = "transparent"; }}
+            >
+              Clear
+            </button>
+          </div>
+          {filtered.length > 0 && (
+            <p className="text-xs mt-3" style={{ fontFamily: "JetBrains Mono, monospace", color: "#707974" }}>
               Showing {Math.min(displayCount, filtered.length)} of {filtered.length} record{filtered.length !== 1 ? "s" : ""}
             </p>
           )}
@@ -759,37 +1343,40 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
         {/* Attendance trend chart (admins only) */}
         {isAdmin && chartData.labels.length > 0 && (
           <div className="rounded-xl border p-6" style={{ backgroundColor: "#ffffff", borderColor: "rgba(191,201,195,0.3)" }}>
-            <h3 className="font-bold mb-5" style={{ color: "#003527", fontFamily: "var(--font-hanken, sans-serif)" }}>Attendance Trend</h3>
+            <h3 className="font-bold mb-5" style={{ color: "#003527", fontFamily: "Hanken Grotesk, sans-serif" }}>Attendance Trend</h3>
             <div style={{ height: "280px" }}>
               <Line data={chartData} options={chartOptions} />
             </div>
           </div>
         )}
 
-        {/* Attendance table */}
+        {/* Attendance history table */}
         <div className="rounded-xl border overflow-hidden" style={{ backgroundColor: "#ffffff", borderColor: "rgba(191,201,195,0.3)" }}>
           <div className="px-6 py-4 border-b" style={{ borderColor: "rgba(191,201,195,0.2)", backgroundColor: "#f6faf7" }}>
-            <h3 className="font-bold" style={{ color: "#003527", fontFamily: "var(--font-hanken, sans-serif)" }}>Attendance History</h3>
+            <h3 className="font-bold" style={{ color: "#003527", fontFamily: "Hanken Grotesk, sans-serif" }}>Attendance History</h3>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-left">
               <thead>
                 <tr style={{ backgroundColor: "rgba(241,245,242,0.6)", borderBottom: "1px solid rgba(191,201,195,0.2)" }}>
-                  {["Date", "Sign In", "Clock Out", "Hours", "Status", ...(isAdmin ? [""] : [])].map((h) => (
-                    <th key={h} className="px-5 py-3" style={{ fontFamily: "var(--font-jetbrains, monospace)", fontSize: "11px", letterSpacing: "0.06em", color: "#707974", textTransform: "uppercase" }}>{h}</th>
+                  {["Date", "Sign In", "Clock Out", "Hours", "Status", ""].map((h) => (
+                    <th key={h} className="px-5 py-3" style={{ fontFamily: "JetBrains Mono, monospace", fontSize: "11px", letterSpacing: "0.06em", color: "#707974", textTransform: "uppercase" }}>{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 {displayedLogs.length === 0 ? (
                   <tr>
-                    <td colSpan={isAdmin ? 6 : 5} className="text-center py-12" style={{ color: "#707974", fontFamily: "var(--font-jetbrains, monospace)", fontSize: "13px" }}>
+                    <td colSpan={6} className="text-center py-12" style={{ color: "#707974", fontFamily: "JetBrains Mono, monospace", fontSize: "13px" }}>
                       No attendance records found for this period.
                     </td>
                   </tr>
                 ) : (
                   displayedLogs.map((row) => (
-                    <tr key={row._id as string} className="border-b transition-colors" style={{ borderColor: "rgba(191,201,195,0.15)" }}
+                    <tr
+                      key={row._id as string}
+                      className="border-b transition-colors"
+                      style={{ borderColor: "rgba(191,201,195,0.15)" }}
                       onMouseEnter={(e) => { (e.currentTarget as HTMLTableRowElement).style.backgroundColor = "rgba(241,245,242,0.5)"; }}
                       onMouseLeave={(e) => { (e.currentTarget as HTMLTableRowElement).style.backgroundColor = "transparent"; }}
                     >
@@ -812,28 +1399,27 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
                       <td className="px-5 py-4 text-sm font-mono" style={{ color: "#707974" }}>{row.clockOutStr}</td>
                       <td className="px-5 py-4 text-sm font-mono" style={{ color: "#707974" }}>{row.hoursWorked}</td>
                       <td className="px-5 py-4">
-                        <span className="text-xs px-2.5 py-0.5 rounded-full font-mono" style={
-                          row.late ? { backgroundColor: "#ffdbd0", color: "#832600" } : { backgroundColor: "#b0f0d6", color: "#0b513d" }
-                        }>
+                        <span
+                          className="text-xs px-2.5 py-0.5 rounded-full font-mono"
+                          style={row.late ? { backgroundColor: "#ffdbd0", color: "#832600" } : { backgroundColor: "#b0f0d6", color: "#0b513d" }}
+                        >
                           {row.late ? "Late" : "On Time"}
                         </span>
                       </td>
-                      {isAdmin && (
-                        <td className="px-5 py-4 text-right">
-                          <button
-                            onClick={() => handleDeleteLog(row._logId as string)}
-                            disabled={deletingLog === (row._logId as string)}
-                            className="p-1 rounded transition-all disabled:opacity-50"
-                            style={{ color: "#707974" }}
-                            onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.color = "#ba1a1a"; }}
-                            onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.color = "#707974"; }}
-                          >
-                            <span className="material-symbols-outlined text-[16px]">
-                              {deletingLog === (row._logId as string) ? "progress_activity" : "delete"}
-                            </span>
-                          </button>
-                        </td>
-                      )}
+                      <td className="px-5 py-4 text-right">
+                        <button
+                          onClick={() => handleDeleteLog(row._logId as string)}
+                          disabled={deletingLog === (row._logId as string)}
+                          className="p-1 rounded transition-all disabled:opacity-50"
+                          style={{ color: "#707974" }}
+                          onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.color = "#ba1a1a"; }}
+                          onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.color = "#707974"; }}
+                        >
+                          <span className="material-symbols-outlined text-[16px]">
+                            {deletingLog === (row._logId as string) ? "progress_activity" : "delete"}
+                          </span>
+                        </button>
+                      </td>
                     </tr>
                   ))
                 )}
@@ -843,14 +1429,10 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
 
           {hasMore && (
             <div className="px-6 py-4 border-t flex items-center justify-between" style={{ borderColor: "rgba(191,201,195,0.2)", backgroundColor: "rgba(241,245,242,0.4)" }}>
-              <span className="text-xs" style={{ fontFamily: "var(--font-jetbrains, monospace)", color: "#707974" }}>
+              <span className="text-xs" style={{ fontFamily: "JetBrains Mono, monospace", color: "#707974" }}>
                 {filtered.length - displayCount} more records
               </span>
-              <button
-                onClick={() => setDisplayCount((c) => c + ITEMS_PER_PAGE)}
-                className="flex items-center gap-1.5 text-xs font-bold"
-                style={{ color: "#003527" }}
-              >
+              <button onClick={() => setDisplayCount((c) => c + ITEMS_PER_PAGE)} className="flex items-center gap-1.5 text-xs font-bold" style={{ color: "#003527" }}>
                 <span className="material-symbols-outlined text-[16px]">expand_more</span>
                 Show more
               </button>
@@ -858,8 +1440,7 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
           )}
         </div>
 
-        {/* Leave section */}
-        <LeaveSection staffUserId={id as Id<"users">} isAdmin={isAdmin} isOwnDashboard={isOwnDashboard} />
+        <LeaveSection staffUserId={id as Id<"users">} isAdmin={isAdmin} isOwnDashboard={false} />
       </div>
 
       {/* Admin: Add Entry Modal */}
@@ -868,7 +1449,12 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
         onClose={() => setShowAddEntry(false)}
         title="Add Attendance Entry"
         size="sm"
-        footer={<div className="flex justify-end gap-3"><Button color="gray" variant="soft" onClick={() => setShowAddEntry(false)}>Cancel</Button><Button loading={addingEntry} onClick={handleAddEntry}>Add Entry</Button></div>}
+        footer={
+          <div className="flex justify-end gap-3">
+            <Button color="gray" variant="soft" onClick={() => setShowAddEntry(false)}>Cancel</Button>
+            <Button loading={addingEntry} onClick={handleAddEntry}>Add Entry</Button>
+          </div>
+        }
       >
         <div className="space-y-4 p-1">
           <p className="text-sm" style={{ color: "#707974" }}>Manually record a clock-in for {staffName}.</p>
