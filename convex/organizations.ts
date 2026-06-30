@@ -277,7 +277,8 @@ export const setOrgMemberRole = mutation({
   },
   returns: v.null(),
   handler: async (ctx, args) => {
-    await requireSuperAdmin(ctx);
+    // Super admins can manage any org; org admins can manage their own org
+    await requireOrgAdmin(ctx, args.organizationId);
     const now = Date.now();
 
     // Update staffProfile

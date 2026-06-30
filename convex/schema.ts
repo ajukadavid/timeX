@@ -82,10 +82,12 @@ export default defineSchema({
   attendanceLogs: defineTable({
     staffUserId: v.id("users"),
     employerId: v.id("users"), // legacy
-    organizationId: v.optional(v.id("organizations")), // NEW
+    organizationId: v.optional(v.id("organizations")),
     staffProfileId: v.id("staffProfiles"),
     entryTime: v.number(),
-    entryDate: v.string(), // YYYY-MM-DD
+    entryDate: v.string(), // YYYY-MM-DD in org timezone
+    clockOutTime: v.optional(v.number()), // NEW
+    hoursWorked: v.optional(v.number()), // NEW: decimal hours
     late: v.boolean(),
     source: v.optional(
       v.union(v.literal("web"), v.literal("mobile"), v.literal("import"))
@@ -98,6 +100,25 @@ export default defineSchema({
     .index("by_staff_date", ["staffUserId", "entryDate"])
     .index("by_employer_date", ["employerId", "entryDate"])
     .index("by_org_date", ["organizationId", "entryDate"]),
+
+  leaveRequests: defineTable({
+    staffUserId: v.id("users"),
+    organizationId: v.optional(v.id("organizations")),
+    employerId: v.optional(v.id("users")), // legacy fallback
+    type: v.union(v.literal("annual"), v.literal("sick"), v.literal("other")),
+    startDate: v.string(), // YYYY-MM-DD
+    endDate: v.string(),   // YYYY-MM-DD
+    reason: v.optional(v.string()),
+    status: v.union(v.literal("pending"), v.literal("approved"), v.literal("rejected")),
+    reviewedBy: v.optional(v.id("users")),
+    reviewedAt: v.optional(v.number()),
+    reviewNote: v.optional(v.string()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_staff", ["staffUserId"])
+    .index("by_organization", ["organizationId"])
+    .index("by_org_status", ["organizationId", "status"]),
 
   employerSettings: defineTable({
     employerId: v.id("users"), // legacy

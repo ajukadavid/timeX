@@ -12,6 +12,7 @@ import type * as attendance from "../attendance.js";
 import type * as departments from "../departments.js";
 import type * as http from "../http.js";
 import type * as invites from "../invites.js";
+import type * as leave from "../leave.js";
 import type * as lib_attendanceHelpers from "../lib/attendanceHelpers.js";
 import type * as lib_auth from "../lib/auth.js";
 import type * as migrations from "../migrations.js";
@@ -33,6 +34,7 @@ declare const fullApi: ApiFromModules<{
   departments: typeof departments;
   http: typeof http;
   invites: typeof invites;
+  leave: typeof leave;
   "lib/attendanceHelpers": typeof lib_attendanceHelpers;
   "lib/auth": typeof lib_auth;
   migrations: typeof migrations;

@@ -17,9 +17,9 @@ import { toast } from "@/lib/toast";
 const columns = [
   { key: "firstName", label: "First Name", id: "firstName" },
   { key: "lastName", label: "Last Name", id: "lastName" },
-  { key: "role", label: "Staff Role", id: "role" },
+  { key: "inviteStatus", label: "Status", id: "inviteStatus" },
   { key: "email", label: "Email", id: "email" },
-  { key: "lastEntryTime", label: "Last login time", id: "lastEntryTime" },
+  { key: "lastEntryTime", label: "Last Sign In", id: "lastEntryTime" },
   { key: "actions", label: "Actions", id: "actions" },
 ];
 
@@ -93,10 +93,17 @@ function DashboardEmployerInner() {
   );
   const dailySummary = dailySummaryOrg ?? dailySummaryLegacy ?? null;
 
+  // ── Queries ──
+  const pendingLeaveCount = useQuery(
+    api.leave.getPendingLeaveCount,
+    isAuthenticated && organizationId ? { organizationId } : "skip"
+  );
+
   // ── Mutations ──
   const createStaffOrg = useMutation(api.staff.createStaffInOrg);
   const createStaffLegacy = useMutation(api.staff.createStaffFromDashboard);
   const deleteStaffMutation = useMutation(api.staff.removeStaffByUserId);
+  const setOrgMemberRole = useMutation(api.organizations.setOrgMemberRole);
   const inviteByEmail = useAction(api.invites.inviteStaffByEmail);
   const invitePending = useAction(api.invites.invitePendingStaff);
 
@@ -134,6 +141,7 @@ function DashboardEmployerInner() {
             hour12: true,
           })
         : "N/A",
+      inviteStatus: x.needsInvite ? "⏳ Pending Invite" : "Active",
     };
   });
 
@@ -142,12 +150,51 @@ function DashboardEmployerInner() {
     id: d._id,
   }));
 
+  const handleInviteStaff = async (email: string) => {
+    setLoading(true);
+    try {
+      const result = await inviteByEmail({ email, organizationId: organizationId ?? undefined });
+      if (result.success) {
+        toast(`Invitation sent to ${email}`, "success");
+      } else {
+        toast(result.message, "error");
+      }
+    } catch (e) {
+      toast(e instanceof Error ? e.message : "Failed to send invite", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleToggleRole = async (userId: string, orgRole: string | undefined) => {
+    if (!organizationId) return;
+    const newRole = orgRole === "admin" ? "staff" : "admin";
+    try {
+      await setOrgMemberRole({
+        organizationId,
+        userId: userId as Id<"users">,
+        orgRole: newRole,
+      });
+      toast(`Role updated to ${newRole}`, "success");
+    } catch (e) {
+      toast(e instanceof Error ? e.message : "Failed to update role", "error");
+    }
+  };
+
   const itemsGenerator = (row: Record<string, unknown>) => [
     [
       {
         label: "View Employee",
         icon: "i-heroicons-eye-20-solid",
         click: () => router.push(`/dashboardStaff/${row._id}`),
+      },
+      ...(row.needsInvite
+        ? [{ label: "Send Invite", icon: "i-heroicons-envelope-20-solid", click: () => handleInviteStaff(row.email as string) }]
+        : []),
+      {
+        label: row.orgRole === "admin" ? "Demote to Staff" : "Promote to Admin",
+        icon: "i-heroicons-arrow-up-circle-20-solid",
+        click: () => handleToggleRole(row._id as string, row.orgRole as string | undefined),
       },
     ],
     [
@@ -316,6 +363,16 @@ function DashboardEmployerInner() {
           </span>
         </div>
         <div className="flex space-x-2">
+          {pendingLeaveCount !== undefined && pendingLeaveCount > 0 && (
+            <button
+              type="button"
+              onClick={() => router.push("/leave-requests")}
+              className="border-orange-300 cursor-pointer border py-3 px-5 space-x-2 rounded-md flex justify-center items-center gap-2 hover:bg-orange-50 transition-colors text-orange-700"
+            >
+              <span className="inline-flex items-center justify-center w-5 h-5 bg-orange-100 rounded-full text-xs font-bold">{pendingLeaveCount}</span>
+              <span>Leave Requests</span>
+            </button>
+          )}
           <button
             type="button"
             onClick={() => setShowInviteModal(true)}

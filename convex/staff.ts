@@ -16,6 +16,8 @@ const staffListItemValidator = v.object({
   firstName: v.string(),
   lastName: v.string(),
   role: v.union(v.literal("admin"), v.literal("manager"), v.literal("staff")),
+  orgRole: v.optional(v.union(v.literal("admin"), v.literal("staff"))),
+  organizationId: v.optional(v.id("organizations")),
   department: v.union(v.string(), v.null()),
   jobTitle: v.string(),
   employmentStatus: v.union(
@@ -60,6 +62,8 @@ export const listStaffByOrg = query({
           firstName: user?.firstName ?? "",
           lastName: user?.lastName ?? "",
           role: user?.role ?? ROLE.STAFF,
+          orgRole: profile.orgRole,
+          organizationId: profile.organizationId,
           department: department?.name ?? null,
           jobTitle: profile.jobTitle,
           employmentStatus: profile.employmentStatus,
@@ -99,6 +103,8 @@ export const listStaffByEmployer = query({
           firstName: user?.firstName ?? "",
           lastName: user?.lastName ?? "",
           role: user?.role ?? ROLE.STAFF,
+          orgRole: profile.orgRole,
+          organizationId: profile.organizationId,
           department: department?.name ?? null,
           jobTitle: profile.jobTitle,
           employmentStatus: profile.employmentStatus,
@@ -394,10 +400,12 @@ const staffDetailValidator = v.union(
         _creationTime: v.number(),
         staffUserId: v.id("users"),
         employerId: v.id("users"),
-        organizationId: v.optional(v.id("organizations")), // NEW
+        organizationId: v.optional(v.id("organizations")),
         staffProfileId: v.id("staffProfiles"),
         entryTime: v.number(),
         entryDate: v.string(),
+        clockOutTime: v.optional(v.number()),
+        hoursWorked: v.optional(v.number()),
         late: v.boolean(),
         source: v.optional(
           v.union(v.literal("web"), v.literal("mobile"), v.literal("import"))
