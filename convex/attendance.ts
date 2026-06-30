@@ -3,6 +3,7 @@ import { mutation, query } from "./_generated/server";
 import {
   requireCurrentUser,
   requireEmployerAdmin,
+  requireOrgAdmin,
   requireStaffAccess,
 } from "./lib/auth";
 import { isLateEntry } from "./lib/attendanceHelpers";
@@ -51,10 +52,22 @@ export const clockIn = mutation({
       throw new Error("You have already signed in today");
     }
 
-    const settings = await ctx.db
-      .query("employerSettings")
-      .withIndex("by_employer", (q) => q.eq("employerId", profile.employerId))
-      .unique();
+    // Fetch settings — prefer org-level, fall back to legacy employerId
+    let settings = null;
+    if (profile.organizationId) {
+      settings = await ctx.db
+        .query("employerSettings")
+        .withIndex("by_organization", (q) =>
+          q.eq("organizationId", profile.organizationId!)
+        )
+        .unique();
+    }
+    if (!settings) {
+      settings = await ctx.db
+        .query("employerSettings")
+        .withIndex("by_employer", (q) => q.eq("employerId", profile.employerId))
+        .unique();
+    }
 
     const now = Date.now();
     const defaultSignInTime = settings?.defaultSignInTime ?? "09:00";
@@ -62,6 +75,7 @@ export const clockIn = mutation({
 
     return await ctx.db.insert("attendanceLogs", {
       employerId: profile.employerId,
+      organizationId: profile.organizationId,
       staffUserId: user._id,
       staffProfileId: profile._id,
       entryTime: now,
@@ -165,6 +179,43 @@ export const getEmployerDailySummary = query({
       .query("attendanceLogs")
       .withIndex("by_employer_date", (q) =>
         q.eq("employerId", args.employerId).eq("entryDate", args.date)
+      )
+      .collect();
+
+    const uniqueStaff = new Set(logs.map((log) => log.staffUserId));
+    const late = logs.filter((log) => log.late).length;
+    const onTime = logs.length - late;
+
+    return {
+      date: args.date,
+      totalEntries: logs.length,
+      uniqueStaffSignedIn: uniqueStaff.size,
+      onTime,
+      late,
+    };
+  },
+});
+
+/** Daily summary using the new org model. */
+export const getOrgDailySummary = query({
+  args: {
+    organizationId: v.id("organizations"),
+    date: v.string(),
+  },
+  returns: v.object({
+    date: v.string(),
+    totalEntries: v.number(),
+    uniqueStaffSignedIn: v.number(),
+    onTime: v.number(),
+    late: v.number(),
+  }),
+  handler: async (ctx, args) => {
+    await requireOrgAdmin(ctx, args.organizationId);
+
+    const logs = await ctx.db
+      .query("attendanceLogs")
+      .withIndex("by_org_date", (q) =>
+        q.eq("organizationId", args.organizationId).eq("entryDate", args.date)
       )
       .collect();
 

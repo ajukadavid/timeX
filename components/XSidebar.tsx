@@ -22,10 +22,16 @@ export function XSidebar() {
   const { isAuthenticated } = useConvexAuth();
   const me = useQuery(api.users.getCurrentUser, isAuthenticated ? {} : "skip");
 
+  const isSuperAdmin = me?.platformRole === "superAdmin";
   const isAdmin = me?.role === "admin";
   const staffDashboardPath = me ? `/dashboardStaff/${me._id}` : "/dashboardStaff";
 
-  const links: LinkDef[] = isAdmin
+  const links: LinkDef[] = isSuperAdmin
+    ? [
+        { label: "Platform Dashboard", icon: "squares", to: "/superAdmin" },
+        { label: "Log out", icon: "logout", to: "/login", isLogout: true },
+      ]
+    : isAdmin
     ? [
         { label: "Dashboard", icon: "squares", to: "/dashboardEmployer" },
         { label: "User Management", icon: "user-plus", to: "/user-management" },

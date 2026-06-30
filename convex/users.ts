@@ -24,6 +24,7 @@ const userDocValidator = v.object({
   organizationName: v.optional(v.string()),
   isActive: v.boolean(),
   lastLoginAt: v.optional(v.number()),
+  platformRole: v.optional(v.literal("superAdmin")),
   createdAt: v.number(),
   updatedAt: v.number(),
 });
@@ -46,6 +47,23 @@ export const getPostLoginPath = query({
     const user = await resolveCurrentUser(ctx);
     if (!user) return null;
 
+    // 1. Platform super admin → dedicated dashboard
+    if (user.platformRole === "superAdmin") {
+      return "/superAdmin";
+    }
+
+    // 2. Look for an org admin profile (new model)
+    const adminProfile = await ctx.db
+      .query("staffProfiles")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .filter((q) => q.eq(q.field("orgRole"), "admin"))
+      .first();
+
+    if (adminProfile?.organizationId) {
+      return `/dashboardEmployer?org=${adminProfile.organizationId}`;
+    }
+
+    // 3. Legacy role check
     if (user.role === ROLE.ADMIN) {
       return "/dashboardEmployer";
     }
