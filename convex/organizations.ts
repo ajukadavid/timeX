@@ -2,6 +2,7 @@ import { v } from "convex/values";
 import { internalMutation, internalQuery, mutation, query } from "./_generated/server";
 import { requireCurrentUser, requireOrgAdmin, requireSuperAdmin, resolveCurrentUser } from "./lib/auth";
 import { ROLE } from "./roles";
+import { logAction } from "./audit";
 
 // ─── Shared validators ─────────────────────────────────────────
 
@@ -277,10 +278,9 @@ export const setOrgMemberRole = mutation({
   },
   returns: v.null(),
   handler: async (ctx, args) => {
-    await requireSuperAdmin(ctx);
+    const me = await requireOrgAdmin(ctx, args.organizationId);
     const now = Date.now();
 
-    // Update staffProfile
     const profile = await ctx.db
       .query("staffProfiles")
       .withIndex("by_org_and_user", (q) =>
@@ -289,7 +289,6 @@ export const setOrgMemberRole = mutation({
       .unique();
 
     if (!profile) {
-      // Create the profile if it doesn't exist (edge case)
       const adminProfile = await ctx.db
         .query("staffProfiles")
         .withIndex("by_organization", (q) =>
@@ -315,10 +314,22 @@ export const setOrgMemberRole = mutation({
       });
     }
 
-    // Also update the users.role field for backward compat
     await ctx.db.patch(args.userId, {
       role: args.orgRole === "admin" ? ROLE.ADMIN : ROLE.STAFF,
       updatedAt: now,
+    });
+
+    const targetUser = await ctx.db.get(args.userId);
+    await logAction(ctx, {
+      organizationId: args.organizationId,
+      adminId: me._id,
+      adminName: `${me.firstName ?? ""} ${me.lastName ?? ""}`.trim() || me.email,
+      action: "role_change",
+      targetUserId: args.userId,
+      targetName: targetUser
+        ? `${targetUser.firstName ?? ""} ${targetUser.lastName ?? ""}`.trim() || targetUser.email
+        : undefined,
+      details: `Role changed to ${args.orgRole}`,
     });
 
     return null;
@@ -401,5 +412,44 @@ export const listAllInternal = internalQuery({
   returns: v.array(orgValidator),
   handler: async (ctx) => {
     return await ctx.db.query("organizations").collect();
+  },
+});
+
+/** Internal: list all active orgs — used by the daily digest email cron. */
+export const listAllForDigest = internalQuery({
+  args: {},
+  returns: v.array(orgValidator),
+  handler: async (ctx) => {
+    return await ctx.db
+      .query("organizations")
+      .filter((q) => q.eq(q.field("isActive"), true))
+      .collect();
+  },
+});
+
+/** Internal: get single org by ID — used by email actions. */
+export const getByIdInternal = internalQuery({
+  args: { organizationId: v.id("organizations") },
+  returns: v.union(orgValidator, v.null()),
+  handler: async (ctx, args) => {
+    return await ctx.db.get(args.organizationId);
+  },
+});
+
+/** Internal: get the email of the first admin in an org — used by email alerts. */
+export const getOrgAdminEmailInternal = internalQuery({
+  args: { organizationId: v.id("organizations") },
+  returns: v.union(v.string(), v.null()),
+  handler: async (ctx, args) => {
+    const adminProfile = await ctx.db
+      .query("staffProfiles")
+      .withIndex("by_organization", (q) =>
+        q.eq("organizationId", args.organizationId)
+      )
+      .filter((q) => q.eq(q.field("orgRole"), "admin"))
+      .first();
+    if (!adminProfile) return null;
+    const adminUser = await ctx.db.get(adminProfile.userId);
+    return adminUser?.email ?? null;
   },
 });

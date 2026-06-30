@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { mutation, query } from "./_generated/server";
+import { internalQuery, mutation, query } from "./_generated/server";
 import { requireEmployerAdmin, requireOrgAdmin } from "./lib/auth";
 
 const settingsValidator = v.object({
@@ -8,6 +8,9 @@ const settingsValidator = v.object({
   employerId: v.id("users"),
   organizationId: v.optional(v.id("organizations")),
   defaultSignInTime: v.optional(v.string()),
+  dailyDigestEnabled: v.optional(v.boolean()),
+  lateAlertEnabled: v.optional(v.boolean()),
+  notificationEmail: v.optional(v.string()),
   createdAt: v.number(),
   updatedAt: v.number(),
 });
@@ -92,6 +95,71 @@ export const getEmployerSettings = query({
     return await ctx.db
       .query("employerSettings")
       .withIndex("by_employer", (q) => q.eq("employerId", args.employerId))
+      .unique();
+  },
+});
+
+/** Update email notification preferences for an org. */
+export const updateOrgNotificationSettings = mutation({
+  args: {
+    organizationId: v.id("organizations"),
+    dailyDigestEnabled: v.optional(v.boolean()),
+    lateAlertEnabled: v.optional(v.boolean()),
+    notificationEmail: v.optional(v.string()),
+  },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    await requireOrgAdmin(ctx, args.organizationId);
+    const now = Date.now();
+
+    const existing = await ctx.db
+      .query("employerSettings")
+      .withIndex("by_organization", (q) =>
+        q.eq("organizationId", args.organizationId)
+      )
+      .unique();
+
+    const updates: Record<string, unknown> = { updatedAt: now };
+    if (args.dailyDigestEnabled !== undefined) updates.dailyDigestEnabled = args.dailyDigestEnabled;
+    if (args.lateAlertEnabled !== undefined) updates.lateAlertEnabled = args.lateAlertEnabled;
+    if (args.notificationEmail !== undefined) updates.notificationEmail = args.notificationEmail;
+
+    if (existing) {
+      await ctx.db.patch(existing._id, updates);
+    } else {
+      const adminProfile = await ctx.db
+        .query("staffProfiles")
+        .withIndex("by_organization", (q) =>
+          q.eq("organizationId", args.organizationId)
+        )
+        .filter((q) => q.eq(q.field("orgRole"), "admin"))
+        .first();
+
+      await ctx.db.insert("employerSettings", {
+        employerId: adminProfile?.userId ?? ("" as never),
+        organizationId: args.organizationId,
+        createdAt: now,
+        updatedAt: now,
+        dailyDigestEnabled: args.dailyDigestEnabled,
+        lateAlertEnabled: args.lateAlertEnabled,
+        notificationEmail: args.notificationEmail,
+      });
+    }
+
+    return null;
+  },
+});
+
+/** Internal query for notification settings — used by email actions. */
+export const getOrgSettingsInternal = internalQuery({
+  args: { organizationId: v.id("organizations") },
+  returns: v.union(settingsValidator, v.null()),
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query("employerSettings")
+      .withIndex("by_organization", (q) =>
+        q.eq("organizationId", args.organizationId)
+      )
       .unique();
   },
 });

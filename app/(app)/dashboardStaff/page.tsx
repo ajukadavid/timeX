@@ -55,15 +55,21 @@ export default function DashboardStaffRedirect() {
 
   if (error) {
     return (
-      <div className="flex min-h-screen items-center justify-center p-6">
-        <p className="max-w-md text-center text-gray-600">{error}</p>
+      <div className="flex min-h-screen items-center justify-center p-6" style={{ backgroundColor: "#f6faf7" }}>
+        <div className="text-center max-w-md space-y-4">
+          <span className="material-symbols-outlined text-[48px]" style={{ color: "#ba1a1a", fontVariationSettings: "'FILL' 1" }}>error</span>
+          <p style={{ color: "#404944", fontFamily: "var(--font-hanken, sans-serif)" }}>{error}</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center">
-      <p className="text-gray-500">Loading your dashboard…</p>
+    <div className="flex min-h-screen items-center justify-center" style={{ backgroundColor: "#f6faf7" }}>
+      <div className="flex flex-col items-center gap-3">
+        <span className="material-symbols-outlined text-[48px] animate-spin" style={{ color: "#003527" }}>progress_activity</span>
+        <p style={{ fontFamily: "var(--font-jetbrains, monospace)", fontSize: "12px", color: "#707974" }}>Loading your dashboard…</p>
+      </div>
     </div>
   );
 }

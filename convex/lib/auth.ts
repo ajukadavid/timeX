@@ -113,7 +113,7 @@ export async function requireEmployerAdmin(
   return user;
 }
 
-/** Staff can read their own data; org admins and super admins can read any staff in their org. */
+/** Staff can read their own data; org admins, managers (same dept), and super admins can access. */
 export async function requireStaffAccess(
   ctx: QueryCtx | MutationCtx,
   staffUserId: Id<"users">
@@ -137,7 +137,17 @@ export async function requireStaffAccess(
           .eq("userId", user._id)
       )
       .unique();
+
     if (callerProfile?.orgRole === "admin") return user;
+
+    // Manager can access staff in the same department
+    if (
+      user.role === ROLE.MANAGER &&
+      callerProfile?.departmentId &&
+      callerProfile.departmentId === targetProfile.departmentId
+    ) {
+      return user;
+    }
   }
 
   // Legacy check

@@ -16,6 +16,8 @@ const staffListItemValidator = v.object({
   firstName: v.string(),
   lastName: v.string(),
   role: v.union(v.literal("admin"), v.literal("manager"), v.literal("staff")),
+  orgRole: v.optional(v.union(v.literal("admin"), v.literal("staff"))),
+  organizationId: v.optional(v.id("organizations")),
   department: v.union(v.string(), v.null()),
   jobTitle: v.string(),
   employmentStatus: v.union(
@@ -60,6 +62,8 @@ export const listStaffByOrg = query({
           firstName: user?.firstName ?? "",
           lastName: user?.lastName ?? "",
           role: user?.role ?? ROLE.STAFF,
+          orgRole: profile.orgRole,
+          organizationId: profile.organizationId,
           department: department?.name ?? null,
           jobTitle: profile.jobTitle,
           employmentStatus: profile.employmentStatus,
@@ -70,6 +74,66 @@ export const listStaffByOrg = query({
     );
 
     return items;
+  },
+});
+
+/** List staff for a specific department — for manager dashboards. */
+export const listStaffByDept = query({
+  args: {
+    organizationId: v.id("organizations"),
+    departmentId: v.id("departments"),
+  },
+  returns: v.array(staffListItemValidator),
+  handler: async (ctx, args) => {
+    const user = await requireCurrentUser(ctx);
+
+    // Must be org admin OR a manager of this specific department
+    const callerProfile = await ctx.db
+      .query("staffProfiles")
+      .withIndex("by_org_and_user", (q) =>
+        q.eq("organizationId", args.organizationId).eq("userId", user._id)
+      )
+      .unique();
+
+    const isOrgAdmin =
+      callerProfile?.orgRole === "admin" || user.platformRole === "superAdmin";
+    const isManager =
+      user.role === ROLE.MANAGER &&
+      callerProfile?.departmentId === args.departmentId;
+
+    if (!isOrgAdmin && !isManager) throw new Error("Unauthorized");
+
+    const allProfiles = await ctx.db
+      .query("staffProfiles")
+      .withIndex("by_department", (q) => q.eq("departmentId", args.departmentId))
+      .collect();
+
+    const profiles = allProfiles.filter(
+      (p) => p.organizationId === args.organizationId && p.orgRole !== "admin"
+    );
+
+    return await Promise.all(
+      profiles.map(async (profile) => {
+        const u = await ctx.db.get(profile.userId);
+        const department = await ctx.db.get(args.departmentId);
+        return {
+          profileId: profile._id,
+          userId: profile.userId,
+          clerkId: u?.clerkId ?? null,
+          email: u?.email ?? "",
+          firstName: u?.firstName ?? "",
+          lastName: u?.lastName ?? "",
+          role: u?.role ?? ROLE.STAFF,
+          orgRole: profile.orgRole,
+          organizationId: profile.organizationId,
+          department: department?.name ?? null,
+          jobTitle: profile.jobTitle,
+          employmentStatus: profile.employmentStatus,
+          lastEntryTime: profile.lastEntryTime ?? null,
+          needsInvite: Boolean(u?.clerkId?.startsWith("legacy:")),
+        };
+      })
+    );
   },
 });
 
@@ -99,6 +163,8 @@ export const listStaffByEmployer = query({
           firstName: user?.firstName ?? "",
           lastName: user?.lastName ?? "",
           role: user?.role ?? ROLE.STAFF,
+          orgRole: profile.orgRole,
+          organizationId: profile.organizationId,
           department: department?.name ?? null,
           jobTitle: profile.jobTitle,
           employmentStatus: profile.employmentStatus,
@@ -394,11 +460,15 @@ const staffDetailValidator = v.union(
         _creationTime: v.number(),
         staffUserId: v.id("users"),
         employerId: v.id("users"),
-        organizationId: v.optional(v.id("organizations")), // NEW
+        organizationId: v.optional(v.id("organizations")),
         staffProfileId: v.id("staffProfiles"),
         entryTime: v.number(),
         entryDate: v.string(),
+        clockOutTime: v.optional(v.number()),
+        hoursWorked: v.optional(v.number()),
         late: v.boolean(),
+        latitude: v.optional(v.number()),
+        longitude: v.optional(v.number()),
         source: v.optional(
           v.union(v.literal("web"), v.literal("mobile"), v.literal("import"))
         ),

@@ -9,6 +9,7 @@ const departmentValidator = v.object({
   description: v.optional(v.string()),
   employerId: v.id("users"),
   organizationId: v.optional(v.id("organizations")),
+  defaultSignInTime: v.optional(v.string()),
   isActive: v.boolean(),
   createdAt: v.number(),
   updatedAt: v.number(),
@@ -117,6 +118,31 @@ export const updateDepartment = mutation({
 
     await ctx.db.patch(args.departmentId, {
       name: args.name.trim(),
+      updatedAt: Date.now(),
+    });
+    return null;
+  },
+});
+
+/** Update per-department sign-in time override. */
+export const updateDepartmentSignInTime = mutation({
+  args: {
+    departmentId: v.id("departments"),
+    defaultSignInTime: v.union(v.string(), v.null()),
+  },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    const dept = await ctx.db.get(args.departmentId);
+    if (!dept) throw new Error("Department not found");
+
+    if (dept.organizationId) {
+      await requireOrgAdmin(ctx, dept.organizationId);
+    } else {
+      await requireEmployerAdmin(ctx, dept.employerId);
+    }
+
+    await ctx.db.patch(args.departmentId, {
+      defaultSignInTime: args.defaultSignInTime ?? undefined,
       updatedAt: Date.now(),
     });
     return null;
