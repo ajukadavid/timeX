@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useConvexAuth, useMutation, useQuery } from "convex/react";
 import { useParams, useRouter } from "next/navigation";
 import { api } from "@/convex/_generated/api";
@@ -101,8 +101,57 @@ export default function OrgDetailPage() {
   const dailySummary = useQuery(api.attendance.getOrgDailySummary, isAuthenticated ? { organizationId: orgId, date: today } : "skip");
 
   const setOrgMemberRole = useMutation(api.organizations.setOrgMemberRole);
+  const setOrgSubscriptionTier = useMutation(api.organizations.setOrgSubscriptionTier);
+  const setOrgFeatureEntitlements = useMutation(api.organizations.setOrgFeatureEntitlements);
   const [loadingUserId, setLoadingUserId] = useState<string | null>(null);
+  const [savingPremium, setSavingPremium] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [entitlements, setEntitlements] = useState({
+    geoFence: false,
+    biometric: false,
+    offlineSync: false,
+  });
+
+  useEffect(() => {
+    if (!org) return;
+    setEntitlements({
+      geoFence: org.featuresGeoFenceAllowed ?? false,
+      biometric: org.featuresBiometricAllowed ?? false,
+      offlineSync: org.featuresOfflineSyncAllowed ?? false,
+    });
+  }, [org]);
+
+  async function handleSetSubscriptionTier(tier: "free" | "paid") {
+    setSavingPremium(true);
+    setError(null);
+    try {
+      await setOrgSubscriptionTier({ organizationId: orgId, subscriptionTier: tier });
+      if (tier === "free") {
+        setEntitlements({ geoFence: false, biometric: false, offlineSync: false });
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to update subscription");
+    } finally {
+      setSavingPremium(false);
+    }
+  }
+
+  async function handleSaveEntitlements() {
+    setSavingPremium(true);
+    setError(null);
+    try {
+      await setOrgFeatureEntitlements({
+        organizationId: orgId,
+        featuresGeoFenceAllowed: entitlements.geoFence,
+        featuresBiometricAllowed: entitlements.biometric,
+        featuresOfflineSyncAllowed: entitlements.offlineSync,
+      });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to update entitlements");
+    } finally {
+      setSavingPremium(false);
+    }
+  }
 
   async function handleSetRole(userId: Id<"users">, newRole: "admin" | "staff") {
     setLoadingUserId(userId);
@@ -144,6 +193,8 @@ export default function OrgDetailPage() {
 
   const adminMembers = (members ?? []).filter((m) => m.orgRole === "admin");
   const staffMembers = (members ?? []).filter((m) => m.orgRole === "staff");
+  const subscriptionTier = org.subscriptionTier ?? "free";
+  const isPaid = subscriptionTier === "paid";
 
   return (
     <div className="space-y-6">
@@ -192,6 +243,85 @@ export default function OrgDetailPage() {
           {error}
         </div>
       )}
+
+      {/* Premium access (super admin) */}
+      <div className="rounded-xl border p-6" style={{ backgroundColor: "#ffffff", borderColor: "rgba(191,201,195,0.3)" }}>
+        <div className="flex items-center gap-2 mb-4">
+          <span className="material-symbols-outlined text-[22px]" style={{ color: "#ac3400" }}>workspace_premium</span>
+          <h2 className="font-bold" style={{ color: "#003527", fontFamily: "var(--font-hanken, sans-serif)" }}>Premium Access</h2>
+        </div>
+
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 p-4 rounded-lg" style={{ backgroundColor: "#f1f5f2" }}>
+          <div>
+            <p className="text-sm font-semibold" style={{ color: "#003527" }}>Subscription tier</p>
+            <p className="text-xs mt-1" style={{ color: "#707974" }}>
+              Only paid organisations can be granted premium features. When you add billing, this will sync automatically.
+            </p>
+          </div>
+          <div className="flex gap-2 shrink-0">
+            {(["free", "paid"] as const).map((tier) => (
+              <button
+                key={tier}
+                disabled={savingPremium}
+                onClick={() => handleSetSubscriptionTier(tier)}
+                className="px-4 py-2 rounded-lg text-sm font-bold capitalize transition-all disabled:opacity-50"
+                style={
+                  subscriptionTier === tier
+                    ? { backgroundColor: "#003527", color: "#ffffff" }
+                    : { backgroundColor: "#ffffff", color: "#003527", border: "1px solid rgba(191,201,195,0.5)" }
+                }
+              >
+                {tier}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <p className="text-xs uppercase tracking-wider mb-3" style={{ fontFamily: "var(--font-jetbrains, monospace)", color: "#707974" }}>
+          Feature entitlements {isPaid ? "(org admins can toggle these on)" : "(requires paid tier)"}
+        </p>
+
+        <div className={`space-y-3 ${!isPaid ? "opacity-50 pointer-events-none" : ""}`}>
+          {[
+            { key: "geoFence" as const, icon: "location_on", label: "Geo-fenced Zones", desc: "Allow org to restrict clock-ins to a GPS zone" },
+            { key: "biometric" as const, icon: "fingerprint", label: "Biometric Auth", desc: "Allow org to require Face ID / Touch ID" },
+            { key: "offlineSync" as const, icon: "cloud_off", label: "Offline Syncing", desc: "Allow org to queue clock-ins offline" },
+          ].map(({ key, icon, label, desc }) => (
+            <div key={key} className="flex items-center justify-between p-4 rounded-lg border" style={{ borderColor: "rgba(191,201,195,0.3)" }}>
+              <div className="flex items-start gap-3">
+                <span className="material-symbols-outlined text-[20px] mt-0.5" style={{ color: "#003527" }}>{icon}</span>
+                <div>
+                  <p className="text-sm font-semibold" style={{ color: "#003527" }}>{label}</p>
+                  <p className="text-xs mt-0.5" style={{ color: "#707974" }}>{desc}</p>
+                </div>
+              </div>
+              <div
+                className="w-10 h-6 rounded-full transition-colors cursor-pointer shrink-0"
+                style={{ backgroundColor: entitlements[key] ? "#003527" : "#dfe3e1" }}
+                onClick={() => setEntitlements((e) => ({ ...e, [key]: !e[key] }))}
+              >
+                <div className="w-4 h-4 bg-white rounded-full mt-1 transition-transform shadow-sm" style={{ transform: entitlements[key] ? "translateX(20px)" : "translateX(4px)" }} />
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {!isPaid && (
+          <p className="text-xs mt-3 flex items-center gap-1.5" style={{ color: "#832600" }}>
+            <span className="material-symbols-outlined text-[14px]">info</span>
+            Set this organisation to Paid before enabling premium features.
+          </p>
+        )}
+
+        <button
+          onClick={handleSaveEntitlements}
+          disabled={savingPremium || !isPaid}
+          className="mt-4 w-full sm:w-auto px-6 py-2.5 rounded-lg text-sm font-bold disabled:opacity-50"
+          style={{ backgroundColor: "#ac3400", color: "#ffffff" }}
+        >
+          {savingPremium ? "Saving…" : "Save Entitlements"}
+        </button>
+      </div>
 
       {/* Today's attendance stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

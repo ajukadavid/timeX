@@ -10,6 +10,7 @@
 
 import type * as attendance from "../attendance.js";
 import type * as audit from "../audit.js";
+import type * as biometric from "../biometric.js";
 import type * as crons from "../crons.js";
 import type * as departments from "../departments.js";
 import type * as emails from "../emails.js";
@@ -18,6 +19,7 @@ import type * as invites from "../invites.js";
 import type * as leave from "../leave.js";
 import type * as lib_attendanceHelpers from "../lib/attendanceHelpers.js";
 import type * as lib_auth from "../lib/auth.js";
+import type * as lib_orgFeatures from "../lib/orgFeatures.js";
 import type * as migrations from "../migrations.js";
 import type * as organizations from "../organizations.js";
 import type * as reports from "../reports.js";
@@ -36,6 +38,7 @@ import type {
 declare const fullApi: ApiFromModules<{
   attendance: typeof attendance;
   audit: typeof audit;
+  biometric: typeof biometric;
   crons: typeof crons;
   departments: typeof departments;
   emails: typeof emails;
@@ -44,6 +47,7 @@ declare const fullApi: ApiFromModules<{
   leave: typeof leave;
   "lib/attendanceHelpers": typeof lib_attendanceHelpers;
   "lib/auth": typeof lib_auth;
+  "lib/orgFeatures": typeof lib_orgFeatures;
   migrations: typeof migrations;
   organizations: typeof organizations;
   reports: typeof reports;

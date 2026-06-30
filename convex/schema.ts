@@ -38,6 +38,19 @@ export default defineSchema({
     timezone: v.string(), // e.g. "Africa/Lagos"
     defaultSignInTime: v.optional(v.string()), // "HH:mm"
     isActive: v.boolean(),
+    // ── Subscription (super admin; paid unlocks premium entitlements) ──
+    subscriptionTier: v.optional(v.union(v.literal("free"), v.literal("paid"))),
+    // ── Premium entitlements (super admin grants per org) ──
+    featuresGeoFenceAllowed: v.optional(v.boolean()),
+    featuresBiometricAllowed: v.optional(v.boolean()),
+    featuresOfflineSyncAllowed: v.optional(v.boolean()),
+    // ── Org admin toggles (only effective when entitled) ──
+    geoFenceEnabled: v.optional(v.boolean()),
+    geoFenceLat: v.optional(v.number()),
+    geoFenceLng: v.optional(v.number()),
+    geoFenceRadiusMeters: v.optional(v.number()), // default 100m
+    biometricEnabled: v.optional(v.boolean()),
+    offlineSyncEnabled: v.optional(v.boolean()),
     createdAt: v.number(),
     updatedAt: v.number(),
   }).index("by_active", ["isActive"]),
@@ -149,6 +162,17 @@ export default defineSchema({
   })
     .index("by_organization", ["organizationId"])
     .index("by_org_created", ["organizationId", "createdAt"]),
+
+  // ─── WebAuthn biometric credentials ──────────────────────────
+  webAuthnCredentials: defineTable({
+    userId: v.id("users"),
+    credentialId: v.string(), // base64url encoded raw credential ID
+    publicKeyBase64: v.optional(v.string()),
+    deviceName: v.optional(v.string()), // e.g. "iPhone 15"
+    createdAt: v.number(),
+  })
+    .index("by_user", ["userId"])
+    .index("by_credential", ["credentialId"]),
 
   // Raw legacy collections (MongoDB migration audit).
   employers: defineTable({

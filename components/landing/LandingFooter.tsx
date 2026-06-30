@@ -1,45 +1,120 @@
+"use client";
+
 import Link from "next/link";
-import Image from "next/image";
+
+const footerSections = [
+  {
+    title: "Product",
+    links: [
+      { label: "Dashboard", href: "/platform" },
+      { label: "Attendance", href: "/platform" },
+      { label: "Leave Management", href: "/use-cases" },
+      { label: "Payroll Integration", href: "/pricing" },
+    ],
+  },
+  {
+    title: "Company",
+    links: [
+      { label: "About Us", href: "/why-timex" },
+      { label: "Sustainability", href: "/why-timex" },
+      { label: "Careers", href: "/why-timex" },
+      { label: "Press", href: "/resources" },
+    ],
+  },
+  {
+    title: "Legal",
+    links: [
+      { label: "Privacy Policy", href: "#" },
+      { label: "Terms of Service", href: "#" },
+      { label: "Cookie Policy", href: "#" },
+    ],
+  },
+  {
+    title: "Support",
+    links: [
+      { label: "Help Center", href: "/resources" },
+      { label: "Community", href: "/resources" },
+      { label: "Status", href: "#" },
+    ],
+  },
+];
 
 export function LandingFooter() {
   return (
-    <footer className="bg-gray-900 text-white">
-      <div className="max-w-7xl mx-auto px-6 md:px-8 py-16">
-        <div className="grid md:grid-cols-4 gap-12">
-          <div className="space-y-4">
-            <div className="flex items-center space-x-3">
-              <Image src="/logo.png" alt="TimeX" width={40} height={40} className="rounded-xl" />
-              <span className="text-xl font-bold">TimeX</span>
+    <footer style={{ backgroundColor: "#f1f5f2", paddingTop: "6rem", paddingBottom: "3rem" }}>
+      <div className="max-w-screen-xl mx-auto px-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-12 mb-20">
+          {/* Brand column */}
+          <div className="col-span-2">
+            <div className="flex items-center gap-2 mb-6">
+              <span className="material-symbols-outlined text-[22px]" style={{ color: "#003527", fontVariationSettings: "'FILL' 1" }}>eco</span>
+              <span className="text-xl font-bold" style={{ color: "#003527", fontFamily: "var(--font-hanken, sans-serif)" }}>Logasiko</span>
             </div>
-            <p className="text-gray-400 leading-relaxed">
-              Empowering organizations worldwide with intelligent workforce management solutions.
+            <p className="max-w-xs mb-8 leading-relaxed" style={{ color: "#404944" }}>
+              Building the technical framework for the sustainable, human-centric workplaces of tomorrow.
             </p>
+            <div className="flex gap-3">
+              {[
+                { icon: "language", href: "#" },
+                { icon: "share", href: "#" },
+                { icon: "campaign", href: "#" },
+              ].map(({ icon, href }) => (
+                <a
+                  key={icon}
+                  href={href}
+                  className="w-10 h-10 rounded-full flex items-center justify-center transition-all"
+                  style={{ backgroundColor: "#ffffff", color: "#707974" }}
+                  onMouseEnter={(e) => {
+                    (e.currentTarget as HTMLAnchorElement).style.backgroundColor = "#003527";
+                    (e.currentTarget as HTMLAnchorElement).style.color = "#ffffff";
+                  }}
+                  onMouseLeave={(e) => {
+                    (e.currentTarget as HTMLAnchorElement).style.backgroundColor = "#ffffff";
+                    (e.currentTarget as HTMLAnchorElement).style.color = "#707974";
+                  }}
+                >
+                  <span className="material-symbols-outlined text-[18px]">{icon}</span>
+                </a>
+              ))}
+            </div>
           </div>
-          {[
-            { title: "Product", links: [{ label: "Platform", href: "/platform" }, { label: "Pricing", href: "/pricing" }, { label: "Use Cases", href: "/use-cases" }] },
-            { title: "Company", links: [{ label: "Why TimeX", href: "/why-timex" }, { label: "Resources", href: "/resources" }] },
-            { title: "Support", links: [{ label: "Help Center", href: "/resources" }, { label: "Documentation", href: "/resources" }] },
-          ].map((section) => (
-            <div key={section.title} className="space-y-4">
-              <h3 className="text-lg font-semibold">{section.title}</h3>
-              <div className="flex flex-col space-y-3">
-                {section.links.map((l) => (
-                  <Link key={l.label} href={l.href} className="text-gray-400 hover:text-white transition-colors">
-                    {l.label}
-                  </Link>
+
+          {/* Link columns */}
+          {footerSections.map((section) => (
+            <div key={section.title}>
+              <h5 className="font-bold mb-6" style={{ color: "#003527", fontFamily: "var(--font-hanken, sans-serif)" }}>
+                {section.title}
+              </h5>
+              <ul className="space-y-4">
+                {section.links.map((link) => (
+                  <li key={link.label}>
+                    <Link
+                      href={link.href}
+                      className="text-sm transition-colors"
+                      style={{ color: "#404944" }}
+                    >
+                      {link.label}
+                    </Link>
+                  </li>
                 ))}
-              </div>
+              </ul>
             </div>
           ))}
         </div>
-        <div className="border-t border-gray-800 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">
-          <p className="text-gray-400">© 2026 TimeX. All rights reserved.</p>
-          <div className="flex space-x-6 mt-4 md:mt-0">
-            {["Privacy Policy", "Terms of Service", "Cookie Policy"].map((l) => (
-              <a key={l} href="#" className="text-gray-400 hover:text-white transition-colors text-sm">
-                {l}
-              </a>
-            ))}
+
+        {/* Bottom bar */}
+        <div
+          className="pt-8 border-t flex flex-col md:flex-row justify-between items-center gap-4"
+          style={{ borderColor: "rgba(191,201,195,0.4)" }}
+        >
+          <p className="text-sm" style={{ color: "#707974" }}>
+            © 2026 Logasiko Systems Inc. All rights reserved.
+          </p>
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: "#a0d663" }} />
+            <p className="text-xs font-mono uppercase tracking-wider" style={{ color: "#707974" }}>
+              System Operational
+            </p>
           </div>
         </div>
       </div>

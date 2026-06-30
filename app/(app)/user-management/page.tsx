@@ -65,6 +65,12 @@ export default function UserManagementPage() {
   const updateTimeLegacy = useMutation(api.settings.updateDefaultSignInTime);
   const updateDeptSignInTime = useMutation(api.departments.updateDepartmentSignInTime);
   const updateNotifSettings = useMutation(api.settings.updateOrgNotificationSettings);
+  const updateGeoFence = useMutation(api.organizations.updateGeoFence);
+  const updateOrgFeatureToggles = useMutation(api.organizations.updateOrgFeatureToggles);
+  const orgFeatures = useQuery(
+    api.organizations.getOrgFeatures,
+    isAuthenticated && organizationId ? { organizationId } : "skip"
+  );
 
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showUpdateTime, setShowUpdateTime] = useState(false);
@@ -83,6 +89,17 @@ export default function UserManagementPage() {
   const [notifEmail, setNotifEmail] = useState("");
   const [savingNotif, setSavingNotif] = useState(false);
 
+  // ── Geofence state ──────────────────────────────────────────
+  const [geoEnabled, setGeoEnabled] = useState(false);
+  const [geoLat, setGeoLat] = useState("");
+  const [geoLng, setGeoLng] = useState("");
+  const [geoRadius, setGeoRadius] = useState("100");
+  const [savingGeo, setSavingGeo] = useState(false);
+  const [locatingGeo, setLocatingGeo] = useState(false);
+  const [biometricEnabled, setBiometricEnabled] = useState(false);
+  const [offlineSyncEnabled, setOfflineSyncEnabled] = useState(false);
+  const [savingFeatures, setSavingFeatures] = useState(false);
+
   useEffect(() => {
     if (orgSettings) {
       setNotifDailyDigest(orgSettings.dailyDigestEnabled ?? false);
@@ -90,6 +107,28 @@ export default function UserManagementPage() {
       setNotifEmail(orgSettings.notificationEmail ?? "");
     }
   }, [orgSettings]);
+
+  useEffect(() => {
+    if (orgFeatures) {
+      setBiometricEnabled(orgFeatures.biometric.enabled);
+      setOfflineSyncEnabled(orgFeatures.offlineSync.enabled);
+    }
+  }, [orgFeatures]);
+
+  useEffect(() => {
+    if (myAdminOrg) {
+      const org = myAdminOrg as typeof myAdminOrg & {
+        geoFenceEnabled?: boolean;
+        geoFenceLat?: number;
+        geoFenceLng?: number;
+        geoFenceRadiusMeters?: number;
+      };
+      setGeoEnabled(org.geoFenceEnabled ?? false);
+      setGeoLat(org.geoFenceLat != null ? String(org.geoFenceLat) : "");
+      setGeoLng(org.geoFenceLng != null ? String(org.geoFenceLng) : "");
+      setGeoRadius(String(org.geoFenceRadiusMeters ?? 100));
+    }
+  }, [myAdminOrg]);
 
   const currentSignInTime = orgSettings?.defaultSignInTime ?? myAdminOrg?.defaultSignInTime ?? "09:00";
 
@@ -142,6 +181,50 @@ export default function UserManagementPage() {
       toast("Department sign-in time updated!", "success"); setShowDeptTimeModal(false);
     } catch { toast("Failed to update", "error"); }
     finally { setLoading(false); }
+  };
+
+  const handleUseMyLocation = () => {
+    if (!navigator.geolocation) { toast("Geolocation not supported on this device", "error"); return; }
+    setLocatingGeo(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setGeoLat(pos.coords.latitude.toFixed(6));
+        setGeoLng(pos.coords.longitude.toFixed(6));
+        setLocatingGeo(false);
+        toast("Location captured!", "success");
+      },
+      () => { toast("Could not get location — check browser permissions", "error"); setLocatingGeo(false); },
+      { timeout: 8000 }
+    );
+  };
+
+  const handleSavePremiumFeatures = async () => {
+    if (!organizationId) return;
+    setSavingFeatures(true);
+    setSavingGeo(true);
+    try {
+      await updateOrgFeatureToggles({
+        organizationId,
+        geoFenceEnabled: geoEnabled,
+        biometricEnabled,
+        offlineSyncEnabled,
+      });
+      if (orgFeatures?.geoFence.allowed) {
+        await updateGeoFence({
+          organizationId,
+          enabled: geoEnabled,
+          lat: geoLat ? parseFloat(geoLat) : undefined,
+          lng: geoLng ? parseFloat(geoLng) : undefined,
+          radiusMeters: geoRadius ? parseInt(geoRadius, 10) : undefined,
+        });
+      }
+      toast("Premium feature settings saved!", "success");
+    } catch (e) {
+      toast(e instanceof Error ? e.message : "Failed to save settings", "error");
+    } finally {
+      setSavingFeatures(false);
+      setSavingGeo(false);
+    }
   };
 
   const handleSaveNotifSettings = async () => {
@@ -366,6 +449,113 @@ export default function UserManagementPage() {
                 </div>
               </div>
             </div>
+
+            {/* Premium features (org toggles — only if entitled by super admin) */}
+            {organizationId && orgFeatures && (
+              <div className="rounded-xl border p-6" style={{ backgroundColor: "#ffffff", borderColor: "rgba(191,201,195,0.3)" }}>
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="material-symbols-outlined text-[20px]" style={{ color: "#ac3400" }}>workspace_premium</span>
+                  <h3 className="font-bold" style={{ color: "#181d1b", fontFamily: "var(--font-hanken, sans-serif)" }}>Premium Features</h3>
+                </div>
+                <p className="text-xs mb-4" style={{ color: "#707974" }}>
+                  {orgFeatures.subscriptionTier === "paid"
+                    ? "Toggle features your organisation has been granted. Contact Logasiko to unlock more."
+                    : "Upgrade to a paid plan to unlock geofencing, biometric sign-in, and offline sync."}
+                </p>
+
+                {!orgFeatures.geoFence.allowed && !orgFeatures.biometric.allowed && !orgFeatures.offlineSync.allowed ? (
+                  <div className="flex items-start gap-3 p-4 rounded-lg" style={{ backgroundColor: "#f1f5f2" }}>
+                    <span className="material-symbols-outlined text-[20px] shrink-0" style={{ color: "#707974" }}>lock</span>
+                    <p className="text-sm" style={{ color: "#707974" }}>
+                      No premium features are enabled for your organisation yet. Ask your Logasiko administrator to upgrade your plan.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {/* Geofencing */}
+                    <div className={`rounded-lg border p-4 ${!orgFeatures.geoFence.allowed ? "opacity-50" : ""}`} style={{ borderColor: "rgba(191,201,195,0.3)" }}>
+                      <div className="flex items-center justify-between mb-1">
+                        <div className="flex items-center gap-2">
+                          <span className="material-symbols-outlined text-[18px]" style={{ color: "#003527" }}>location_on</span>
+                          <span className="font-semibold text-sm" style={{ color: "#003527" }}>Geo-fenced Zones</span>
+                        </div>
+                        <div
+                          className={`w-10 h-6 rounded-full transition-colors shrink-0 ${orgFeatures.geoFence.allowed ? "cursor-pointer" : "cursor-not-allowed"}`}
+                          style={{ backgroundColor: geoEnabled && orgFeatures.geoFence.allowed ? "#003527" : "#dfe3e1" }}
+                          onClick={() => orgFeatures.geoFence.allowed && setGeoEnabled((v) => !v)}
+                        >
+                          <div className="w-4 h-4 bg-white rounded-full mt-1 transition-transform shadow-sm" style={{ transform: geoEnabled && orgFeatures.geoFence.allowed ? "translateX(20px)" : "translateX(4px)" }} />
+                        </div>
+                      </div>
+                      <p className="text-xs mb-3" style={{ color: "#707974" }}>Restrict clock-ins to a GPS zone.</p>
+                      {orgFeatures.geoFence.allowed && geoEnabled && (
+                        <div className="space-y-2 pt-2 border-t" style={{ borderColor: "rgba(191,201,195,0.2)" }}>
+                          <button
+                            onClick={handleUseMyLocation}
+                            disabled={locatingGeo}
+                            className="w-full flex items-center justify-center gap-2 py-2 rounded-lg text-xs border disabled:opacity-60"
+                            style={{ borderColor: "rgba(191,201,195,0.5)", color: "#003527" }}
+                          >
+                            <span className="material-symbols-outlined text-[14px]">{locatingGeo ? "progress_activity" : "my_location"}</span>
+                            {locatingGeo ? "Getting location…" : "Use my current location"}
+                          </button>
+                          <div className="grid grid-cols-2 gap-2">
+                            <input type="number" step="any" value={geoLat} onChange={(e) => setGeoLat(e.target.value)} placeholder="Latitude" className="w-full rounded-lg border px-2 py-1.5 text-xs outline-none" style={{ borderColor: "rgba(191,201,195,0.5)", backgroundColor: "#f6faf7", fontFamily: "var(--font-jetbrains, monospace)" }} />
+                            <input type="number" step="any" value={geoLng} onChange={(e) => setGeoLng(e.target.value)} placeholder="Longitude" className="w-full rounded-lg border px-2 py-1.5 text-xs outline-none" style={{ borderColor: "rgba(191,201,195,0.5)", backgroundColor: "#f6faf7", fontFamily: "var(--font-jetbrains, monospace)" }} />
+                          </div>
+                          <input type="number" min="10" max="10000" value={geoRadius} onChange={(e) => setGeoRadius(e.target.value)} placeholder="Radius (m)" className="w-full rounded-lg border px-2 py-1.5 text-xs outline-none" style={{ borderColor: "rgba(191,201,195,0.5)", backgroundColor: "#f6faf7", fontFamily: "var(--font-jetbrains, monospace)" }} />
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Biometric */}
+                    <div className={`flex items-center justify-between rounded-lg border p-4 ${!orgFeatures.biometric.allowed ? "opacity-50" : ""}`} style={{ borderColor: "rgba(191,201,195,0.3)" }}>
+                      <div>
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="material-symbols-outlined text-[18px]" style={{ color: "#003527" }}>fingerprint</span>
+                          <span className="font-semibold text-sm" style={{ color: "#003527" }}>Biometric Auth</span>
+                        </div>
+                        <p className="text-xs" style={{ color: "#707974" }}>Require Face ID / Touch ID on clock-in.</p>
+                      </div>
+                      <div
+                        className={`w-10 h-6 rounded-full transition-colors shrink-0 ${orgFeatures.biometric.allowed ? "cursor-pointer" : "cursor-not-allowed"}`}
+                        style={{ backgroundColor: biometricEnabled && orgFeatures.biometric.allowed ? "#003527" : "#dfe3e1" }}
+                        onClick={() => orgFeatures.biometric.allowed && setBiometricEnabled((v) => !v)}
+                      >
+                        <div className="w-4 h-4 bg-white rounded-full mt-1 transition-transform shadow-sm" style={{ transform: biometricEnabled && orgFeatures.biometric.allowed ? "translateX(20px)" : "translateX(4px)" }} />
+                      </div>
+                    </div>
+
+                    {/* Offline sync */}
+                    <div className={`flex items-center justify-between rounded-lg border p-4 ${!orgFeatures.offlineSync.allowed ? "opacity-50" : ""}`} style={{ borderColor: "rgba(191,201,195,0.3)" }}>
+                      <div>
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="material-symbols-outlined text-[18px]" style={{ color: "#003527" }}>cloud_off</span>
+                          <span className="font-semibold text-sm" style={{ color: "#003527" }}>Offline Syncing</span>
+                        </div>
+                        <p className="text-xs" style={{ color: "#707974" }}>Queue clock-ins when offline, sync on reconnect.</p>
+                      </div>
+                      <div
+                        className={`w-10 h-6 rounded-full transition-colors shrink-0 ${orgFeatures.offlineSync.allowed ? "cursor-pointer" : "cursor-not-allowed"}`}
+                        style={{ backgroundColor: offlineSyncEnabled && orgFeatures.offlineSync.allowed ? "#003527" : "#dfe3e1" }}
+                        onClick={() => orgFeatures.offlineSync.allowed && setOfflineSyncEnabled((v) => !v)}
+                      >
+                        <div className="w-4 h-4 bg-white rounded-full mt-1 transition-transform shadow-sm" style={{ transform: offlineSyncEnabled && orgFeatures.offlineSync.allowed ? "translateX(20px)" : "translateX(4px)" }} />
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={handleSavePremiumFeatures}
+                      disabled={savingFeatures || savingGeo}
+                      className="w-full py-2.5 rounded-lg text-sm font-bold transition-all disabled:opacity-60"
+                      style={{ backgroundColor: "#003527", color: "#ffffff" }}
+                    >
+                      {savingFeatures || savingGeo ? "Saving…" : "Save Premium Features"}
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Notification settings */}
             {organizationId && (

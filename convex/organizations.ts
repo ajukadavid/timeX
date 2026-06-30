@@ -1,6 +1,13 @@
 import { v } from "convex/values";
 import { internalMutation, internalQuery, mutation, query } from "./_generated/server";
 import { requireCurrentUser, requireOrgAdmin, requireSuperAdmin, resolveCurrentUser } from "./lib/auth";
+import {
+  isPaidOrg,
+  orgFeatureFlagsValidator,
+  resolveOrgFeatureFlags,
+  revokedPremiumFeaturePatches,
+  subscriptionTierValidator,
+} from "./lib/orgFeatures";
 import { ROLE } from "./roles";
 import { logAction } from "./audit";
 
@@ -13,8 +20,52 @@ const orgValidator = v.object({
   timezone: v.string(),
   defaultSignInTime: v.optional(v.string()),
   isActive: v.boolean(),
+  subscriptionTier: v.optional(subscriptionTierValidator),
+  featuresGeoFenceAllowed: v.optional(v.boolean()),
+  featuresBiometricAllowed: v.optional(v.boolean()),
+  featuresOfflineSyncAllowed: v.optional(v.boolean()),
+  geoFenceEnabled: v.optional(v.boolean()),
+  geoFenceLat: v.optional(v.number()),
+  geoFenceLng: v.optional(v.number()),
+  geoFenceRadiusMeters: v.optional(v.number()),
+  biometricEnabled: v.optional(v.boolean()),
+  offlineSyncEnabled: v.optional(v.boolean()),
   createdAt: v.number(),
   updatedAt: v.number(),
+});
+
+/** Returns premium feature flags for the current user's organization. */
+export const getMyOrgFeatures = query({
+  args: {},
+  returns: v.union(orgFeatureFlagsValidator, v.null()),
+  handler: async (ctx) => {
+    const user = await resolveCurrentUser(ctx);
+    if (!user) return null;
+
+    const profile = await ctx.db
+      .query("staffProfiles")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .first();
+
+    if (!profile?.organizationId) return null;
+
+    const org = await ctx.db.get(profile.organizationId);
+    if (!org) return null;
+
+    return resolveOrgFeatureFlags(org);
+  },
+});
+
+/** Returns premium feature flags for an org (super admin or org admin). */
+export const getOrgFeatures = query({
+  args: { organizationId: v.id("organizations") },
+  returns: orgFeatureFlagsValidator,
+  handler: async (ctx, args) => {
+    await requireOrgAdmin(ctx, args.organizationId);
+    const org = await ctx.db.get(args.organizationId);
+    if (!org) throw new Error("Organization not found");
+    return resolveOrgFeatureFlags(org);
+  },
 });
 
 // ─── Super admin queries ───────────────────────────────────────
@@ -258,6 +309,151 @@ export const updateOrgSettings = mutation({
     if (args.defaultSignInTime !== undefined)
       updates.defaultSignInTime = args.defaultSignInTime;
     await ctx.db.patch(args.organizationId, updates);
+    return null;
+  },
+});
+
+/** Super admin: set subscription tier. Downgrading to free revokes all premium access. */
+export const setOrgSubscriptionTier = mutation({
+  args: {
+    organizationId: v.id("organizations"),
+    subscriptionTier: subscriptionTierValidator,
+  },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    await requireSuperAdmin(ctx);
+    const org = await ctx.db.get(args.organizationId);
+    if (!org) throw new Error("Organization not found");
+
+    if (args.subscriptionTier === "free") {
+      await ctx.db.patch(args.organizationId, {
+        subscriptionTier: "free",
+        ...revokedPremiumFeaturePatches(),
+      });
+    } else {
+      await ctx.db.patch(args.organizationId, {
+        subscriptionTier: "paid",
+        updatedAt: Date.now(),
+      });
+    }
+    return null;
+  },
+});
+
+/**
+ * Super admin: grant or revoke premium feature entitlements for an org.
+ * Entitlements can only be enabled when subscriptionTier is "paid".
+ */
+export const setOrgFeatureEntitlements = mutation({
+  args: {
+    organizationId: v.id("organizations"),
+    featuresGeoFenceAllowed: v.optional(v.boolean()),
+    featuresBiometricAllowed: v.optional(v.boolean()),
+    featuresOfflineSyncAllowed: v.optional(v.boolean()),
+  },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    await requireSuperAdmin(ctx);
+    const org = await ctx.db.get(args.organizationId);
+    if (!org) throw new Error("Organization not found");
+
+    const enablingAny =
+      args.featuresGeoFenceAllowed === true ||
+      args.featuresBiometricAllowed === true ||
+      args.featuresOfflineSyncAllowed === true;
+
+    if (enablingAny && !isPaidOrg(org)) {
+      throw new Error(
+        "Premium features require a paid subscription. Set the organization to Paid first."
+      );
+    }
+
+    const updates: Record<string, unknown> = { updatedAt: Date.now() };
+
+    if (args.featuresGeoFenceAllowed !== undefined) {
+      updates.featuresGeoFenceAllowed = args.featuresGeoFenceAllowed;
+      if (!args.featuresGeoFenceAllowed) updates.geoFenceEnabled = false;
+    }
+    if (args.featuresBiometricAllowed !== undefined) {
+      updates.featuresBiometricAllowed = args.featuresBiometricAllowed;
+      if (!args.featuresBiometricAllowed) updates.biometricEnabled = false;
+    }
+    if (args.featuresOfflineSyncAllowed !== undefined) {
+      updates.featuresOfflineSyncAllowed = args.featuresOfflineSyncAllowed;
+      if (!args.featuresOfflineSyncAllowed) updates.offlineSyncEnabled = false;
+    }
+
+    await ctx.db.patch(args.organizationId, updates);
+    return null;
+  },
+});
+
+/** Org admin: toggle premium features on/off (only if entitled by super admin). */
+export const updateOrgFeatureToggles = mutation({
+  args: {
+    organizationId: v.id("organizations"),
+    geoFenceEnabled: v.optional(v.boolean()),
+    biometricEnabled: v.optional(v.boolean()),
+    offlineSyncEnabled: v.optional(v.boolean()),
+  },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    await requireOrgAdmin(ctx, args.organizationId);
+    const org = await ctx.db.get(args.organizationId);
+    if (!org) throw new Error("Organization not found");
+
+    const updates: Record<string, unknown> = { updatedAt: Date.now() };
+
+    if (args.geoFenceEnabled !== undefined) {
+      if (args.geoFenceEnabled && !org.featuresGeoFenceAllowed) {
+        throw new Error("Geofencing is not enabled for your organization. Contact Logasiko support.");
+      }
+      updates.geoFenceEnabled = args.geoFenceEnabled;
+    }
+    if (args.biometricEnabled !== undefined) {
+      if (args.biometricEnabled && !org.featuresBiometricAllowed) {
+        throw new Error("Biometric sign-in is not enabled for your organization. Contact Logasiko support.");
+      }
+      updates.biometricEnabled = args.biometricEnabled;
+    }
+    if (args.offlineSyncEnabled !== undefined) {
+      if (args.offlineSyncEnabled && !org.featuresOfflineSyncAllowed) {
+        throw new Error("Offline sync is not enabled for your organization. Contact Logasiko support.");
+      }
+      updates.offlineSyncEnabled = args.offlineSyncEnabled;
+    }
+
+    await ctx.db.patch(args.organizationId, updates);
+    return null;
+  },
+});
+
+/** Update or remove the geofence for an org (org admin only). */
+export const updateGeoFence = mutation({
+  args: {
+    organizationId: v.id("organizations"),
+    enabled: v.boolean(),
+    lat: v.optional(v.number()),
+    lng: v.optional(v.number()),
+    radiusMeters: v.optional(v.number()),
+  },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    await requireOrgAdmin(ctx, args.organizationId);
+    const org = await ctx.db.get(args.organizationId);
+    if (!org) throw new Error("Organization not found");
+
+    if (args.enabled && !org.featuresGeoFenceAllowed) {
+      throw new Error("Geofencing is not enabled for your organization. Contact Logasiko support.");
+    }
+
+    await ctx.db.patch(args.organizationId, {
+      geoFenceEnabled: args.enabled,
+      geoFenceLat: args.lat ?? undefined,
+      geoFenceLng: args.lng ?? undefined,
+      geoFenceRadiusMeters: args.radiusMeters ?? undefined,
+      updatedAt: Date.now(),
+    });
     return null;
   },
 });
