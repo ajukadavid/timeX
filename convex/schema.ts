@@ -46,7 +46,8 @@ export default defineSchema({
     name: v.string(),
     description: v.optional(v.string()),
     employerId: v.id("users"), // legacy — still required for old records
-    organizationId: v.optional(v.id("organizations")), // NEW — set by migration + new creates
+    organizationId: v.optional(v.id("organizations")),
+    defaultSignInTime: v.optional(v.string()), // dept-level override HH:mm
     isActive: v.boolean(),
     createdAt: v.number(),
     updatedAt: v.number(),
@@ -86,9 +87,11 @@ export default defineSchema({
     staffProfileId: v.id("staffProfiles"),
     entryTime: v.number(),
     entryDate: v.string(), // YYYY-MM-DD in org timezone
-    clockOutTime: v.optional(v.number()), // NEW
-    hoursWorked: v.optional(v.number()), // NEW: decimal hours
+    clockOutTime: v.optional(v.number()),
+    hoursWorked: v.optional(v.number()), // decimal hours
     late: v.boolean(),
+    latitude: v.optional(v.number()),  // geolocation
+    longitude: v.optional(v.number()), // geolocation
     source: v.optional(
       v.union(v.literal("web"), v.literal("mobile"), v.literal("import"))
     ),
@@ -122,13 +125,30 @@ export default defineSchema({
 
   employerSettings: defineTable({
     employerId: v.id("users"), // legacy
-    organizationId: v.optional(v.id("organizations")), // NEW
+    organizationId: v.optional(v.id("organizations")),
     defaultSignInTime: v.optional(v.string()),
+    // Email notification preferences
+    dailyDigestEnabled: v.optional(v.boolean()),
+    lateAlertEnabled: v.optional(v.boolean()),
+    notificationEmail: v.optional(v.string()), // override; defaults to org admin email
     createdAt: v.number(),
     updatedAt: v.number(),
   })
     .index("by_employer", ["employerId"])
     .index("by_organization", ["organizationId"]),
+
+  auditLogs: defineTable({
+    organizationId: v.optional(v.id("organizations")),
+    adminId: v.id("users"),
+    adminName: v.string(),
+    action: v.string(),
+    targetUserId: v.optional(v.id("users")),
+    targetName: v.optional(v.string()),
+    details: v.optional(v.string()),
+    createdAt: v.number(),
+  })
+    .index("by_organization", ["organizationId"])
+    .index("by_org_created", ["organizationId", "createdAt"]),
 
   // Raw legacy collections (MongoDB migration audit).
   employers: defineTable({

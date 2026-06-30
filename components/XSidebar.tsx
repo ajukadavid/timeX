@@ -6,13 +6,12 @@ import { useClerk } from "@clerk/nextjs";
 import { useConvexAuth, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 
-const icons = {
-  squares: "M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z",
-  "user-plus": "M18 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zM3 19.235v-.11a6.375 6.375 0 0112.75 0v.109A12.318 12.318 0 019.374 21c-2.331 0-4.512-.645-6.374-1.766z",
-  logout: "M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75",
+type NavItem = {
+  label: string;
+  icon: string;
+  to: string;
+  isLogout?: boolean;
 };
-
-type LinkDef = { label: string; icon: keyof typeof icons; to: string; isLogout?: boolean };
 
 export function XSidebar() {
   const [open, setOpen] = useState(true);
@@ -26,83 +25,212 @@ export function XSidebar() {
   const isAdmin = me?.role === "admin";
   const staffDashboardPath = me ? `/dashboardStaff/${me._id}` : "/dashboardStaff";
 
-  const links: LinkDef[] = isSuperAdmin
-    ? [
-        { label: "Platform Dashboard", icon: "squares", to: "/superAdmin" },
-        { label: "Log out", icon: "logout", to: "/login", isLogout: true },
-      ]
+  const adminLinks: NavItem[] = [
+    { label: "Dashboard", icon: "dashboard", to: "/dashboardEmployer" },
+    { label: "Workforce", icon: "groups", to: "/user-management" },
+    { label: "Reports", icon: "analytics", to: "/reports" },
+    { label: "Leave Requests", icon: "event_busy", to: "/leave-requests" },
+    { label: "Audit Log", icon: "history", to: "/audit-log" },
+  ];
+
+  const staffLinks: NavItem[] = [
+    { label: "Dashboard", icon: "dashboard", to: staffDashboardPath },
+  ];
+
+  const superAdminLinks: NavItem[] = [
+    { label: "Platform", icon: "admin_panel_settings", to: "/superAdmin" },
+  ];
+
+  const links: NavItem[] = isSuperAdmin
+    ? superAdminLinks
     : isAdmin
-    ? [
-        { label: "Dashboard", icon: "squares", to: "/dashboardEmployer" },
-        { label: "User Management", icon: "user-plus", to: "/user-management" },
-        { label: "Log out", icon: "logout", to: "/login", isLogout: true },
-      ]
-    : [
-        { label: "Dashboard", icon: "squares", to: staffDashboardPath },
-        { label: "Log out", icon: "logout", to: "/login", isLogout: true },
-      ];
+    ? adminLinks
+    : staffLinks;
 
-  const isActive = (to: string) => pathname === to || pathname.startsWith(to + "/");
+  const isActive = (to: string) =>
+    pathname === to || pathname.startsWith(to + "/");
 
-  const handleClick = async (link: typeof links[0]) => {
-    if (link.isLogout) {
+  const handleClick = async (item: NavItem) => {
+    if (item.isLogout) {
       await signOut({ redirectUrl: "/login" });
     } else {
-      router.push(link.to);
+      router.push(item.to);
     }
+    if (window.innerWidth < 768) setOpen(false);
   };
 
   return (
     <>
+      {/* Overlay on mobile */}
+      {open && (
+        <div
+          className="fixed inset-0 bg-black/30 z-40 md:hidden"
+          onClick={() => setOpen(false)}
+        />
+      )}
+
       <aside
-        className={`h-screen fixed bg-white border-r border-gray-300 flex flex-col transition-all duration-300 z-50 ${
-          open ? "w-64 translate-x-0" : "w-0 md:w-16 -translate-x-full md:translate-x-0"
+        className={`h-screen fixed left-0 top-0 flex flex-col z-50 transition-all duration-300 ${
+          open ? "w-64" : "w-0 md:w-16 overflow-hidden"
         }`}
+        style={{ backgroundColor: "#f1f5f2", borderRight: "1px solid #bfc9c3" }}
       >
-        <div className={`py-4 border-b flex items-center justify-center border-gray-300 bg-gray-50 ${open ? "px-6" : "px-2"}`}>
-          {open ? (
-            <h2 className="font-sans text-2xl cursor-pointer font-bold text-primary-700" onClick={() => setOpen(false)}>
-              TimeX
-            </h2>
-          ) : (
-            <button onClick={() => setOpen(true)} className="p-2 hover:bg-gray-100 rounded-lg transition-colors" aria-label="Toggle sidebar">
-              <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-              </svg>
-            </button>
+        {/* Brand */}
+        <div
+          className="flex items-center gap-3 px-4 py-6 border-b"
+          style={{ borderColor: "rgba(191,201,195,0.4)" }}
+        >
+          <div
+            className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
+            style={{ backgroundColor: "#003527" }}
+          >
+            <span
+              className="material-symbols-outlined text-white text-[20px]"
+              style={{ fontVariationSettings: "'FILL' 1" }}
+            >
+              eco
+            </span>
+          </div>
+          {open && (
+            <div>
+              <p
+                className="font-bold leading-none"
+                style={{ fontFamily: "var(--font-hanken, sans-serif)", fontSize: "18px", color: "#003527" }}
+              >
+                Logasiko
+              </p>
+              <p
+                className="text-[11px] mt-0.5"
+                style={{ fontFamily: "var(--font-jetbrains, monospace)", color: "#707974" }}
+              >
+                {isSuperAdmin ? "Super Admin" : isAdmin ? "Management Portal" : "Staff Portal"}
+              </p>
+            </div>
           )}
         </div>
 
-        <div className={`space-y-2 overflow-y-auto flex-1 py-4 ${open ? "px-4" : "px-2"}`}>
-          {links.map((link) => (
-            <button
-              key={link.to}
-              onClick={() => handleClick(link)}
-              className={`group relative flex items-center gap-3 py-2.5 px-3 rounded-lg text-sm font-medium transition-all duration-200 w-full ${
-                isActive(link.to)
-                  ? "text-white bg-primary-600 shadow-sm"
-                  : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
-              }`}
-            >
-              <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={icons[link.icon]} />
-              </svg>
-              {open && <span className="flex-1 text-left">{link.label}</span>}
-            </button>
-          ))}
+        {/* Nav links */}
+        <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto">
+          {links.map((item) => {
+            const active = isActive(item.to);
+            return (
+              <button
+                key={item.to}
+                onClick={() => handleClick(item)}
+                title={!open ? item.label : undefined}
+                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-150 text-left ${
+                  active
+                    ? "font-bold"
+                    : "hover:opacity-100"
+                }`}
+                style={
+                  active
+                    ? {
+                        backgroundColor: "#064e3b",
+                        color: "#b0f0d6",
+                        borderRight: "3px solid #ac3400",
+                      }
+                    : {
+                        color: "#404944",
+                        backgroundColor: "transparent",
+                      }
+                }
+                onMouseEnter={(e) => {
+                  if (!active) {
+                    (e.currentTarget as HTMLButtonElement).style.backgroundColor = "#e5e9e6";
+                    (e.currentTarget as HTMLButtonElement).style.color = "#003527";
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!active) {
+                    (e.currentTarget as HTMLButtonElement).style.backgroundColor = "transparent";
+                    (e.currentTarget as HTMLButtonElement).style.color = "#404944";
+                  }
+                }}
+              >
+                <span
+                  className="material-symbols-outlined shrink-0 text-[22px]"
+                  style={active ? { fontVariationSettings: "'FILL' 1" } : undefined}
+                >
+                  {item.icon}
+                </span>
+                {open && (
+                  <span
+                    style={{
+                      fontFamily: "var(--font-jetbrains, monospace)",
+                      fontSize: "12px",
+                      letterSpacing: "0.02em",
+                    }}
+                  >
+                    {item.label}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </nav>
+
+        {/* Footer: sign out */}
+        <div
+          className="px-3 pb-6 pt-4 space-y-1 border-t"
+          style={{ borderColor: "rgba(191,201,195,0.3)" }}
+        >
+          <button
+            onClick={() => signOut({ redirectUrl: "/login" })}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all"
+            style={{ color: "#707974" }}
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.backgroundColor = "#e5e9e6";
+              (e.currentTarget as HTMLButtonElement).style.color = "#003527";
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.backgroundColor = "transparent";
+              (e.currentTarget as HTMLButtonElement).style.color = "#707974";
+            }}
+          >
+            <span className="material-symbols-outlined shrink-0 text-[22px]">logout</span>
+            {open && (
+              <span
+                style={{
+                  fontFamily: "var(--font-jetbrains, monospace)",
+                  fontSize: "12px",
+                  letterSpacing: "0.02em",
+                }}
+              >
+                Sign Out
+              </span>
+            )}
+          </button>
         </div>
       </aside>
 
+      {/* Mobile hamburger */}
       <button
-        className="fixed top-4 left-4 z-50 md:hidden p-2 bg-white rounded-lg shadow-md border border-gray-300"
+        className="fixed top-4 left-4 z-50 md:hidden p-2 rounded-lg shadow-md border"
+        style={{ backgroundColor: "#ffffff", borderColor: "#bfc9c3" }}
         onClick={() => setOpen(true)}
-        aria-label="Toggle sidebar"
+        aria-label="Open menu"
       >
-        {!open && (
-          <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-          </svg>
-        )}
+        <span className="material-symbols-outlined text-[22px]" style={{ color: "#003527" }}>
+          menu
+        </span>
+      </button>
+
+      {/* Desktop collapse toggle */}
+      <button
+        className="hidden md:flex fixed bottom-6 z-50 p-1.5 rounded-full border shadow-sm transition-all"
+        style={{
+          left: open ? "15rem" : "2.5rem",
+          backgroundColor: "#ffffff",
+          borderColor: "#bfc9c3",
+          color: "#003527",
+        }}
+        onClick={() => setOpen((v) => !v)}
+        aria-label="Collapse sidebar"
+      >
+        <span className="material-symbols-outlined text-[18px]">
+          {open ? "chevron_left" : "chevron_right"}
+        </span>
       </button>
     </>
   );

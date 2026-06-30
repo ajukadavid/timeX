@@ -77,6 +77,66 @@ export const listStaffByOrg = query({
   },
 });
 
+/** List staff for a specific department — for manager dashboards. */
+export const listStaffByDept = query({
+  args: {
+    organizationId: v.id("organizations"),
+    departmentId: v.id("departments"),
+  },
+  returns: v.array(staffListItemValidator),
+  handler: async (ctx, args) => {
+    const user = await requireCurrentUser(ctx);
+
+    // Must be org admin OR a manager of this specific department
+    const callerProfile = await ctx.db
+      .query("staffProfiles")
+      .withIndex("by_org_and_user", (q) =>
+        q.eq("organizationId", args.organizationId).eq("userId", user._id)
+      )
+      .unique();
+
+    const isOrgAdmin =
+      callerProfile?.orgRole === "admin" || user.platformRole === "superAdmin";
+    const isManager =
+      user.role === ROLE.MANAGER &&
+      callerProfile?.departmentId === args.departmentId;
+
+    if (!isOrgAdmin && !isManager) throw new Error("Unauthorized");
+
+    const allProfiles = await ctx.db
+      .query("staffProfiles")
+      .withIndex("by_department", (q) => q.eq("departmentId", args.departmentId))
+      .collect();
+
+    const profiles = allProfiles.filter(
+      (p) => p.organizationId === args.organizationId && p.orgRole !== "admin"
+    );
+
+    return await Promise.all(
+      profiles.map(async (profile) => {
+        const u = await ctx.db.get(profile.userId);
+        const department = await ctx.db.get(args.departmentId);
+        return {
+          profileId: profile._id,
+          userId: profile.userId,
+          clerkId: u?.clerkId ?? null,
+          email: u?.email ?? "",
+          firstName: u?.firstName ?? "",
+          lastName: u?.lastName ?? "",
+          role: u?.role ?? ROLE.STAFF,
+          orgRole: profile.orgRole,
+          organizationId: profile.organizationId,
+          department: department?.name ?? null,
+          jobTitle: profile.jobTitle,
+          employmentStatus: profile.employmentStatus,
+          lastEntryTime: profile.lastEntryTime ?? null,
+          needsInvite: Boolean(u?.clerkId?.startsWith("legacy:")),
+        };
+      })
+    );
+  },
+});
+
 export const listStaffByEmployer = query({
   args: { employerId: v.id("users") },
   returns: v.array(staffListItemValidator),
@@ -407,6 +467,8 @@ const staffDetailValidator = v.union(
         clockOutTime: v.optional(v.number()),
         hoursWorked: v.optional(v.number()),
         late: v.boolean(),
+        latitude: v.optional(v.number()),
+        longitude: v.optional(v.number()),
         source: v.optional(
           v.union(v.literal("web"), v.literal("mobile"), v.literal("import"))
         ),

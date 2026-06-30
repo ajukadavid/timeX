@@ -11,10 +11,24 @@ import { toast } from "@/lib/toast";
 
 type StatusFilter = "all" | "pending" | "approved" | "rejected";
 
-function statusBadge(status: string) {
-  if (status === "approved") return "bg-green-50 text-green-700";
-  if (status === "rejected") return "bg-red-50 text-red-700";
-  return "bg-yellow-50 text-yellow-700";
+const LEAVE_TYPE_STYLES: Record<string, { bg: string; color: string }> = {
+  annual: { bg: "#b0f0d6", color: "#0b513d" },
+  sick: { bg: "#ffdbd0", color: "#832600" },
+  emergency: { bg: "#ffdad6", color: "#93000a" },
+  unpaid: { bg: "#ebefec", color: "#404944" },
+  maternity: { bg: "#bbf37c", color: "#1c3400" },
+  paternity: { bg: "#bbf37c", color: "#1c3400" },
+  other: { bg: "#ebefec", color: "#404944" },
+};
+
+const STATUS_STYLES: Record<string, { bg: string; color: string; dot: string }> = {
+  pending: { bg: "#ffdbd0", color: "#832600", dot: "#ac3400" },
+  approved: { bg: "#b0f0d6", color: "#0b513d", dot: "#003527" },
+  rejected: { bg: "#ffdad6", color: "#93000a", dot: "#ba1a1a" },
+};
+
+function initials(name: string) {
+  return name.split(" ").map((w) => w[0] ?? "").slice(0, 2).join("").toUpperCase();
 }
 
 export default function LeaveRequestsPage() {
@@ -42,105 +56,183 @@ export default function LeaveRequestsPage() {
     try {
       await reviewLeave({ requestId: reviewingId, decision, reviewNote: reviewNote || undefined });
       toast(`Leave request ${decision}`, "success");
-      setReviewingId(null);
-      setReviewNote("");
+      setReviewingId(null); setReviewNote("");
     } catch (e) {
       toast(e instanceof Error ? e.message : "Failed to review", "error");
-    } finally {
-      setSubmitting(false);
-    }
+    } finally { setSubmitting(false); }
   }
 
   const reviewingRequest = reviewingId ? requests?.find((r) => r._id === reviewingId) : null;
 
-  const filterTabs: { label: string; value: StatusFilter }[] = [
+  const filterTabs: { label: string; value: StatusFilter; count?: number }[] = [
     { label: "Pending", value: "pending" },
     { label: "Approved", value: "approved" },
     { label: "Rejected", value: "rejected" },
     { label: "All", value: "all" },
   ];
 
+  const pendingCount = filter === "pending" ? (requests?.length ?? 0) : 0;
+
   return (
-    <main className="min-h-full bg-white p-4 md:p-10">
-      <div className="max-w-5xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">Leave Requests</h1>
-          <p className="text-sm text-gray-500 mt-1">
-            Review and manage staff leave requests for {myAdminOrg?.name ?? "your organisation"}.
-          </p>
+    <div className="min-h-screen" style={{ backgroundColor: "#f6faf7" }}>
+      {/* Header */}
+      <header className="sticky top-0 z-40 border-b" style={{ backgroundColor: "#f6faf7", borderColor: "rgba(191,201,195,0.4)", boxShadow: "0 1px 12px rgba(6,78,59,0.04)" }}>
+        <div className="flex items-center justify-between h-16 px-6">
+          <div>
+            <h1 className="font-bold text-xl leading-none" style={{ color: "#003527", fontFamily: "var(--font-hanken, sans-serif)" }}>
+              Leave Management
+            </h1>
+            {myAdminOrg && <p className="text-xs mt-0.5" style={{ fontFamily: "var(--font-jetbrains, monospace)", color: "#707974" }}>{myAdminOrg.name}</p>}
+          </div>
+        </div>
+      </header>
+
+      <div className="p-6 space-y-6">
+        {/* Summary bento cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* Pending count */}
+          <div className="rounded-xl border-l-4 p-6" style={{ backgroundColor: "#ffffff", borderColor: "#ac3400", boxShadow: "0 2px 10px rgba(6,78,59,0.04)" }}>
+            <p className="text-xs uppercase tracking-wider mb-3" style={{ fontFamily: "var(--font-jetbrains, monospace)", color: "#707974" }}>Pending</p>
+            <p className="text-4xl font-bold" style={{ color: "#ac3400", fontFamily: "var(--font-hanken, sans-serif)" }}>
+              {filter === "pending" ? (requests?.length ?? "—") : "—"}
+            </p>
+            <p className="text-sm mt-2" style={{ color: "#707974" }}>Awaiting review</p>
+          </div>
+          {/* Quick tip */}
+          <div className="rounded-xl p-6 relative overflow-hidden" style={{ backgroundColor: "#064e3b" }}>
+            <p className="text-xs uppercase tracking-wider mb-2" style={{ fontFamily: "var(--font-jetbrains, monospace)", color: "#80bea6" }}>Policy Tip</p>
+            <p className="text-sm" style={{ color: "#b0f0d6" }}>Review leave promptly to maintain healthy team capacity.</p>
+            <div className="absolute bottom-0 right-0 opacity-10" style={{ transform: "translate(25%, 25%)" }}>
+              <span className="material-symbols-outlined text-white" style={{ fontSize: "80px", fontVariationSettings: "'FILL' 1" }}>eco</span>
+            </div>
+          </div>
+          {/* Capacity indicator */}
+          <div className="rounded-xl border p-6" style={{ backgroundColor: "#ffffff", borderColor: "rgba(191,201,195,0.3)" }}>
+            <p className="text-xs uppercase tracking-wider mb-3" style={{ fontFamily: "var(--font-jetbrains, monospace)", color: "#707974" }}>Status</p>
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full" style={{ backgroundColor: "#003527" }} />
+              <p className="font-semibold text-sm" style={{ color: "#003527" }}>Leave system active</p>
+            </div>
+            <p className="text-xs mt-2" style={{ color: "#707974" }}>Staff can request leave from their portal.</p>
+          </div>
         </div>
 
         {/* Filter tabs */}
-        <div className="flex gap-2 mb-6 border-b border-gray-200">
+        <div className="flex gap-1 p-1 rounded-xl" style={{ backgroundColor: "#ebefec" }}>
           {filterTabs.map((tab) => (
             <button
               key={tab.value}
               onClick={() => setFilter(tab.value)}
-              className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+              className="flex-1 py-2 rounded-lg text-sm font-medium transition-all"
+              style={
                 filter === tab.value
-                  ? "border-purple-600 text-purple-700"
-                  : "border-transparent text-gray-500 hover:text-gray-700"
-              }`}
+                  ? { backgroundColor: "#ffffff", color: "#003527", fontWeight: "700", boxShadow: "0 1px 3px rgba(6,78,59,0.08)" }
+                  : { color: "#707974" }
+              }
             >
               {tab.label}
             </button>
           ))}
         </div>
 
-        {/* Table */}
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        {/* Requests table */}
+        <div className="rounded-xl border overflow-hidden" style={{ backgroundColor: "#ffffff", borderColor: "rgba(191,201,195,0.3)" }}>
+          <div className="px-6 py-4 border-b flex items-center justify-between" style={{ borderColor: "rgba(191,201,195,0.2)", backgroundColor: "#f6faf7" }}>
+            <h3 className="font-bold" style={{ color: "#003527", fontFamily: "var(--font-hanken, sans-serif)" }}>
+              {filter === "pending" ? "Pending Approvals" : filter === "approved" ? "Approved Leave" : filter === "rejected" ? "Rejected Requests" : "All Requests"}
+            </h3>
+            {filter === "pending" && (requests?.length ?? 0) > 0 && (
+              <span className="text-xs font-mono px-2 py-0.5 rounded-full" style={{ backgroundColor: "#ffdbd0", color: "#832600" }}>
+                {requests!.length} pending
+              </span>
+            )}
+          </div>
+
           {requests === undefined ? (
-            <div className="p-8 text-center text-gray-400 text-sm">Loading…</div>
+            <div className="py-16 flex flex-col items-center gap-3">
+              <span className="material-symbols-outlined text-[40px] animate-spin" style={{ color: "#003527" }}>progress_activity</span>
+              <p className="text-sm" style={{ fontFamily: "var(--font-jetbrains, monospace)", color: "#707974" }}>Loading…</p>
+            </div>
           ) : requests.length === 0 ? (
-            <div className="p-8 text-center text-gray-400 text-sm">
-              No {filter !== "all" ? filter : ""} leave requests.
+            <div className="py-16 flex flex-col items-center gap-3">
+              <span className="material-symbols-outlined text-[48px]" style={{ color: "#bfc9c3", fontVariationSettings: "'FILL' 1" }}>event_busy</span>
+              <p className="font-semibold" style={{ color: "#003527" }}>No {filter !== "all" ? filter : ""} requests</p>
+              <p className="text-sm" style={{ color: "#707974" }}>No leave requests found for this filter.</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full text-sm">
+              <table className="w-full text-left">
                 <thead>
-                  <tr className="bg-gray-50 border-b border-gray-200">
-                    <th className="text-left py-3 px-4 text-gray-600 font-semibold">Staff</th>
-                    <th className="text-left py-3 px-4 text-gray-600 font-semibold">Type</th>
-                    <th className="text-left py-3 px-4 text-gray-600 font-semibold">From</th>
-                    <th className="text-left py-3 px-4 text-gray-600 font-semibold">To</th>
-                    <th className="text-left py-3 px-4 text-gray-600 font-semibold">Days</th>
-                    <th className="text-left py-3 px-4 text-gray-600 font-semibold">Reason</th>
-                    <th className="text-left py-3 px-4 text-gray-600 font-semibold">Status</th>
-                    <th className="py-3 px-4" />
+                  <tr style={{ backgroundColor: "rgba(241,245,242,0.6)", borderBottom: "1px solid rgba(191,201,195,0.2)" }}>
+                    {["Staff Member", "Leave Type", "Dates", "Duration", "Status", "Actions"].map((h) => (
+                      <th key={h} className="px-6 py-4" style={{ fontFamily: "var(--font-jetbrains, monospace)", fontSize: "11px", letterSpacing: "0.06em", color: "#707974", textTransform: "uppercase" }}>{h}</th>
+                    ))}
                   </tr>
                 </thead>
                 <tbody>
-                  {requests.map((req) => (
-                    <tr key={req._id} className="border-b border-gray-50 hover:bg-gray-50/50">
-                      <td className="py-3 px-4 font-medium text-gray-900">{req.staffName}</td>
-                      <td className="py-3 px-4 capitalize text-gray-700">{req.type}</td>
-                      <td className="py-3 px-4 text-gray-600">{req.startDate}</td>
-                      <td className="py-3 px-4 text-gray-600">{req.endDate}</td>
-                      <td className="py-3 px-4 text-gray-600">{req.daysRequested}</td>
-                      <td className="py-3 px-4 text-gray-500 max-w-[160px] truncate">{req.reason ?? "—"}</td>
-                      <td className="py-3 px-4">
-                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${statusBadge(req.status)}`}>
-                          {req.status.charAt(0).toUpperCase() + req.status.slice(1)}
-                        </span>
-                      </td>
-                      <td className="py-3 px-4 text-right">
-                        {req.status === "pending" && (
-                          <button
-                            onClick={() => { setReviewingId(req._id); setReviewNote(""); }}
-                            className="text-xs text-purple-600 hover:text-purple-800 font-medium"
-                          >
-                            Review
-                          </button>
-                        )}
-                        {req.reviewNote && req.status !== "pending" && (
-                          <span className="text-xs text-gray-400 italic" title={req.reviewNote}>
-                            Note ℹ️
+                  {requests.map((req) => {
+                    const statusStyle = STATUS_STYLES[req.status] ?? STATUS_STYLES.pending;
+                    const typeStyle = LEAVE_TYPE_STYLES[req.type] ?? LEAVE_TYPE_STYLES.other;
+                    return (
+                      <tr
+                        key={req._id}
+                        className="border-b transition-colors"
+                        style={{ borderColor: "rgba(191,201,195,0.15)" }}
+                        onMouseEnter={(e) => { (e.currentTarget as HTMLTableRowElement).style.backgroundColor = "rgba(241,245,242,0.5)"; }}
+                        onMouseLeave={(e) => { (e.currentTarget as HTMLTableRowElement).style.backgroundColor = "transparent"; }}
+                      >
+                        <td className="px-6 py-5">
+                          <div className="flex items-center gap-3">
+                            <div className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold shrink-0" style={{ backgroundColor: "#b0f0d6", color: "#003527" }}>
+                              {initials(req.staffName)}
+                            </div>
+                            <div>
+                              <p className="font-semibold text-sm" style={{ color: "#181d1b" }}>{req.staffName}</p>
+                              {req.reason && (
+                                <p className="text-xs mt-0.5 max-w-[140px] truncate" style={{ color: "#707974" }}>{req.reason}</p>
+                              )}
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-5">
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-mono font-bold uppercase" style={{ backgroundColor: typeStyle.bg, color: typeStyle.color }}>
+                            {req.type}
                           </span>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
+                        </td>
+                        <td className="px-6 py-5">
+                          <p className="text-sm font-mono" style={{ color: "#181d1b" }}>{req.startDate}</p>
+                          <p className="text-xs mt-0.5 font-mono" style={{ color: "#707974" }}>→ {req.endDate}</p>
+                        </td>
+                        <td className="px-6 py-5">
+                          <span className="text-sm" style={{ color: "#404944" }}>{req.daysRequested} day{req.daysRequested !== 1 ? "s" : ""}</span>
+                        </td>
+                        <td className="px-6 py-5">
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-mono" style={{ backgroundColor: statusStyle.bg, color: statusStyle.color }}>
+                            <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: statusStyle.dot }} />
+                            {req.status.charAt(0).toUpperCase() + req.status.slice(1)}
+                          </span>
+                        </td>
+                        <td className="px-6 py-5">
+                          {req.status === "pending" ? (
+                            <button
+                              onClick={() => { setReviewingId(req._id); setReviewNote(""); }}
+                              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all"
+                              style={{ backgroundColor: "#003527", color: "#ffffff" }}
+                            >
+                              <span className="material-symbols-outlined text-[14px]">rate_review</span>
+                              Review
+                            </button>
+                          ) : (
+                            req.reviewNote ? (
+                              <span className="text-xs italic" style={{ color: "#bfc9c3" }} title={req.reviewNote}>Has note</span>
+                            ) : (
+                              <span className="text-xs" style={{ color: "#bfc9c3" }}>—</span>
+                            )
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
@@ -163,25 +255,33 @@ export default function LeaveRequestsPage() {
         }
       >
         {reviewingRequest && (
-          <div className="space-y-4">
-            <div className="bg-gray-50 rounded-lg p-4 text-sm space-y-2">
-              <p><span className="text-gray-500">Staff:</span> <strong>{reviewingRequest.staffName}</strong></p>
-              <p><span className="text-gray-500">Type:</span> <span className="capitalize">{reviewingRequest.type}</span></p>
-              <p><span className="text-gray-500">Dates:</span> {reviewingRequest.startDate} → {reviewingRequest.endDate} ({reviewingRequest.daysRequested} day{reviewingRequest.daysRequested !== 1 ? "s" : ""})</p>
-              {reviewingRequest.reason && <p><span className="text-gray-500">Reason:</span> {reviewingRequest.reason}</p>}
+          <div className="space-y-4 p-2">
+            <div className="rounded-xl p-4 space-y-3" style={{ backgroundColor: "#f6faf7" }}>
+              {[
+                ["Staff", reviewingRequest.staffName],
+                ["Type", reviewingRequest.type.charAt(0).toUpperCase() + reviewingRequest.type.slice(1)],
+                ["Dates", `${reviewingRequest.startDate} → ${reviewingRequest.endDate} (${reviewingRequest.daysRequested} day${reviewingRequest.daysRequested !== 1 ? "s" : ""})`],
+                ...(reviewingRequest.reason ? [["Reason", reviewingRequest.reason]] : []),
+              ].map(([label, value]) => (
+                <div key={label} className="flex items-start gap-2">
+                  <span className="text-xs uppercase tracking-wider w-16 shrink-0 mt-0.5" style={{ fontFamily: "var(--font-jetbrains, monospace)", color: "#707974" }}>{label}</span>
+                  <span className="text-sm font-medium" style={{ color: "#181d1b" }}>{value}</span>
+                </div>
+              ))}
             </div>
             <FormField label="Review Note (optional)" name="reviewNote">
               <textarea
                 value={reviewNote}
                 onChange={(e) => setReviewNote(e.target.value)}
                 rows={3}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"
+                className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none resize-none"
+                style={{ borderColor: "rgba(191,201,195,0.5)", backgroundColor: "#f6faf7", color: "#181d1b" }}
                 placeholder="e.g. Approved. Enjoy your time off!"
               />
             </FormField>
           </div>
         )}
       </XModal>
-    </main>
+    </div>
   );
 }

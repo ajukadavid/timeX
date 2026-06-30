@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { requireCurrentUser, requireOrgAdmin, requireStaffAccess } from "./lib/auth";
+import { logAction } from "./audit";
 
 // ─── Validators ───────────────────────────────────────────────
 
@@ -218,13 +219,28 @@ export const reviewLeave = mutation({
       await requireOrgAdmin(ctx, req.organizationId);
     }
 
+    const now = Date.now();
     await ctx.db.patch(args.requestId, {
       status: args.decision,
       reviewedBy: me._id,
-      reviewedAt: Date.now(),
+      reviewedAt: now,
       reviewNote: args.reviewNote,
-      updatedAt: Date.now(),
+      updatedAt: now,
     });
+
+    const staffUser = await ctx.db.get(req.staffUserId);
+    await logAction(ctx, {
+      organizationId: req.organizationId,
+      adminId: me._id,
+      adminName: `${me.firstName ?? ""} ${me.lastName ?? ""}`.trim() || me.email,
+      action: args.decision === "approved" ? "leave_approved" : "leave_rejected",
+      targetUserId: req.staffUserId,
+      targetName: staffUser
+        ? `${staffUser.firstName ?? ""} ${staffUser.lastName ?? ""}`.trim() || staffUser.email
+        : undefined,
+      details: `${req.type} leave ${args.decision} (${req.startDate} – ${req.endDate})${args.reviewNote ? `: ${args.reviewNote}` : ""}`,
+    });
+
     return null;
   },
 });

@@ -1,5 +1,6 @@
 import { v } from "convex/values";
-import { mutation, query } from "./_generated/server";
+import { internalQuery, mutation, query } from "./_generated/server";
+import { internal } from "./_generated/api";
 import type { MutationCtx, QueryCtx } from "./_generated/server";
 import type { Id } from "./_generated/dataModel";
 import {
@@ -13,6 +14,7 @@ import {
   isLateEntry,
   localDateTimeToUTC,
 } from "./lib/attendanceHelpers";
+import { logAction } from "./audit";
 
 export const attendanceLogValidator = v.object({
   _id: v.id("attendanceLogs"),
@@ -26,6 +28,8 @@ export const attendanceLogValidator = v.object({
   clockOutTime: v.optional(v.number()),
   hoursWorked: v.optional(v.number()),
   late: v.boolean(),
+  latitude: v.optional(v.number()),
+  longitude: v.optional(v.number()),
   source: v.optional(
     v.union(v.literal("web"), v.literal("mobile"), v.literal("import"))
   ),
@@ -36,10 +40,15 @@ export const attendanceLogValidator = v.object({
 
 // ─── Helpers ──────────────────────────────────────────────────
 
-/** Fetch org timezone + sign-in time for a staff profile. */
+/** Fetch org timezone + sign-in time for a staff profile.
+ *  Priority: dept-level override → settings table → org default → "09:00". */
 async function getOrgConfig(
   ctx: QueryCtx | MutationCtx,
-  profile: { organizationId?: Id<"organizations"> | null; employerId: Id<"users"> }
+  profile: {
+    organizationId?: Id<"organizations"> | null;
+    employerId: Id<"users">;
+    departmentId?: Id<"departments"> | null;
+  }
 ): Promise<{ timezone: string; defaultSignInTime: string }> {
   let timezone = "UTC";
   let orgDefaultSignInTime: string | undefined;
@@ -48,6 +57,13 @@ async function getOrgConfig(
     const org = await ctx.db.get(profile.organizationId);
     timezone = org?.timezone ?? "UTC";
     orgDefaultSignInTime = org?.defaultSignInTime ?? undefined;
+  }
+
+  // Check per-department sign-in time override
+  let deptSignInTime: string | undefined;
+  if (profile.departmentId) {
+    const dept = await ctx.db.get(profile.departmentId);
+    deptSignInTime = dept?.defaultSignInTime ?? undefined;
   }
 
   let settings = null;
@@ -68,7 +84,8 @@ async function getOrgConfig(
 
   return {
     timezone,
-    defaultSignInTime: settings?.defaultSignInTime ?? orgDefaultSignInTime ?? "09:00",
+    defaultSignInTime:
+      deptSignInTime ?? settings?.defaultSignInTime ?? orgDefaultSignInTime ?? "09:00",
   };
 }
 
@@ -76,9 +93,12 @@ async function getOrgConfig(
 
 /** Staff signs in for today. Date is computed server-side using org timezone. */
 export const clockIn = mutation({
-  args: {},
+  args: {
+    latitude: v.optional(v.number()),
+    longitude: v.optional(v.number()),
+  },
   returns: v.id("attendanceLogs"),
-  handler: async (ctx, _args) => {
+  handler: async (ctx, args) => {
     const user = await requireCurrentUser(ctx);
 
     const profile = await ctx.db
@@ -110,12 +130,25 @@ export const clockIn = mutation({
       entryTime: now,
       entryDate: today,
       late,
+      latitude: args.latitude,
+      longitude: args.longitude,
       source: "web",
       createdAt: now,
       updatedAt: now,
     });
 
     await ctx.db.patch(profile._id, { lastEntryTime: now, updatedAt: now });
+
+    // Schedule late alert email if org model is active
+    if (late && profile.organizationId) {
+      const staffName =
+        `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim() || user.email;
+      await ctx.scheduler.runAfter(0, internal.emails.sendLateAlertForOrg, {
+        organizationId: profile.organizationId,
+        staffName,
+        entryTime: now,
+      });
+    }
 
     return logId;
   },
@@ -246,6 +279,19 @@ export const adminAddAttendance = mutation({
       await ctx.db.patch(profile._id, { lastEntryTime: entryTimeMs, updatedAt: now });
     }
 
+    const staffUser = await ctx.db.get(args.staffUserId);
+    await logAction(ctx, {
+      organizationId: profile.organizationId,
+      adminId: me._id,
+      adminName: `${me.firstName ?? ""} ${me.lastName ?? ""}`.trim() || me.email,
+      action: "manual_clock_in",
+      targetUserId: args.staffUserId,
+      targetName: staffUser
+        ? `${staffUser.firstName ?? ""} ${staffUser.lastName ?? ""}`.trim() || staffUser.email
+        : undefined,
+      details: `Added attendance for ${args.entryDate} at ${args.entryTimeStr}`,
+    });
+
     return logId;
   },
 });
@@ -255,14 +301,45 @@ export const adminDeleteAttendance = mutation({
   args: { logId: v.id("attendanceLogs") },
   returns: v.null(),
   handler: async (ctx, args) => {
-    await requireCurrentUser(ctx);
+    const me = await requireCurrentUser(ctx);
     const log = await ctx.db.get(args.logId);
     if (!log) throw new Error("Log not found");
 
-    // Verify caller has access to this staff member
     await requireStaffAccess(ctx, log.staffUserId);
 
+    const staffUser = await ctx.db.get(log.staffUserId);
+    const profile = await ctx.db
+      .query("staffProfiles")
+      .withIndex("by_user", (q) => q.eq("userId", log.staffUserId))
+      .unique();
+
     await ctx.db.delete(args.logId);
+
+    await logAction(ctx, {
+      organizationId: log.organizationId,
+      adminId: me._id,
+      adminName: `${me.firstName ?? ""} ${me.lastName ?? ""}`.trim() || me.email,
+      action: "delete_attendance",
+      targetUserId: log.staffUserId,
+      targetName: staffUser
+        ? `${staffUser.firstName ?? ""} ${staffUser.lastName ?? ""}`.trim() || staffUser.email
+        : undefined,
+      details: `Deleted attendance entry for ${log.entryDate}`,
+    });
+
+    // Update lastEntryTime if needed
+    if (profile) {
+      const latest = await ctx.db
+        .query("attendanceLogs")
+        .withIndex("by_staff", (q) => q.eq("staffUserId", log.staffUserId))
+        .order("desc")
+        .first();
+      await ctx.db.patch(profile._id, {
+        lastEntryTime: latest?.entryTime,
+        updatedAt: Date.now(),
+      });
+    }
+
     return null;
   },
 });
@@ -346,6 +423,50 @@ export const getOrgDailySummary = query({
       date: args.date,
       totalEntries: logs.length,
       uniqueStaffSignedIn: uniqueStaff.size,
+      onTime: logs.length - late,
+      late,
+    };
+  },
+});
+
+/** Internal version of getOrgDailySummary — used by the daily digest email. */
+export const getOrgDailySummaryInternal = internalQuery({
+  args: {
+    organizationId: v.id("organizations"),
+    date: v.string(),
+  },
+  returns: v.object({
+    date: v.string(),
+    totalEntries: v.number(),
+    uniqueStaffSignedIn: v.number(),
+    totalStaff: v.number(),
+    onTime: v.number(),
+    late: v.number(),
+  }),
+  handler: async (ctx, args) => {
+    const logs = await ctx.db
+      .query("attendanceLogs")
+      .withIndex("by_org_date", (q) =>
+        q.eq("organizationId", args.organizationId).eq("entryDate", args.date)
+      )
+      .collect();
+
+    const allProfiles = await ctx.db
+      .query("staffProfiles")
+      .withIndex("by_organization", (q) =>
+        q.eq("organizationId", args.organizationId)
+      )
+      .filter((q) => q.neq(q.field("orgRole"), "admin"))
+      .collect();
+
+    const uniqueStaff = new Set(logs.map((l) => l.staffUserId));
+    const late = logs.filter((l) => l.late).length;
+
+    return {
+      date: args.date,
+      totalEntries: logs.length,
+      uniqueStaffSignedIn: uniqueStaff.size,
+      totalStaff: allProfiles.length,
       onTime: logs.length - late,
       late,
     };

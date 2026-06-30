@@ -528,6 +528,8 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
         hoursWorked: log.hoursWorked !== undefined ? `${log.hoursWorked}h` : "—",
         late: log.late,
         status: log.late ? "Late" : "On Time",
+        latitude: log.latitude,
+        longitude: log.longitude,
         _originalEntryDate: entryDateObj,
         _originalEntryTime: entryDateObj,
         _rawDate: log.entryDate,
@@ -575,7 +577,24 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
   const handleClockIn = async () => {
     setSigningIn(true);
     try {
-      await clockInMutation();
+      // Attempt to capture geolocation silently; proceed regardless
+      let latitude: number | undefined;
+      let longitude: number | undefined;
+      if (typeof navigator !== "undefined" && "geolocation" in navigator) {
+        try {
+          const pos = await new Promise<GeolocationPosition>((resolve, reject) => {
+            navigator.geolocation.getCurrentPosition(resolve, reject, {
+              timeout: 5000,
+              maximumAge: 60000,
+            });
+          });
+          latitude = pos.coords.latitude;
+          longitude = pos.coords.longitude;
+        } catch {
+          // Location denied or unavailable — clock in anyway
+        }
+      }
+      await clockInMutation({ latitude, longitude });
       toast("Signed in successfully!", "success");
     } catch (e) {
       toast(e instanceof Error ? e.message : "Failed to sign in", "error");
@@ -779,7 +798,22 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
                   displayedLogs.map((row) => (
                     <tr key={row._id as string} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
                       <td className="py-3 px-4 text-gray-900">{row.entryDate}</td>
-                      <td className="py-3 px-4 text-gray-700">{row.entryTime}</td>
+                      <td className="py-3 px-4 text-gray-700">
+                        <span className="flex items-center gap-1">
+                          {row.entryTime}
+                          {(row.latitude as number | null) != null && (row.longitude as number | null) != null && (
+                            <a
+                              href={`https://www.google.com/maps?q=${row.latitude},${row.longitude}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              title={`${(row.latitude as number).toFixed(4)}, ${(row.longitude as number).toFixed(4)}`}
+                              className="text-blue-400 hover:text-blue-600"
+                            >
+                              📍
+                            </a>
+                          )}
+                        </span>
+                      </td>
                       <td className="py-3 px-4 text-gray-500">{row.clockOutStr}</td>
                       <td className="py-3 px-4 text-gray-500">{row.hoursWorked}</td>
                       <td className="py-3 px-4">
