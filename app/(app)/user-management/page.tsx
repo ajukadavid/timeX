@@ -31,23 +31,40 @@ export default function UserManagementPage() {
   const { isAuthenticated } = useConvexAuth();
 
   const me = useQuery(api.users.getCurrentUser, isAuthenticated ? {} : "skip");
-
-  useEffect(() => {
-    if (me === undefined) return;
-    if (me === null || me.role !== "admin") {
-      router.replace(me ? `/dashboardStaff/${me._id}` : "/login");
-    }
-  }, [me, router]);
-
-  const employerId = me?._id as Id<"users"> | undefined;
-
-  const departments = useQuery(
-    api.departments.listByEmployer,
-    employerId ? { employerId } : "skip"
+  const myAdminOrg = useQuery(
+    api.organizations.getMyAdminOrg,
+    isAuthenticated ? {} : "skip"
   );
 
-  const createDept = useMutation(api.departments.createDepartment);
-  const updateTime = useMutation(api.settings.updateDefaultSignInTime);
+  const isSuperAdmin = me?.platformRole === "superAdmin";
+  const isAdmin = me?.role === "admin";
+
+  useEffect(() => {
+    if (me === undefined || myAdminOrg === undefined) return;
+    if (me === null) { router.replace("/login"); return; }
+    // super admins don't use this page; pure staff shouldn't access it
+    if (isSuperAdmin) { router.replace("/superAdmin"); return; }
+    if (!isAdmin) { router.replace(`/dashboardStaff/${me._id}`); return; }
+  }, [me, myAdminOrg, isSuperAdmin, isAdmin, router]);
+
+  const organizationId = myAdminOrg?._id ?? null;
+  const employerId = me?._id as Id<"users"> | undefined;
+
+  // Prefer org model, fall back to legacy employerId
+  const departmentsOrg = useQuery(
+    api.departments.listByOrg,
+    isAuthenticated && organizationId ? { organizationId } : "skip"
+  );
+  const departmentsLegacy = useQuery(
+    api.departments.listByEmployer,
+    isAuthenticated && !organizationId && employerId ? { employerId } : "skip"
+  );
+  const departments = departmentsOrg ?? departmentsLegacy ?? null;
+
+  const createDeptOrg = useMutation(api.departments.createDepartmentInOrg);
+  const createDeptLegacy = useMutation(api.departments.createDepartment);
+  const updateTimeOrg = useMutation(api.settings.updateOrgSignInTime);
+  const updateTimeLegacy = useMutation(api.settings.updateDefaultSignInTime);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showUpdateTime, setShowUpdateTime] = useState(false);
@@ -64,10 +81,16 @@ export default function UserManagementPage() {
 
   const handleCreateDepartment = async () => {
     if (!deptName.trim()) { toast("Department name is required", "error"); return; }
-    if (!employerId) return;
     setLoading(true);
     try {
-      await createDept({ employerId, name: deptName });
+      if (organizationId) {
+        await createDeptOrg({ organizationId, name: deptName });
+      } else if (employerId) {
+        await createDeptLegacy({ employerId, name: deptName });
+      } else {
+        toast("No organization found", "error");
+        return;
+      }
       toast("Department Successfully Created!", "success");
       setIsModalOpen(false);
       setDeptName("");
@@ -80,9 +103,12 @@ export default function UserManagementPage() {
 
   const handleSaveTime = async () => {
     if (!signInTime) { toast("Please select a time", "error"); return; }
-    if (!employerId) return;
     try {
-      await updateTime({ employerId, defaultSignInTime: signInTime });
+      if (organizationId) {
+        await updateTimeOrg({ organizationId, defaultSignInTime: signInTime });
+      } else if (employerId) {
+        await updateTimeLegacy({ employerId, defaultSignInTime: signInTime });
+      }
       setShowUpdateTime(false);
       toast("Login time Successfully Updated!", "success");
     } catch {
@@ -90,16 +116,33 @@ export default function UserManagementPage() {
     }
   };
 
+  if (me === undefined || myAdminOrg === undefined) {
+    return (
+      <main className="p-4 md:p-10 flex items-center justify-center min-h-screen">
+        <p className="text-gray-400">Loading…</p>
+      </main>
+    );
+  }
+
   return (
     <main className="p-4 md:p-10">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between">
         <div className="flex flex-col mb-4 md:mb-0">
           <span className="text-xl md:text-2xl font-bold">User Management</span>
-          <span className="text-sm font-light text-gray-600">Manage your company&apos;s users &amp; departments</span>
+          {myAdminOrg && (
+            <span className="text-sm text-purple-700 font-medium">{myAdminOrg.name}</span>
+          )}
+          <span className="text-sm font-light text-gray-600">
+            Manage your company&apos;s users &amp; departments
+          </span>
         </div>
         <div className="flex flex-col space-y-3 md:flex-row md:space-y-0 md:space-x-3">
-          <Button onClick={() => setShowUpdateTime(!showUpdateTime)} color="primary" size="lg">Update Time</Button>
-          <Button color="primary" size="lg" onClick={() => setIsModalOpen(true)}>Create Department</Button>
+          <Button onClick={() => setShowUpdateTime(!showUpdateTime)} color="primary" size="lg">
+            Update Time
+          </Button>
+          <Button color="primary" size="lg" onClick={() => setIsModalOpen(true)}>
+            Create Department
+          </Button>
         </div>
       </div>
 
@@ -115,7 +158,23 @@ export default function UserManagementPage() {
       )}
 
       <div className="mt-8 md:mt-20">
-        <XTable columns={columns} itemsGenerator={itemsGenerator} tableData={deptData} paginationData={paginationData} />
+        {departments === null ? (
+          <p className="text-gray-400 text-sm text-center py-12">Loading departments…</p>
+        ) : departments.length === 0 ? (
+          <p className="text-gray-500 text-sm text-center py-12">
+            No departments yet.{" "}
+            <button onClick={() => setIsModalOpen(true)} className="text-purple-600 hover:underline">
+              Create the first one.
+            </button>
+          </p>
+        ) : (
+          <XTable
+            columns={columns}
+            itemsGenerator={itemsGenerator}
+            tableData={deptData}
+            paginationData={paginationData}
+          />
+        )}
       </div>
 
       <XModal
@@ -124,13 +183,20 @@ export default function UserManagementPage() {
         title="Create Department"
         footer={
           <div className="flex justify-end">
-            <Button size="lg" color="primary" loading={loading} onClick={handleCreateDepartment}>Submit</Button>
+            <Button size="lg" color="primary" loading={loading} onClick={handleCreateDepartment}>
+              Submit
+            </Button>
           </div>
         }
       >
         <div className="space-y-5 w-full">
           <FormField label="Department Name" name="deptName">
-            <Input placeholder="Please Enter name of department" size="lg" value={deptName} onChange={(e) => setDeptName(e.target.value)} />
+            <Input
+              placeholder="Enter department name"
+              size="lg"
+              value={deptName}
+              onChange={(e) => setDeptName(e.target.value)}
+            />
           </FormField>
         </div>
       </XModal>
