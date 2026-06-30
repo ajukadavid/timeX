@@ -54,18 +54,21 @@ async function sendClerkInvite(email: string, role: string) {
 export const inviteStaffByEmail = action({
   args: {
     email: v.string(),
+    organizationId: v.optional(v.id("organizations")),
   },
   returns: inviteResultValidator,
   handler: async (ctx, args) => {
     const me = await ctx.runQuery(api.users.getCurrentUser, {});
-    if (!me || me.role !== "admin") {
-      throw new Error("Admin access required");
-    }
+    if (!me) throw new Error("Not authenticated");
+
+    // Org model: user must be org admin OR platform super admin
+    const canInvite =
+      me.platformRole === "superAdmin" ||
+      me.role === "admin";
+    if (!canInvite) throw new Error("Admin access required");
 
     const email = args.email.trim().toLowerCase();
-    if (!email.includes("@")) {
-      throw new Error("Invalid email address");
-    }
+    if (!email.includes("@")) throw new Error("Invalid email address");
 
     const result = await sendClerkInvite(email, "staff");
     return { email, ...result };
@@ -73,23 +76,34 @@ export const inviteStaffByEmail = action({
 });
 
 export const invitePendingStaff = action({
-  args: {},
+  args: {
+    organizationId: v.optional(v.id("organizations")),
+  },
   returns: v.object({
     invited: v.number(),
     failed: v.number(),
     results: v.array(inviteResultValidator),
   }),
-  handler: async (ctx) => {
+  handler: async (ctx, args) => {
     const me = await ctx.runQuery(api.users.getCurrentUser, {});
     if (!me || me.role !== "admin") {
       throw new Error("Admin access required");
     }
 
-    const staffList = await ctx.runQuery(api.staff.listStaffByEmployer, {
-      employerId: me._id,
-    });
+    let pending: Array<{ email: string; needsInvite: boolean }> = [];
 
-    const pending = staffList.filter((s) => s.needsInvite);
+    if (args.organizationId) {
+      const staffList = await ctx.runQuery(api.staff.listStaffByOrg, {
+        organizationId: args.organizationId,
+      });
+      pending = staffList.filter((s) => s.needsInvite);
+    } else {
+      const staffList = await ctx.runQuery(api.staff.listStaffByEmployer, {
+        employerId: me._id,
+      });
+      pending = staffList.filter((s) => s.needsInvite);
+    }
+
     const results: Array<{ email: string; success: boolean; message: string }> =
       [];
 

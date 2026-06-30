@@ -1,7 +1,9 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import {
+  requireCurrentUser,
   requireEmployerAdmin,
+  requireOrgAdmin,
   requireStaffAccess,
 } from "./lib/auth";
 import { ROLE } from "./roles";
@@ -23,6 +25,58 @@ const staffListItemValidator = v.object({
   ),
   lastEntryTime: v.union(v.number(), v.null()),
   needsInvite: v.boolean(),
+});
+
+/** List staff by organization (new model). */
+export const listStaffByOrg = query({
+  args: { organizationId: v.id("organizations") },
+  returns: v.array(staffListItemValidator),
+  handler: async (ctx, args) => {
+    await requireOrgAdmin(ctx, args.organizationId);
+
+    const profiles = await ctx.db
+      .query("staffProfiles")
+      .withIndex("by_organization", (q) =>
+        q.eq("organizationId", args.organizationId)
+      )
+      .filter((q) => q.eq(q.field("orgRole"), "staff"))
+      .collect();
+
+    const items = await Promise.all(
+      profiles.map(async (profile) => {
+        const user = await ctx.db.get(profile.userId);
+        const department = profile.departmentId
+          ? await ctx.db.get(profile.departmentId)
+          : null;
+
+        const logs = await ctx.db
+          .query("attendanceLogs")
+          .withIndex("by_staff", (q) => q.eq("staffUserId", profile.userId))
+          .collect();
+        const lastEntryTime =
+          logs.length > 0
+            ? Math.max(...logs.map((log) => log.entryTime))
+            : null;
+
+        return {
+          profileId: profile._id,
+          userId: profile.userId,
+          clerkId: user?.clerkId ?? null,
+          email: user?.email ?? "",
+          firstName: user?.firstName ?? "",
+          lastName: user?.lastName ?? "",
+          role: user?.role ?? ROLE.STAFF,
+          department: department?.name ?? null,
+          jobTitle: profile.jobTitle,
+          employmentStatus: profile.employmentStatus,
+          lastEntryTime,
+          needsInvite: Boolean(user?.clerkId?.startsWith("legacy:")),
+        };
+      })
+    );
+
+    return items;
+  },
 });
 
 export const listStaffByEmployer = query({
@@ -101,6 +155,95 @@ export const createStaffProfile = mutation({
   },
 });
 
+/** Create staff within an organization (new model). */
+export const createStaffInOrg = mutation({
+  args: {
+    organizationId: v.id("organizations"),
+    firstName: v.string(),
+    lastName: v.string(),
+    email: v.string(),
+    jobTitle: v.string(),
+    departmentId: v.optional(v.id("departments")),
+  },
+  returns: v.id("staffProfiles"),
+  handler: async (ctx, args) => {
+    await requireOrgAdmin(ctx, args.organizationId);
+    const now = Date.now();
+    const normalizedEmail = args.email.trim().toLowerCase();
+
+    // Find or create the user
+    let user = await ctx.db
+      .query("users")
+      .withIndex("by_email", (q) => q.eq("email", normalizedEmail))
+      .unique();
+
+    if (!user) {
+      const userId = await ctx.db.insert("users", {
+        clerkId: `legacy:${normalizedEmail}`,
+        email: normalizedEmail,
+        firstName: args.firstName,
+        lastName: args.lastName,
+        fullName: `${args.firstName} ${args.lastName}`.trim(),
+        role: ROLE.STAFF,
+        isActive: true,
+        createdAt: now,
+        updatedAt: now,
+      });
+      user = await ctx.db.get(userId);
+    } else {
+      await ctx.db.patch(user._id, {
+        firstName: args.firstName,
+        lastName: args.lastName,
+        fullName: `${args.firstName} ${args.lastName}`.trim(),
+        updatedAt: now,
+      });
+      user = await ctx.db.get(user._id);
+    }
+
+    if (!user) throw new Error("Failed to create staff user");
+
+    // Find the org admin's user ID for backward-compat employerId field
+    const adminProfile = await ctx.db
+      .query("staffProfiles")
+      .withIndex("by_organization", (q) =>
+        q.eq("organizationId", args.organizationId)
+      )
+      .filter((q) => q.eq(q.field("orgRole"), "admin"))
+      .first();
+    const employerId = adminProfile?.userId ?? user._id;
+
+    // Check for existing profile in this org
+    const existingProfile = await ctx.db
+      .query("staffProfiles")
+      .withIndex("by_org_and_user", (q) =>
+        q.eq("organizationId", args.organizationId).eq("userId", user!._id)
+      )
+      .unique();
+
+    if (existingProfile) {
+      await ctx.db.patch(existingProfile._id, {
+        departmentId: args.departmentId,
+        jobTitle: args.jobTitle || "Staff",
+        orgRole: "staff",
+        updatedAt: now,
+      });
+      return existingProfile._id;
+    }
+
+    return await ctx.db.insert("staffProfiles", {
+      userId: user._id,
+      employerId,
+      organizationId: args.organizationId,
+      orgRole: "staff",
+      departmentId: args.departmentId,
+      jobTitle: args.jobTitle || "Staff",
+      employmentStatus: "active",
+      createdAt: now,
+      updatedAt: now,
+    });
+  },
+});
+
 export const createStaffFromDashboard = mutation({
   args: {
     employerId: v.id("users"),
@@ -147,16 +290,25 @@ export const createStaffFromDashboard = mutation({
 
     if (!user) throw new Error("Failed to create staff user");
 
+    // Also find org if admin has one (bridge old and new models)
+    const adminOrgProfile = await ctx.db
+      .query("staffProfiles")
+      .withIndex("by_user", (q) => q.eq("userId", args.employerId))
+      .filter((q) => q.eq(q.field("orgRole"), "admin"))
+      .first();
+
     const existingProfile = await ctx.db
       .query("staffProfiles")
-      .withIndex("by_user", (q) => q.eq("userId", user._id))
-      .unique();
+      .withIndex("by_user", (q) => q.eq("userId", user!._id))
+      .first();
 
     if (existingProfile) {
       await ctx.db.patch(existingProfile._id, {
         departmentId: args.departmentId,
         jobTitle: args.role || "Staff",
         employerId: args.employerId,
+        organizationId: adminOrgProfile?.organizationId,
+        orgRole: "staff",
         updatedAt: now,
       });
       return existingProfile._id;
@@ -165,6 +317,8 @@ export const createStaffFromDashboard = mutation({
     return await ctx.db.insert("staffProfiles", {
       userId: user._id,
       employerId: args.employerId,
+      organizationId: adminOrgProfile?.organizationId,
+      orgRole: "staff",
       departmentId: args.departmentId,
       jobTitle: args.role || "Staff",
       employmentStatus: "active",
@@ -189,7 +343,11 @@ export const removeStaffByUserId = mutation({
       throw new Error("Staff profile not found");
     }
 
-    await requireEmployerAdmin(ctx, profile.employerId);
+    if (profile.organizationId) {
+      await requireOrgAdmin(ctx, profile.organizationId);
+    } else {
+      await requireEmployerAdmin(ctx, profile.employerId);
+    }
 
     const attendance = await ctx.db
       .query("attendanceLogs")

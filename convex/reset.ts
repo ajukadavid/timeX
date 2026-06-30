@@ -9,6 +9,7 @@ const TABLES_TO_WIPE: TableNames[] = [
   "staffProfiles",
   "departments",
   "employerSettings",
+  "organizations",
   "users",
   "employers",
   "staffs",

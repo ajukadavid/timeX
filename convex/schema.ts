@@ -7,6 +7,11 @@ export const userRoles = v.union(
   v.literal("staff")
 );
 
+export const orgMemberRoles = v.union(
+  v.literal("admin"),
+  v.literal("staff")
+);
+
 export default defineSchema({
   users: defineTable({
     clerkId: v.string(),
@@ -18,6 +23,8 @@ export default defineSchema({
     organizationName: v.optional(v.string()),
     isActive: v.boolean(),
     lastLoginAt: v.optional(v.number()),
+    // Platform-level super admin (the TimeX operator)
+    platformRole: v.optional(v.literal("superAdmin")),
     createdAt: v.number(),
     updatedAt: v.number(),
   })
@@ -25,20 +32,34 @@ export default defineSchema({
     .index("by_email", ["email"])
     .index("by_role", ["role"]),
 
+  // ─── NEW: one row per company ─────────────────────────────────
+  organizations: defineTable({
+    name: v.string(),
+    timezone: v.string(), // e.g. "Africa/Lagos"
+    defaultSignInTime: v.optional(v.string()), // "HH:mm"
+    isActive: v.boolean(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  }).index("by_active", ["isActive"]),
+
   departments: defineTable({
     name: v.string(),
     description: v.optional(v.string()),
-    employerId: v.id("users"),
+    employerId: v.id("users"), // legacy — still required for old records
+    organizationId: v.optional(v.id("organizations")), // NEW — set by migration + new creates
     isActive: v.boolean(),
     createdAt: v.number(),
     updatedAt: v.number(),
   })
     .index("by_employer", ["employerId"])
+    .index("by_organization", ["organizationId"])
     .index("by_name_employer", ["name", "employerId"]),
 
   staffProfiles: defineTable({
     userId: v.id("users"),
-    employerId: v.id("users"),
+    employerId: v.id("users"), // legacy — still required for old records
+    organizationId: v.optional(v.id("organizations")), // NEW
+    orgRole: v.optional(orgMemberRoles), // NEW: "admin" | "staff" within the org
     departmentId: v.optional(v.id("departments")),
     jobTitle: v.string(),
     employmentStatus: v.union(
@@ -53,14 +74,17 @@ export default defineSchema({
   })
     .index("by_user", ["userId"])
     .index("by_employer", ["employerId"])
+    .index("by_organization", ["organizationId"])
+    .index("by_org_and_user", ["organizationId", "userId"])
     .index("by_department", ["departmentId"]),
 
   attendanceLogs: defineTable({
     staffUserId: v.id("users"),
-    employerId: v.id("users"),
+    employerId: v.id("users"), // legacy
+    organizationId: v.optional(v.id("organizations")), // NEW
     staffProfileId: v.id("staffProfiles"),
     entryTime: v.number(),
-    entryDate: v.string(), // YYYY-MM-DD in employer timezone
+    entryDate: v.string(), // YYYY-MM-DD
     late: v.boolean(),
     source: v.optional(
       v.union(v.literal("web"), v.literal("mobile"), v.literal("import"))
@@ -71,16 +95,20 @@ export default defineSchema({
   })
     .index("by_staff", ["staffUserId"])
     .index("by_staff_date", ["staffUserId", "entryDate"])
-    .index("by_employer_date", ["employerId", "entryDate"]),
+    .index("by_employer_date", ["employerId", "entryDate"])
+    .index("by_org_date", ["organizationId", "entryDate"]),
 
   employerSettings: defineTable({
-    employerId: v.id("users"),
-    defaultSignInTime: v.optional(v.string()), // HH:mm
+    employerId: v.id("users"), // legacy
+    organizationId: v.optional(v.id("organizations")), // NEW
+    defaultSignInTime: v.optional(v.string()),
     createdAt: v.number(),
     updatedAt: v.number(),
-  }).index("by_employer", ["employerId"]),
+  })
+    .index("by_employer", ["employerId"])
+    .index("by_organization", ["organizationId"]),
 
-  // Raw legacy collections (MongoDB parity during migration/audit).
+  // Raw legacy collections (MongoDB migration audit).
   employers: defineTable({
     mongoId: v.optional(v.string()),
     clerkId: v.optional(v.string()),
