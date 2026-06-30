@@ -13,6 +13,7 @@ const attendanceLogValidator = v.object({
   _creationTime: v.number(),
   staffUserId: v.id("users"),
   employerId: v.id("users"),
+  organizationId: v.optional(v.id("organizations")), // NEW
   staffProfileId: v.id("staffProfiles"),
   entryTime: v.number(),
   entryDate: v.string(),

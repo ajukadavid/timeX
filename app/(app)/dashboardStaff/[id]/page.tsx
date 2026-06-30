@@ -20,11 +20,12 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { FormField } from "@/components/ui/FormField";
 import { XTable } from "@/components/XTable";
+import { XModal } from "@/components/XModal";
 import { toast } from "@/lib/toast";
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
-const columns = [
+const attendanceColumns = [
   { key: "entryDate", label: "Date", id: "entryDate" },
   { key: "entryTime", label: "Sign in Time", id: "entryTime" },
   { key: "status", label: "Status", id: "status" },
@@ -43,7 +44,8 @@ const chartOptions = {
     title: { display: true, text: "Staff Attendance Trends", font: { size: 16, weight: "bold" as const }, padding: 20 },
     tooltip: {
       callbacks: {
-        label: (ctx: any) => `${ctx.dataset.label}: ${ctx.parsed.y} day${ctx.parsed.y !== 1 ? "s" : ""}`,
+        label: (ctx: { dataset: { label: string }; parsed: { y: number } }) =>
+          `${ctx.dataset.label}: ${ctx.parsed.y} day${ctx.parsed.y !== 1 ? "s" : ""}`,
       },
     },
   },
@@ -65,11 +67,184 @@ function todayString() {
   return new Date().toISOString().slice(0, 10);
 }
 
+// ─── Profile card ─────────────────────────────────────────────
+
+function ProfileCard({
+  staffData,
+  isAdmin,
+  isOwnDashboard,
+  staffUserId,
+}: {
+  staffData: NonNullable<ReturnType<typeof useQuery<typeof api.staff.getStaffDetail>>>;
+  isAdmin: boolean;
+  isOwnDashboard: boolean;
+  staffUserId: Id<"users">;
+}) {
+  const updateProfile = useMutation(api.staff.updateStaffProfile);
+  const [showEdit, setShowEdit] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  const { staff, profile } = staffData;
+
+  const [form, setForm] = useState({
+    firstName: staff.firstName ?? "",
+    lastName: staff.lastName ?? "",
+    jobTitle: profile?.jobTitle ?? "",
+    startDate: profile?.startDate ?? "",
+  });
+
+  // Reset form when modal opens
+  useEffect(() => {
+    if (showEdit) {
+      setForm({
+        firstName: staff.firstName ?? "",
+        lastName: staff.lastName ?? "",
+        jobTitle: profile?.jobTitle ?? "",
+        startDate: profile?.startDate ?? "",
+      });
+    }
+  }, [showEdit, staff, profile]);
+
+  async function handleSave() {
+    setSaving(true);
+    try {
+      await updateProfile({
+        staffUserId,
+        firstName: form.firstName,
+        lastName: form.lastName,
+        jobTitle: form.jobTitle || undefined,
+        startDate: form.startDate || undefined,
+      });
+      toast("Profile updated", "success");
+      setShowEdit(false);
+    } catch (e) {
+      toast(e instanceof Error ? e.message : "Failed to update profile", "error");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  const canEdit = isAdmin || isOwnDashboard;
+  const fullName = `${staff.firstName ?? ""} ${staff.lastName ?? ""}`.trim() || staff.email;
+  const initials = ((staff.firstName?.[0] ?? "") + (staff.lastName?.[0] ?? "")).toUpperCase() || staff.email[0]?.toUpperCase() ?? "?";
+
+  return (
+    <>
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-5">
+          {/* Avatar */}
+          <div className="w-16 h-16 rounded-full bg-purple-100 flex items-center justify-center text-purple-700 text-2xl font-bold shrink-0">
+            {initials}
+          </div>
+
+          {/* Info */}
+          <div className="flex-1 min-w-0">
+            <h2 className="text-xl font-bold text-gray-900">{fullName}</h2>
+            <p className="text-sm text-gray-500">{staff.email}</p>
+            <div className="flex flex-wrap gap-2 mt-2">
+              {profile?.jobTitle && (
+                <span className="text-xs bg-purple-50 text-purple-700 px-2 py-0.5 rounded-full font-medium">
+                  {profile.jobTitle}
+                </span>
+              )}
+              {profile?.employmentStatus && (
+                <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                  profile.employmentStatus === "active"
+                    ? "bg-green-50 text-green-700"
+                    : "bg-gray-100 text-gray-500"
+                }`}>
+                  {profile.employmentStatus}
+                </span>
+              )}
+              {profile?.startDate && (
+                <span className="text-xs text-gray-400">
+                  Since {new Date(profile.startDate).toLocaleDateString("en-GB", { month: "short", year: "numeric" })}
+                </span>
+              )}
+            </div>
+          </div>
+
+          {/* Actions */}
+          {canEdit && (
+            <button
+              onClick={() => setShowEdit(true)}
+              className="flex items-center gap-1.5 text-sm text-purple-700 border border-purple-200 hover:bg-purple-50 px-4 py-2 rounded-lg transition-colors self-start sm:self-center"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                  d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+              </svg>
+              Edit Profile
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Edit Modal */}
+      <XModal
+        open={showEdit}
+        onClose={() => setShowEdit(false)}
+        title="Edit Profile"
+        size="lg"
+        footer={
+          <div className="flex justify-end gap-3">
+            <Button color="gray" variant="soft" onClick={() => setShowEdit(false)}>Cancel</Button>
+            <Button loading={saving} onClick={handleSave}>Save Changes</Button>
+          </div>
+        }
+      >
+        <div className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <FormField label="First Name" name="firstName">
+              <Input
+                size="lg"
+                value={form.firstName}
+                onChange={(e) => setForm({ ...form, firstName: e.target.value })}
+                placeholder="First name"
+              />
+            </FormField>
+            <FormField label="Last Name" name="lastName">
+              <Input
+                size="lg"
+                value={form.lastName}
+                onChange={(e) => setForm({ ...form, lastName: e.target.value })}
+                placeholder="Last name"
+              />
+            </FormField>
+          </div>
+          {isAdmin && (
+            <>
+              <FormField label="Job Title / Role" name="jobTitle">
+                <Input
+                  size="lg"
+                  value={form.jobTitle}
+                  onChange={(e) => setForm({ ...form, jobTitle: e.target.value })}
+                  placeholder="e.g. Software Engineer"
+                />
+              </FormField>
+              <FormField label="Start Date" name="startDate">
+                <Input
+                  type="date"
+                  size="lg"
+                  value={form.startDate}
+                  onChange={(e) => setForm({ ...form, startDate: e.target.value })}
+                />
+              </FormField>
+            </>
+          )}
+        </div>
+      </XModal>
+    </>
+  );
+}
+
+// ─── Main page ────────────────────────────────────────────────
+
 export default function StaffDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const { isAuthenticated } = useConvexAuth();
   const me = useQuery(api.users.getCurrentUser, isAuthenticated ? {} : "skip");
-  const isAdmin = me?.role === "admin";
+  const isAdmin = me?.role === "admin" || me?.platformRole === "superAdmin";
   const isOwnDashboard = me?._id === id;
 
   const staffData = useQuery(api.staff.getStaffDetail, { staffUserId: id as Id<"users"> });
@@ -83,7 +258,7 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
   const [filtered, setFiltered] = useState<LogEntry[]>([]);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-  const [chartData, setChartData] = useState<{ labels: string[]; datasets: any[] }>({ labels: [], datasets: [] });
+  const [chartData, setChartData] = useState<{ labels: string[]; datasets: { label: string; backgroundColor: string; borderColor: string; data: number[]; fill: boolean }[] }>({ labels: [], datasets: [] });
   const [signingIn, setSigningIn] = useState(false);
 
   useEffect(() => {
@@ -96,7 +271,7 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
 
   useEffect(() => {
     if (!staffData) return;
-    const formatted: LogEntry[] = staffData.entryLogs.map((val: any) => {
+    const formatted: LogEntry[] = staffData.entryLogs.map((val) => {
       const entryDate = new Date(val.entryDate);
       const entryTime = new Date(val.entryTime);
       return {
@@ -115,7 +290,10 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
     if (!startDate || !endDate) { setFiltered(allLogs); return; }
     const s = new Date(startDate); s.setHours(0, 0, 0, 0);
     const e = new Date(endDate); e.setHours(23, 59, 59, 999);
-    const f = allLogs.filter((l) => { const d = l._originalEntryDate!; return d >= s && d <= e; });
+    const f = allLogs.filter((l) => {
+      const d = l._originalEntryDate!;
+      return d >= s && d <= e;
+    });
     setFiltered(f);
   }, [startDate, endDate, allLogs]);
 
@@ -131,13 +309,15 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
     setChartData({
       labels: Object.keys(stats),
       datasets: [
-        { label: "Early Arrivals (Before 9 AM)", backgroundColor: "#4CAF50", borderColor: "#4CAF50", data: Object.values(stats).map((s) => s.early), fill: false },
-        { label: "Late Arrivals (After 9 AM)", backgroundColor: "#FF5252", borderColor: "#FF5252", data: Object.values(stats).map((s) => s.late), fill: false },
+        { label: "Early Arrivals", backgroundColor: "#4CAF50", borderColor: "#4CAF50", data: Object.values(stats).map((s) => s.early), fill: false },
+        { label: "Late Arrivals", backgroundColor: "#FF5252", borderColor: "#FF5252", data: Object.values(stats).map((s) => s.late), fill: false },
       ],
     });
   }, [filtered]);
 
-  const staffName = staffData ? `${staffData.staff.firstName || ""} ${staffData.staff.lastName || ""}`.trim() : "";
+  const staffName = staffData
+    ? `${staffData.staff.firstName ?? ""} ${staffData.staff.lastName ?? ""}`.trim() || staffData.staff.email
+    : "";
 
   const handleClockIn = async () => {
     setSigningIn(true);
@@ -166,21 +346,43 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
     saveAs(new Blob([csv], { type: "text/csv;charset=utf-8;" }), filename);
   };
 
+  if (staffData === undefined) {
+    return (
+      <div className="w-full p-4 flex items-center justify-center min-h-[200px]">
+        <p className="text-gray-400 text-sm">Loading profile…</p>
+      </div>
+    );
+  }
+
+  if (staffData === null) {
+    return (
+      <div className="w-full p-4 flex items-center justify-center min-h-[200px]">
+        <p className="text-gray-500 text-sm">Staff profile not found.</p>
+      </div>
+    );
+  }
+
   return (
     <div className="w-full p-2 sm:p-4">
       <div className="max-w-7xl mx-auto">
+
+        {/* Profile card */}
+        <ProfileCard
+          staffData={staffData}
+          isAdmin={isAdmin}
+          isOwnDashboard={isOwnDashboard}
+          staffUserId={id as Id<"users">}
+        />
+
+        {/* Action bar */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-          <h1 className="text-2xl font-semibold">{staffName} Attendance Summary</h1>
+          <h2 className="text-xl font-semibold">{staffName} — Attendance Summary</h2>
           <div className="flex flex-wrap gap-3">
             {isOwnDashboard && (
               todayEntry === undefined ? null : todayEntry ? (
                 <span className="inline-flex items-center px-4 py-2 rounded-lg bg-green-50 text-green-700 text-sm font-medium border border-green-200">
                   Signed in today at{" "}
-                  {new Date(todayEntry.entryTime).toLocaleTimeString("en-US", {
-                    hour: "numeric",
-                    minute: "numeric",
-                    hour12: true,
-                  })}
+                  {new Date(todayEntry.entryTime).toLocaleTimeString("en-US", { hour: "numeric", minute: "numeric", hour12: true })}
                   {todayEntry.late ? " (Late)" : " (On Time)"}
                 </span>
               ) : (
@@ -189,16 +391,18 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
                 </Button>
               )
             )}
-          <Button onClick={exportToCSV} color="primary" size="md" className="flex items-center gap-2">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
-            Export to CSV
-          </Button>
+            <Button onClick={exportToCSV} color="primary" size="md" className="flex items-center gap-2">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                  d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              Export CSV
+            </Button>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-4 mb-6">
+        {/* Date filter */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
           <div className="flex flex-col sm:flex-row gap-4 items-end">
             <div className="flex-1">
               <FormField label="Start Date" name="startDate">
@@ -217,20 +421,26 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
           {filtered.length > 0 && (
             <p className="text-sm text-gray-600 mt-3">
               Showing {filtered.length} record{filtered.length !== 1 ? "s" : ""}
-              {startDate && endDate && ` from ${new Date(startDate).toLocaleDateString()} to ${new Date(endDate).toLocaleDateString()}`}
+              {startDate && endDate && ` · ${new Date(startDate).toLocaleDateString()} to ${new Date(endDate).toLocaleDateString()}`}
             </p>
           )}
         </div>
 
+        {/* Chart (admins only) */}
         {isAdmin && chartData.labels.length > 0 && (
-          <div className="bg-white rounded-lg shadow p-3 sm:p-6 mb-8">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 sm:p-6 mb-8">
             <div className="h-[300px] md:h-[400px] lg:h-[500px]">
               <Line data={chartData} options={chartOptions} />
             </div>
           </div>
         )}
 
-        <XTable columns={columns} tableData={filtered as Record<string, unknown>[]} paginationData={paginationData} />
+        {/* Attendance table */}
+        <XTable
+          columns={attendanceColumns}
+          tableData={filtered as Record<string, unknown>[]}
+          paginationData={paginationData}
+        />
       </div>
     </div>
   );

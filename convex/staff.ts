@@ -27,20 +27,23 @@ const staffListItemValidator = v.object({
   needsInvite: v.boolean(),
 });
 
-/** List staff by organization (new model). */
+/** List staff by organization (new model) — shows all non-admin members. */
 export const listStaffByOrg = query({
   args: { organizationId: v.id("organizations") },
   returns: v.array(staffListItemValidator),
   handler: async (ctx, args) => {
     await requireOrgAdmin(ctx, args.organizationId);
 
-    const profiles = await ctx.db
+    const allProfiles = await ctx.db
       .query("staffProfiles")
       .withIndex("by_organization", (q) =>
         q.eq("organizationId", args.organizationId)
       )
-      .filter((q) => q.eq(q.field("orgRole"), "staff"))
       .collect();
+
+    // Show staff members — include profiles with orgRole "staff" or unset (legacy)
+    // but exclude org admins so the dashboard isn't cluttered with admin rows.
+    const profiles = allProfiles.filter((p) => p.orgRole !== "admin");
 
     const items = await Promise.all(
       profiles.map(async (profile) => {
@@ -376,6 +379,7 @@ const staffDetailValidator = v.union(
       organizationName: v.optional(v.string()),
       isActive: v.boolean(),
       lastLoginAt: v.optional(v.number()),
+      platformRole: v.optional(v.literal("superAdmin")), // NEW
       createdAt: v.number(),
       updatedAt: v.number(),
     }),
@@ -385,6 +389,8 @@ const staffDetailValidator = v.union(
         _creationTime: v.number(),
         userId: v.id("users"),
         employerId: v.id("users"),
+        organizationId: v.optional(v.id("organizations")), // NEW
+        orgRole: v.optional(v.union(v.literal("admin"), v.literal("staff"))), // NEW
         departmentId: v.optional(v.id("departments")),
         jobTitle: v.string(),
         employmentStatus: v.union(
@@ -405,6 +411,7 @@ const staffDetailValidator = v.union(
         _creationTime: v.number(),
         staffUserId: v.id("users"),
         employerId: v.id("users"),
+        organizationId: v.optional(v.id("organizations")), // NEW
         staffProfileId: v.id("staffProfiles"),
         entryTime: v.number(),
         entryDate: v.string(),
@@ -447,5 +454,59 @@ export const getStaffDetail = query({
       profile,
       entryLogs,
     };
+  },
+});
+
+/** Update basic profile info — staff can edit their own, admins can edit any staff in their org. */
+export const updateStaffProfile = mutation({
+  args: {
+    staffUserId: v.id("users"),
+    firstName: v.optional(v.string()),
+    lastName: v.optional(v.string()),
+    jobTitle: v.optional(v.string()),
+    departmentId: v.optional(v.id("departments")),
+    employmentStatus: v.optional(
+      v.union(v.literal("active"), v.literal("inactive"), v.literal("suspended"))
+    ),
+    timezone: v.optional(v.string()),
+    startDate: v.optional(v.string()),
+  },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    await requireStaffAccess(ctx, args.staffUserId);
+    const now = Date.now();
+
+    // Update user name fields if provided
+    if (args.firstName !== undefined || args.lastName !== undefined) {
+      const user = await ctx.db.get(args.staffUserId);
+      if (user) {
+        const firstName = args.firstName ?? user.firstName ?? "";
+        const lastName = args.lastName ?? user.lastName ?? "";
+        await ctx.db.patch(args.staffUserId, {
+          firstName,
+          lastName,
+          fullName: `${firstName} ${lastName}`.trim(),
+          updatedAt: now,
+        });
+      }
+    }
+
+    // Update profile fields
+    const profile = await ctx.db
+      .query("staffProfiles")
+      .withIndex("by_user", (q) => q.eq("userId", args.staffUserId))
+      .unique();
+
+    if (profile) {
+      const profileUpdates: Record<string, unknown> = { updatedAt: now };
+      if (args.jobTitle !== undefined) profileUpdates.jobTitle = args.jobTitle;
+      if (args.departmentId !== undefined) profileUpdates.departmentId = args.departmentId;
+      if (args.employmentStatus !== undefined) profileUpdates.employmentStatus = args.employmentStatus;
+      if (args.timezone !== undefined) profileUpdates.timezone = args.timezone;
+      if (args.startDate !== undefined) profileUpdates.startDate = args.startDate;
+      await ctx.db.patch(profile._id, profileUpdates);
+    }
+
+    return null;
   },
 });
