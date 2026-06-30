@@ -29,21 +29,25 @@ const ITEMS_PER_PAGE = 30;
 const chartOptions = {
   responsive: true,
   scales: {
-    y: { beginAtZero: true, ticks: { stepSize: 1 }, title: { display: true, text: "Number of Days", font: { size: 14 } } },
-    x: { title: { display: true, text: "Months", font: { size: 14 } } },
+    y: { beginAtZero: true, ticks: { stepSize: 1, font: { family: "JetBrains Mono, monospace", size: 11 }, color: "#707974" }, grid: { color: "#ebefec" } },
+    x: { ticks: { font: { family: "JetBrains Mono, monospace", size: 11 }, color: "#707974" }, grid: { display: false } },
   },
   plugins: {
-    legend: { display: true, position: "top" as const },
-    title: { display: true, text: "Staff Attendance Trends", font: { size: 16, weight: "bold" as const }, padding: 20 },
+    legend: { display: true, position: "top" as const, labels: { font: { family: "Hanken Grotesk, sans-serif", size: 12 }, color: "#404944" } },
+    title: { display: false },
     tooltip: {
+      backgroundColor: "#003527",
+      padding: 12,
+      titleFont: { family: "Hanken Grotesk, sans-serif", size: 13 },
+      bodyFont: { family: "JetBrains Mono, monospace", size: 12 },
+      cornerRadius: 8,
       callbacks: {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        label: (ctx: any) =>
-          `${ctx.dataset.label ?? ""}: ${ctx.parsed.y} day${ctx.parsed.y !== 1 ? "s" : ""}`,
+        label: (ctx: any) => `${ctx.dataset.label ?? ""}: ${ctx.parsed.y} day${ctx.parsed.y !== 1 ? "s" : ""}`,
       },
     },
   },
-  elements: { line: { tension: 0.4 }, point: { radius: 5, hoverRadius: 7 } },
+  elements: { line: { tension: 0.4 }, point: { radius: 4, hoverRadius: 6 } },
   interaction: { intersect: false, mode: "index" as const },
 };
 
@@ -62,18 +66,6 @@ interface LogEntry {
   _originalEntryDate?: Date;
   _originalEntryTime?: Date;
   [key: string]: unknown;
-}
-
-// ─── Status badge ─────────────────────────────────────────────
-
-function StatusBadge({ late }: { late: boolean }) {
-  return (
-    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
-      late ? "bg-red-50 text-red-700" : "bg-green-50 text-green-700"
-    }`}>
-      {late ? "Late" : "On Time"}
-    </span>
-  );
 }
 
 // ─── Profile card ─────────────────────────────────────────────
@@ -118,20 +110,12 @@ function ProfileCard({
   async function handleSave() {
     setSaving(true);
     try {
-      await updateProfile({
-        staffUserId,
-        firstName: form.firstName,
-        lastName: form.lastName,
-        jobTitle: form.jobTitle || undefined,
-        startDate: form.startDate || undefined,
-      });
+      await updateProfile({ staffUserId, firstName: form.firstName, lastName: form.lastName, jobTitle: form.jobTitle || undefined, startDate: form.startDate || undefined });
       toast("Profile updated", "success");
       setShowEdit(false);
     } catch (e) {
       toast(e instanceof Error ? e.message : "Failed to update profile", "error");
-    } finally {
-      setSaving(false);
-    }
+    } finally { setSaving(false); }
   }
 
   async function handleToggleRole() {
@@ -139,17 +123,11 @@ function ProfileCard({
     const newRole = profile.orgRole === "admin" ? "staff" : "admin";
     setPromotingRole(true);
     try {
-      await setRole({
-        organizationId: profile.organizationId,
-        userId: staffUserId,
-        orgRole: newRole,
-      });
+      await setRole({ organizationId: profile.organizationId, userId: staffUserId, orgRole: newRole });
       toast(`Role updated to ${newRole}`, "success");
     } catch (e) {
       toast(e instanceof Error ? e.message : "Failed to update role", "error");
-    } finally {
-      setPromotingRole(false);
-    }
+    } finally { setPromotingRole(false); }
   }
 
   const canEdit = isAdmin || isOwnDashboard;
@@ -160,37 +138,47 @@ function ProfileCard({
 
   return (
     <>
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+      <div
+        className="rounded-xl border p-6 mb-6"
+        style={{ backgroundColor: "#ffffff", borderColor: "rgba(191,201,195,0.3)", boxShadow: "0 2px 10px rgba(6,78,59,0.04)" }}
+      >
         <div className="flex flex-col sm:flex-row sm:items-center gap-5">
-          <div className="w-16 h-16 rounded-full bg-purple-100 flex items-center justify-center text-purple-700 text-2xl font-bold shrink-0">
+          <div
+            className="w-16 h-16 rounded-xl flex items-center justify-center text-2xl font-bold shrink-0"
+            style={{ backgroundColor: "#064e3b", color: "#b0f0d6", fontFamily: "var(--font-hanken, sans-serif)" }}
+          >
             {initials}
           </div>
 
           <div className="flex-1 min-w-0">
-            <h2 className="text-xl font-bold text-gray-900">{fullName}</h2>
-            <p className="text-sm text-gray-500">{staff.email}</p>
-            <div className="flex flex-wrap gap-2 mt-2">
+            <h2 className="text-xl font-bold" style={{ color: "#003527", fontFamily: "var(--font-hanken, sans-serif)" }}>{fullName}</h2>
+            <p className="text-sm mt-0.5" style={{ fontFamily: "var(--font-jetbrains, monospace)", color: "#707974" }}>{staff.email}</p>
+            <div className="flex flex-wrap gap-2 mt-3">
               {profile?.jobTitle && (
-                <span className="text-xs bg-purple-50 text-purple-700 px-2 py-0.5 rounded-full font-medium">
+                <span className="text-xs px-2.5 py-0.5 rounded-full font-mono" style={{ backgroundColor: "#b0f0d6", color: "#0b513d" }}>
                   {profile.jobTitle}
                 </span>
               )}
               {profile?.orgRole && (
-                <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                  profile.orgRole === "admin" ? "bg-blue-50 text-blue-700" : "bg-gray-100 text-gray-600"
-                }`}>
+                <span className="text-xs px-2.5 py-0.5 rounded-full font-mono" style={
+                  profile.orgRole === "admin"
+                    ? { backgroundColor: "#064e3b", color: "#80bea6" }
+                    : { backgroundColor: "#ebefec", color: "#404944" }
+                }>
                   {profile.orgRole === "admin" ? "Admin" : "Staff"}
                 </span>
               )}
               {profile?.employmentStatus && (
-                <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                  profile.employmentStatus === "active" ? "bg-green-50 text-green-700" : "bg-gray-100 text-gray-500"
-                }`}>
+                <span className="text-xs px-2.5 py-0.5 rounded-full font-mono" style={
+                  profile.employmentStatus === "active"
+                    ? { backgroundColor: "#bbf37c", color: "#1c3400" }
+                    : { backgroundColor: "#ebefec", color: "#707974" }
+                }>
                   {profile.employmentStatus}
                 </span>
               )}
               {profile?.startDate && (
-                <span className="text-xs text-gray-400">
+                <span className="text-xs" style={{ fontFamily: "var(--font-jetbrains, monospace)", color: "#707974" }}>
                   Since {new Date(profile.startDate).toLocaleDateString("en-GB", { month: "short", year: "numeric" })}
                 </span>
               )}
@@ -201,12 +189,12 @@ function ProfileCard({
             {canEdit && (
               <button
                 onClick={() => setShowEdit(true)}
-                className="flex items-center gap-1.5 text-sm text-purple-700 border border-purple-200 hover:bg-purple-50 px-4 py-2 rounded-lg transition-colors"
+                className="flex items-center gap-1.5 text-sm px-4 py-2 rounded-lg transition-all border"
+                style={{ color: "#003527", borderColor: "rgba(191,201,195,0.5)", backgroundColor: "transparent" }}
+                onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = "#ebefec"; }}
+                onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = "transparent"; }}
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                    d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                </svg>
+                <span className="material-symbols-outlined text-[16px]">edit</span>
                 Edit Profile
               </button>
             )}
@@ -214,12 +202,16 @@ function ProfileCard({
               <button
                 onClick={handleToggleRole}
                 disabled={promotingRole}
-                className={`flex items-center gap-1.5 text-sm px-4 py-2 rounded-lg transition-colors border ${
+                className="flex items-center gap-1.5 text-sm px-4 py-2 rounded-lg transition-all border disabled:opacity-50"
+                style={
                   isStaff
-                    ? "text-blue-700 border-blue-200 hover:bg-blue-50"
-                    : "text-gray-600 border-gray-200 hover:bg-gray-50"
-                }`}
+                    ? { color: "#064e3b", borderColor: "rgba(6,78,59,0.3)", backgroundColor: "transparent" }
+                    : { color: "#707974", borderColor: "rgba(191,201,195,0.5)", backgroundColor: "transparent" }
+                }
+                onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = "#ebefec"; }}
+                onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = "transparent"; }}
               >
+                <span className="material-symbols-outlined text-[16px]">manage_accounts</span>
                 {promotingRole ? "…" : isStaff ? "Promote to Admin" : "Demote to Staff"}
               </button>
             )}
@@ -239,7 +231,7 @@ function ProfileCard({
           </div>
         }
       >
-        <div className="space-y-4">
+        <div className="space-y-4 p-1">
           <div className="grid grid-cols-2 gap-4">
             <FormField label="First Name" name="firstName">
               <Input size="lg" value={form.firstName} onChange={(e) => setForm({ ...form, firstName: e.target.value })} placeholder="First name" />
@@ -266,15 +258,7 @@ function ProfileCard({
 
 // ─── Leave section ────────────────────────────────────────────
 
-function LeaveSection({
-  staffUserId,
-  isAdmin,
-  isOwnDashboard,
-}: {
-  staffUserId: Id<"users">;
-  isAdmin: boolean;
-  isOwnDashboard: boolean;
-}) {
+function LeaveSection({ staffUserId, isAdmin, isOwnDashboard }: { staffUserId: Id<"users">; isAdmin: boolean; isOwnDashboard: boolean; }) {
   const leaveRequests = useQuery(api.leave.listStaffLeaveRequests, { staffUserId });
   const requestLeave = useMutation(api.leave.requestLeave);
   const cancelLeave = useMutation(api.leave.cancelLeave);
@@ -296,9 +280,7 @@ function LeaveSection({
       setLeaveForm({ type: "annual", startDate: "", endDate: "", reason: "" });
     } catch (e) {
       toast(e instanceof Error ? e.message : "Failed to submit request", "error");
-    } finally {
-      setSubmitting(false);
-    }
+    } finally { setSubmitting(false); }
   }
 
   async function handleCancel(reqId: Id<"leaveRequests">) {
@@ -316,100 +298,111 @@ function LeaveSection({
     try {
       await reviewLeave({ requestId: showReview, decision, reviewNote: reviewNote || undefined });
       toast(`Request ${decision}`, "success");
-      setShowReview(null);
-      setReviewNote("");
+      setShowReview(null); setReviewNote("");
     } catch (e) {
       toast(e instanceof Error ? e.message : "Failed to review", "error");
-    } finally {
-      setSubmitting(false);
-    }
+    } finally { setSubmitting(false); }
   }
 
-  const statusColor = (status: string) => {
-    if (status === "approved") return "bg-green-50 text-green-700";
-    if (status === "rejected") return "bg-red-50 text-red-700";
-    return "bg-yellow-50 text-yellow-700";
+  const STATUS_STYLE: Record<string, { bg: string; color: string }> = {
+    approved: { bg: "#b0f0d6", color: "#0b513d" },
+    rejected: { bg: "#ffdad6", color: "#93000a" },
+    pending: { bg: "#ffdbd0", color: "#832600" },
+  };
+
+  const TYPE_STYLE: Record<string, { bg: string; color: string }> = {
+    annual: { bg: "#b0f0d6", color: "#0b513d" },
+    sick: { bg: "#ffdbd0", color: "#832600" },
+    other: { bg: "#ebefec", color: "#404944" },
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mt-8">
-      <div className="flex items-center justify-between mb-5">
-        <h3 className="text-lg font-semibold text-gray-900">Leave Requests</h3>
+    <div className="rounded-xl border overflow-hidden mt-8" style={{ backgroundColor: "#ffffff", borderColor: "rgba(191,201,195,0.3)" }}>
+      <div className="px-6 py-4 border-b flex items-center justify-between" style={{ borderColor: "rgba(191,201,195,0.2)", backgroundColor: "#f6faf7" }}>
+        <h3 className="font-bold" style={{ color: "#003527", fontFamily: "var(--font-hanken, sans-serif)" }}>Leave Requests</h3>
         {isOwnDashboard && (
-          <Button size="sm" onClick={() => setShowRequest(true)}>
-            + Request Leave
-          </Button>
+          <button
+            onClick={() => setShowRequest(true)}
+            className="flex items-center gap-1.5 text-sm font-bold px-4 py-2 rounded-lg"
+            style={{ backgroundColor: "#003527", color: "#ffffff" }}
+          >
+            <span className="material-symbols-outlined text-[16px]">add</span>
+            Request Leave
+          </button>
         )}
       </div>
 
       {leaveRequests === undefined ? (
-        <p className="text-sm text-gray-400">Loading…</p>
+        <div className="py-10 flex items-center justify-center">
+          <span className="material-symbols-outlined animate-spin text-[28px]" style={{ color: "#003527" }}>progress_activity</span>
+        </div>
       ) : leaveRequests.length === 0 ? (
-        <p className="text-sm text-gray-400">No leave requests yet.</p>
+        <div className="py-10 flex flex-col items-center gap-2">
+          <span className="material-symbols-outlined text-[36px]" style={{ color: "#bfc9c3", fontVariationSettings: "'FILL' 1" }}>event_busy</span>
+          <p className="text-sm" style={{ color: "#707974" }}>No leave requests yet.</p>
+        </div>
       ) : (
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+          <table className="w-full text-left">
             <thead>
-              <tr className="border-b border-gray-100">
-                <th className="text-left py-2 px-3 text-gray-500 font-medium">Type</th>
-                <th className="text-left py-2 px-3 text-gray-500 font-medium">From</th>
-                <th className="text-left py-2 px-3 text-gray-500 font-medium">To</th>
-                <th className="text-left py-2 px-3 text-gray-500 font-medium">Days</th>
-                <th className="text-left py-2 px-3 text-gray-500 font-medium">Status</th>
-                <th className="text-left py-2 px-3 text-gray-500 font-medium">Actions</th>
+              <tr style={{ backgroundColor: "rgba(241,245,242,0.6)", borderBottom: "1px solid rgba(191,201,195,0.2)" }}>
+                {["Type", "From", "To", "Days", "Status", "Actions"].map((h) => (
+                  <th key={h} className="px-5 py-3" style={{ fontFamily: "var(--font-jetbrains, monospace)", fontSize: "11px", letterSpacing: "0.06em", color: "#707974", textTransform: "uppercase" }}>{h}</th>
+                ))}
               </tr>
             </thead>
             <tbody>
-              {leaveRequests.map((req) => (
-                <tr key={req._id} className="border-b border-gray-50 hover:bg-gray-50/50">
-                  <td className="py-3 px-3 capitalize">{req.type}</td>
-                  <td className="py-3 px-3">{req.startDate}</td>
-                  <td className="py-3 px-3">{req.endDate}</td>
-                  <td className="py-3 px-3">{req.daysRequested}</td>
-                  <td className="py-3 px-3">
-                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${statusColor(req.status)}`}>
-                      {req.status.charAt(0).toUpperCase() + req.status.slice(1)}
-                    </span>
-                  </td>
-                  <td className="py-3 px-3">
-                    <div className="flex gap-2">
-                      {isOwnDashboard && req.status === "pending" && (
-                        <button onClick={() => handleCancel(req._id)} className="text-xs text-red-600 hover:underline">Cancel</button>
-                      )}
-                      {isAdmin && req.status === "pending" && (
-                        <button onClick={() => { setShowReview(req._id); setReviewNote(""); }} className="text-xs text-blue-600 hover:underline">Review</button>
-                      )}
-                      {req.reviewNote && (
-                        <span className="text-xs text-gray-400 italic" title={req.reviewNote}>Note</span>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ))}
+              {leaveRequests.map((req) => {
+                const ss = STATUS_STYLE[req.status] ?? STATUS_STYLE.pending;
+                const ts = TYPE_STYLE[req.type] ?? TYPE_STYLE.other;
+                return (
+                  <tr key={req._id} className="border-b transition-colors" style={{ borderColor: "rgba(191,201,195,0.15)" }}
+                    onMouseEnter={(e) => { (e.currentTarget as HTMLTableRowElement).style.backgroundColor = "rgba(241,245,242,0.5)"; }}
+                    onMouseLeave={(e) => { (e.currentTarget as HTMLTableRowElement).style.backgroundColor = "transparent"; }}
+                  >
+                    <td className="px-5 py-4">
+                      <span className="text-xs px-2.5 py-0.5 rounded-full font-mono capitalize" style={{ backgroundColor: ts.bg, color: ts.color }}>{req.type}</span>
+                    </td>
+                    <td className="px-5 py-4 text-sm font-mono" style={{ color: "#404944" }}>{req.startDate}</td>
+                    <td className="px-5 py-4 text-sm font-mono" style={{ color: "#404944" }}>{req.endDate}</td>
+                    <td className="px-5 py-4 text-sm" style={{ color: "#404944" }}>{req.daysRequested}</td>
+                    <td className="px-5 py-4">
+                      <span className="text-xs px-2.5 py-0.5 rounded-full font-mono capitalize" style={{ backgroundColor: ss.bg, color: ss.color }}>
+                        {req.status}
+                      </span>
+                    </td>
+                    <td className="px-5 py-4">
+                      <div className="flex gap-2">
+                        {isOwnDashboard && req.status === "pending" && (
+                          <button onClick={() => handleCancel(req._id)} className="text-xs font-bold transition-all" style={{ color: "#ba1a1a" }}>Cancel</button>
+                        )}
+                        {isAdmin && req.status === "pending" && (
+                          <button onClick={() => { setShowReview(req._id); setReviewNote(""); }} className="text-xs font-bold transition-all" style={{ color: "#003527" }}>Review</button>
+                        )}
+                        {req.reviewNote && (
+                          <span className="text-xs italic" style={{ color: "#bfc9c3" }} title={req.reviewNote}>Note</span>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
       )}
 
       {/* Request Leave Modal */}
-      <XModal
-        open={showRequest}
-        onClose={() => setShowRequest(false)}
-        title="Request Leave"
-        size="md"
-        footer={
-          <div className="flex justify-end gap-3">
-            <Button color="gray" variant="soft" onClick={() => setShowRequest(false)}>Cancel</Button>
-            <Button loading={submitting} onClick={handleRequestLeave}>Submit Request</Button>
-          </div>
-        }
+      <XModal open={showRequest} onClose={() => setShowRequest(false)} title="Request Leave" size="md"
+        footer={<div className="flex justify-end gap-3"><Button color="gray" variant="soft" onClick={() => setShowRequest(false)}>Cancel</Button><Button loading={submitting} onClick={handleRequestLeave}>Submit Request</Button></div>}
       >
-        <div className="space-y-4">
+        <div className="space-y-4 p-1">
           <FormField label="Leave Type" name="type">
             <select
               value={leaveForm.type}
               onChange={(e) => setLeaveForm({ ...leaveForm, type: e.target.value as "annual" | "sick" | "other" })}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="w-full rounded-lg border px-3 py-2 text-sm outline-none"
+              style={{ borderColor: "rgba(191,201,195,0.5)", backgroundColor: "#f6faf7", color: "#181d1b" }}
             >
               <option value="annual">Annual Leave</option>
               <option value="sick">Sick Leave</option>
@@ -425,41 +418,25 @@ function LeaveSection({
             </FormField>
           </div>
           <FormField label="Reason (optional)" name="reason">
-            <textarea
-              value={leaveForm.reason}
-              onChange={(e) => setLeaveForm({ ...leaveForm, reason: e.target.value })}
-              rows={3}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"
-              placeholder="Brief reason for leave…"
-            />
+            <textarea value={leaveForm.reason} onChange={(e) => setLeaveForm({ ...leaveForm, reason: e.target.value })} rows={3}
+              className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none resize-none"
+              style={{ borderColor: "rgba(191,201,195,0.5)", backgroundColor: "#f6faf7", color: "#181d1b" }}
+              placeholder="Brief reason for leave…" />
           </FormField>
         </div>
       </XModal>
 
       {/* Review Modal */}
-      <XModal
-        open={!!showReview}
-        onClose={() => setShowReview(null)}
-        title="Review Leave Request"
-        size="sm"
-        footer={
-          <div className="flex justify-end gap-3">
-            <Button color="gray" variant="soft" onClick={() => setShowReview(null)}>Cancel</Button>
-            <Button color="red" loading={submitting} onClick={() => handleReview("rejected")}>Reject</Button>
-            <Button loading={submitting} onClick={() => handleReview("approved")}>Approve</Button>
-          </div>
-        }
+      <XModal open={!!showReview} onClose={() => setShowReview(null)} title="Review Leave Request" size="sm"
+        footer={<div className="flex justify-end gap-3"><Button color="gray" variant="soft" onClick={() => setShowReview(null)}>Cancel</Button><Button color="red" loading={submitting} onClick={() => handleReview("rejected")}>Reject</Button><Button loading={submitting} onClick={() => handleReview("approved")}>Approve</Button></div>}
       >
-        <div className="space-y-4">
-          <p className="text-sm text-gray-600">Add an optional note for the staff member.</p>
+        <div className="space-y-4 p-1">
+          <p className="text-sm" style={{ color: "#707974" }}>Add an optional note for the staff member.</p>
           <FormField label="Review Note (optional)" name="reviewNote">
-            <textarea
-              value={reviewNote}
-              onChange={(e) => setReviewNote(e.target.value)}
-              rows={3}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"
-              placeholder="e.g. Approved, enjoy your time off!"
-            />
+            <textarea value={reviewNote} onChange={(e) => setReviewNote(e.target.value)} rows={3}
+              className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none resize-none"
+              style={{ borderColor: "rgba(191,201,195,0.5)", backgroundColor: "#f6faf7", color: "#181d1b" }}
+              placeholder="e.g. Approved, enjoy your time off!" />
           </FormField>
         </div>
       </XModal>
@@ -477,10 +454,7 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
   const isOwnDashboard = me?._id === id;
 
   const staffData = useQuery(api.staff.getStaffDetail, { staffUserId: id as Id<"users"> });
-  const todayEntry = useQuery(
-    api.attendance.getTodayEntry,
-    isOwnDashboard ? { staffUserId: id as Id<"users"> } : "skip"
-  );
+  const todayEntry = useQuery(api.attendance.getTodayEntry, isOwnDashboard ? { staffUserId: id as Id<"users"> } : "skip");
   const clockInMutation = useMutation(api.attendance.clockIn);
   const clockOutMutation = useMutation(api.attendance.clockOut);
   const adminAddAttendance = useMutation(api.attendance.adminAddAttendance);
@@ -499,8 +473,6 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
   const [signingIn, setSigningIn] = useState(false);
   const [clockingOut, setClockingOut] = useState(false);
   const [deletingLog, setDeletingLog] = useState<string | null>(null);
-
-  // Admin add entry modal
   const [showAddEntry, setShowAddEntry] = useState(false);
   const [addEntryForm, setAddEntryForm] = useState({ entryDate: "", entryTimeStr: "09:00" });
   const [addingEntry, setAddingEntry] = useState(false);
@@ -522,9 +494,7 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
         _id: log._id,
         entryDate: entryDateObj.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }),
         entryTime: entryDateObj.toLocaleTimeString("en-US", { hour: "numeric", minute: "numeric", hour12: true }),
-        clockOutStr: clockOutObj
-          ? clockOutObj.toLocaleTimeString("en-US", { hour: "numeric", minute: "numeric", hour12: true })
-          : "—",
+        clockOutStr: clockOutObj ? clockOutObj.toLocaleTimeString("en-US", { hour: "numeric", minute: "numeric", hour12: true }) : "—",
         hoursWorked: log.hoursWorked !== undefined ? `${log.hoursWorked}h` : "—",
         late: log.late,
         status: log.late ? "Late" : "On Time",
@@ -564,8 +534,8 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
         return new Date(Number(yr), Number(mo) - 1).toLocaleString("en-US", { month: "short", year: "2-digit" });
       }),
       datasets: [
-        { label: "On Time", backgroundColor: "#7C3AED", borderColor: "#7C3AED", data: sortedMonths.map((m) => stats[m]!.onTime), fill: false },
-        { label: "Late Arrivals", backgroundColor: "#FF5252", borderColor: "#FF5252", data: sortedMonths.map((m) => stats[m]!.late), fill: false },
+        { label: "On Time", backgroundColor: "#003527", borderColor: "#003527", data: sortedMonths.map((m) => stats[m]!.onTime), fill: false },
+        { label: "Late Arrivals", backgroundColor: "#ac3400", borderColor: "#ac3400", data: sortedMonths.map((m) => stats[m]!.late), fill: false },
       ],
     });
   }, [filtered]);
@@ -577,30 +547,22 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
   const handleClockIn = async () => {
     setSigningIn(true);
     try {
-      // Attempt to capture geolocation silently; proceed regardless
       let latitude: number | undefined;
       let longitude: number | undefined;
       if (typeof navigator !== "undefined" && "geolocation" in navigator) {
         try {
           const pos = await new Promise<GeolocationPosition>((resolve, reject) => {
-            navigator.geolocation.getCurrentPosition(resolve, reject, {
-              timeout: 5000,
-              maximumAge: 60000,
-            });
+            navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 5000, maximumAge: 60000 });
           });
           latitude = pos.coords.latitude;
           longitude = pos.coords.longitude;
-        } catch {
-          // Location denied or unavailable — clock in anyway
-        }
+        } catch { /* Location denied — proceed anyway */ }
       }
       await clockInMutation({ latitude, longitude });
       toast("Signed in successfully!", "success");
     } catch (e) {
       toast(e instanceof Error ? e.message : "Failed to sign in", "error");
-    } finally {
-      setSigningIn(false);
-    }
+    } finally { setSigningIn(false); }
   };
 
   const handleClockOut = async () => {
@@ -610,28 +572,20 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
       toast("Clocked out successfully!", "success");
     } catch (e) {
       toast(e instanceof Error ? e.message : "Failed to clock out", "error");
-    } finally {
-      setClockingOut(false);
-    }
+    } finally { setClockingOut(false); }
   };
 
   const handleAddEntry = async () => {
     if (!addEntryForm.entryDate) { toast("Select a date", "error"); return; }
     setAddingEntry(true);
     try {
-      await adminAddAttendance({
-        staffUserId: id as Id<"users">,
-        entryDate: addEntryForm.entryDate,
-        entryTimeStr: addEntryForm.entryTimeStr,
-      });
+      await adminAddAttendance({ staffUserId: id as Id<"users">, entryDate: addEntryForm.entryDate, entryTimeStr: addEntryForm.entryTimeStr });
       toast("Attendance entry added", "success");
       setShowAddEntry(false);
       setAddEntryForm({ entryDate: "", entryTimeStr: "09:00" });
     } catch (e) {
       toast(e instanceof Error ? e.message : "Failed to add entry", "error");
-    } finally {
-      setAddingEntry(false);
-    }
+    } finally { setAddingEntry(false); }
   };
 
   const handleDeleteLog = async (logId: string) => {
@@ -642,35 +596,38 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
       toast("Entry deleted", "success");
     } catch (e) {
       toast(e instanceof Error ? e.message : "Failed to delete", "error");
-    } finally {
-      setDeletingLog(null);
-    }
+    } finally { setDeletingLog(null); }
   };
 
   const exportToCSV = () => {
     if (filtered.length === 0) { alert("No data to export."); return; }
     const headers = ["Date", "Sign in Time", "Clock Out", "Hours", "Status"];
-    const rows = filtered.map((row) => {
-      return [row.entryDate, row.entryTime, row.clockOutStr, row.hoursWorked, row.late ? "Late" : "On Time"]
-        .map((f) => (String(f).includes(",") ? `"${f}"` : f)).join(",");
-    });
+    const rows = filtered.map((row) =>
+      [row.entryDate, row.entryTime, row.clockOutStr, row.hoursWorked, row.late ? "Late" : "On Time"]
+        .map((f) => (String(f).includes(",") ? `"${f}"` : f)).join(",")
+    );
     const csv = [headers.join(","), ...rows].join("\n");
-    const filename = `${staffName.replace(/\s+/g, "_")}_attendance_${startDate || "all"}_to_${endDate || "all"}.csv`;
-    saveAs(new Blob([csv], { type: "text/csv;charset=utf-8;" }), filename);
+    saveAs(new Blob([csv], { type: "text/csv;charset=utf-8;" }), `${staffName.replace(/\s+/g, "_")}_attendance_${startDate || "all"}_to_${endDate || "all"}.csv`);
   };
 
   if (staffData === undefined) {
     return (
-      <div className="w-full p-4 flex items-center justify-center min-h-[200px]">
-        <p className="text-gray-400 text-sm">Loading profile…</p>
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "#f6faf7" }}>
+        <div className="flex flex-col items-center gap-3">
+          <span className="material-symbols-outlined text-[48px] animate-spin" style={{ color: "#003527" }}>progress_activity</span>
+          <p style={{ fontFamily: "var(--font-jetbrains, monospace)", fontSize: "12px", color: "#707974" }}>Loading profile…</p>
+        </div>
       </div>
     );
   }
 
   if (staffData === null) {
     return (
-      <div className="w-full p-4 flex items-center justify-center min-h-[200px]">
-        <p className="text-gray-500 text-sm">Staff profile not found.</p>
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "#f6faf7" }}>
+        <div className="text-center space-y-3">
+          <span className="material-symbols-outlined text-[48px]" style={{ color: "#bfc9c3", fontVariationSettings: "'FILL' 1" }}>person_off</span>
+          <p style={{ color: "#707974" }}>Staff profile not found.</p>
+        </div>
       </div>
     );
   }
@@ -679,127 +636,166 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
   const hasMore = displayCount < filtered.length;
 
   return (
-    <div className="w-full p-2 sm:p-4">
-      <div className="max-w-7xl mx-auto">
-
-        {/* Profile card */}
-        <ProfileCard
-          staffData={staffData}
-          isAdmin={isAdmin}
-          isOwnDashboard={isOwnDashboard}
-          staffUserId={id as Id<"users">}
-        />
-
-        {/* Action bar */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-          <h2 className="text-xl font-semibold">{staffName} — Attendance Summary</h2>
-          <div className="flex flex-wrap gap-3">
-            {/* Clock in / clock out for own dashboard */}
-            {isOwnDashboard && (
-              todayEntry === undefined ? null : todayEntry ? (
-                <div className="flex items-center gap-2">
-                  <span className="inline-flex items-center px-4 py-2 rounded-lg bg-green-50 text-green-700 text-sm font-medium border border-green-200">
-                    Signed in at{" "}
-                    {new Date(todayEntry.entryTime).toLocaleTimeString("en-US", { hour: "numeric", minute: "numeric", hour12: true })}
-                    {todayEntry.late ? " (Late)" : " (On Time)"}
-                  </span>
+    <div className="min-h-screen" style={{ backgroundColor: "#f6faf7" }}>
+      {/* Header */}
+      <header className="sticky top-0 z-40 border-b" style={{ backgroundColor: "#f6faf7", borderColor: "rgba(191,201,195,0.4)", boxShadow: "0 1px 12px rgba(6,78,59,0.04)" }}>
+        <div className="flex items-center justify-between h-16 px-4 md:px-6">
+          <div>
+            <h1 className="font-bold text-xl leading-none" style={{ color: "#003527", fontFamily: "var(--font-hanken, sans-serif)" }}>
+              {staffName}
+            </h1>
+            <p className="text-xs mt-0.5" style={{ fontFamily: "var(--font-jetbrains, monospace)", color: "#707974" }}>Attendance & Profile</p>
+          </div>
+          <div className="flex items-center gap-2 flex-wrap justify-end">
+            {/* Clock in / out for own dashboard */}
+            {isOwnDashboard && todayEntry !== undefined && (
+              todayEntry ? (
+                <>
+                  <div
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm"
+                    style={todayEntry.late ? { backgroundColor: "#ffdbd0", color: "#832600" } : { backgroundColor: "#b0f0d6", color: "#0b513d" }}
+                  >
+                    <span className="material-symbols-outlined text-[16px]">{todayEntry.late ? "alarm_on" : "check_circle"}</span>
+                    <span className="font-mono text-xs">
+                      In {new Date(todayEntry.entryTime).toLocaleTimeString("en-US", { hour: "numeric", minute: "numeric", hour12: true })}
+                      {todayEntry.late ? " · Late" : " · On Time"}
+                    </span>
+                  </div>
                   {!todayEntry.clockOutTime && (
-                    <Button loading={clockingOut} onClick={handleClockOut} color="gray" size="md">
-                      Clock Out
-                    </Button>
+                    <button
+                      onClick={handleClockOut}
+                      disabled={clockingOut}
+                      className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-bold disabled:opacity-60 transition-all"
+                      style={{ backgroundColor: "#ebefec", color: "#003527", border: "1px solid rgba(191,201,195,0.5)" }}
+                    >
+                      <span className="material-symbols-outlined text-[16px]">logout</span>
+                      {clockingOut ? "…" : "Clock Out"}
+                    </button>
                   )}
                   {todayEntry.clockOutTime && (
-                    <span className="inline-flex items-center px-3 py-2 rounded-lg bg-gray-50 text-gray-600 text-sm border border-gray-200">
-                      Out at {new Date(todayEntry.clockOutTime).toLocaleTimeString("en-US", { hour: "numeric", minute: "numeric", hour12: true })}
-                      {todayEntry.hoursWorked !== undefined && ` · ${todayEntry.hoursWorked}h`}
+                    <span className="text-xs px-3 py-1.5 rounded-lg font-mono" style={{ backgroundColor: "#ebefec", color: "#707974" }}>
+                      Out {new Date(todayEntry.clockOutTime).toLocaleTimeString("en-US", { hour: "numeric", minute: "numeric", hour12: true })}
+                      {todayEntry.hoursWorked !== undefined ? ` · ${todayEntry.hoursWorked}h` : ""}
                     </span>
                   )}
-                </div>
+                </>
               ) : (
-                <Button loading={signingIn} onClick={handleClockIn} color="primary" size="md">
-                  Sign In Now
-                </Button>
+                <button
+                  onClick={handleClockIn}
+                  disabled={signingIn}
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-bold disabled:opacity-60"
+                  style={{ backgroundColor: "#003527", color: "#ffffff" }}
+                >
+                  <span className="material-symbols-outlined text-[16px]">fingerprint</span>
+                  {signingIn ? "Signing in…" : "Sign In Now"}
+                </button>
               )
             )}
 
             {/* Admin add entry */}
             {isAdmin && !isOwnDashboard && (
-              <Button onClick={() => setShowAddEntry(true)} color="gray" size="md" variant="outline">
-                + Add Entry
-              </Button>
+              <button
+                onClick={() => setShowAddEntry(true)}
+                className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-bold border transition-all"
+                style={{ color: "#003527", borderColor: "rgba(191,201,195,0.5)" }}
+                onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = "#ebefec"; }}
+                onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = "transparent"; }}
+              >
+                <span className="material-symbols-outlined text-[16px]">add</span>
+                Add Entry
+              </button>
             )}
 
-            <Button onClick={exportToCSV} color="primary" size="md" className="flex items-center gap-2">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                  d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
+            <button
+              onClick={exportToCSV}
+              className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-bold transition-all"
+              style={{ backgroundColor: "#ac3400", color: "#ffffff" }}
+            >
+              <span className="material-symbols-outlined text-[16px]">file_download</span>
               Export CSV
-            </Button>
+            </button>
           </div>
         </div>
+      </header>
+
+      <div className="p-4 md:p-6 space-y-6">
+        {/* Profile card */}
+        <ProfileCard staffData={staffData} isAdmin={isAdmin} isOwnDashboard={isOwnDashboard} staffUserId={id as Id<"users">} />
 
         {/* Date filter */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
+        <div className="rounded-xl border p-5" style={{ backgroundColor: "#ffffff", borderColor: "rgba(191,201,195,0.3)" }}>
           <div className="flex flex-col sm:flex-row gap-4 items-end">
             <div className="flex-1">
-              <FormField label="Start Date" name="startDate">
-                <Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} size="md" />
-              </FormField>
+              <p className="text-xs uppercase tracking-wider mb-1.5" style={{ fontFamily: "var(--font-jetbrains, monospace)", color: "#707974" }}>Start Date</p>
+              <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)}
+                className="w-full rounded-lg border px-3 py-2 text-sm outline-none"
+                style={{ borderColor: "rgba(191,201,195,0.5)", backgroundColor: "#f6faf7", color: "#181d1b", fontFamily: "var(--font-jetbrains, monospace)" }}
+              />
             </div>
             <div className="flex-1">
-              <FormField label="End Date" name="endDate">
-                <Input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} size="md" />
-              </FormField>
+              <p className="text-xs uppercase tracking-wider mb-1.5" style={{ fontFamily: "var(--font-jetbrains, monospace)", color: "#707974" }}>End Date</p>
+              <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)}
+                className="w-full rounded-lg border px-3 py-2 text-sm outline-none"
+                style={{ borderColor: "rgba(191,201,195,0.5)", backgroundColor: "#f6faf7", color: "#181d1b", fontFamily: "var(--font-jetbrains, monospace)" }}
+              />
             </div>
-            <Button onClick={() => { setStartDate(""); setEndDate(""); }} color="gray" variant="outline" size="md">
+            <button
+              onClick={() => { setStartDate(""); setEndDate(""); }}
+              className="px-4 py-2 rounded-lg text-sm border transition-all"
+              style={{ color: "#707974", borderColor: "rgba(191,201,195,0.5)" }}
+              onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = "#ebefec"; }}
+              onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = "transparent"; }}
+            >
               Clear
-            </Button>
+            </button>
           </div>
           {filtered.length > 0 && (
-            <p className="text-sm text-gray-600 mt-3">
+            <p className="text-xs mt-3" style={{ fontFamily: "var(--font-jetbrains, monospace)", color: "#707974" }}>
               Showing {Math.min(displayCount, filtered.length)} of {filtered.length} record{filtered.length !== 1 ? "s" : ""}
-              {startDate && endDate && ` · ${new Date(startDate + "T00:00:00").toLocaleDateString()} to ${new Date(endDate + "T00:00:00").toLocaleDateString()}`}
             </p>
           )}
         </div>
 
-        {/* Chart (admins only) */}
+        {/* Attendance trend chart (admins only) */}
         {isAdmin && chartData.labels.length > 0 && (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 sm:p-6 mb-8">
-            <div className="h-[300px] md:h-[400px] lg:h-[500px]">
+          <div className="rounded-xl border p-6" style={{ backgroundColor: "#ffffff", borderColor: "rgba(191,201,195,0.3)" }}>
+            <h3 className="font-bold mb-5" style={{ color: "#003527", fontFamily: "var(--font-hanken, sans-serif)" }}>Attendance Trend</h3>
+            <div style={{ height: "280px" }}>
               <Line data={chartData} options={chartOptions} />
             </div>
           </div>
         )}
 
         {/* Attendance table */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-6">
+        <div className="rounded-xl border overflow-hidden" style={{ backgroundColor: "#ffffff", borderColor: "rgba(191,201,195,0.3)" }}>
+          <div className="px-6 py-4 border-b" style={{ borderColor: "rgba(191,201,195,0.2)", backgroundColor: "#f6faf7" }}>
+            <h3 className="font-bold" style={{ color: "#003527", fontFamily: "var(--font-hanken, sans-serif)" }}>Attendance History</h3>
+          </div>
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full text-left">
               <thead>
-                <tr className="bg-gray-50 border-b border-gray-200">
-                  <th className="text-left py-3 px-4 text-gray-600 font-semibold">Date</th>
-                  <th className="text-left py-3 px-4 text-gray-600 font-semibold">Sign In</th>
-                  <th className="text-left py-3 px-4 text-gray-600 font-semibold">Clock Out</th>
-                  <th className="text-left py-3 px-4 text-gray-600 font-semibold">Hours</th>
-                  <th className="text-left py-3 px-4 text-gray-600 font-semibold">Status</th>
-                  {isAdmin && <th className="py-3 px-4" />}
+                <tr style={{ backgroundColor: "rgba(241,245,242,0.6)", borderBottom: "1px solid rgba(191,201,195,0.2)" }}>
+                  {["Date", "Sign In", "Clock Out", "Hours", "Status", ...(isAdmin ? [""] : [])].map((h) => (
+                    <th key={h} className="px-5 py-3" style={{ fontFamily: "var(--font-jetbrains, monospace)", fontSize: "11px", letterSpacing: "0.06em", color: "#707974", textTransform: "uppercase" }}>{h}</th>
+                  ))}
                 </tr>
               </thead>
               <tbody>
                 {displayedLogs.length === 0 ? (
                   <tr>
-                    <td colSpan={isAdmin ? 6 : 5} className="text-center py-12 text-gray-400 text-sm">
+                    <td colSpan={isAdmin ? 6 : 5} className="text-center py-12" style={{ color: "#707974", fontFamily: "var(--font-jetbrains, monospace)", fontSize: "13px" }}>
                       No attendance records found for this period.
                     </td>
                   </tr>
                 ) : (
                   displayedLogs.map((row) => (
-                    <tr key={row._id as string} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
-                      <td className="py-3 px-4 text-gray-900">{row.entryDate}</td>
-                      <td className="py-3 px-4 text-gray-700">
-                        <span className="flex items-center gap-1">
+                    <tr key={row._id as string} className="border-b transition-colors" style={{ borderColor: "rgba(191,201,195,0.15)" }}
+                      onMouseEnter={(e) => { (e.currentTarget as HTMLTableRowElement).style.backgroundColor = "rgba(241,245,242,0.5)"; }}
+                      onMouseLeave={(e) => { (e.currentTarget as HTMLTableRowElement).style.backgroundColor = "transparent"; }}
+                    >
+                      <td className="px-5 py-4 text-sm" style={{ color: "#181d1b" }}>{row.entryDate}</td>
+                      <td className="px-5 py-4">
+                        <span className="flex items-center gap-1.5 text-sm font-mono" style={{ color: "#404944" }}>
                           {row.entryTime}
                           {(row.latitude as number | null) != null && (row.longitude as number | null) != null && (
                             <a
@@ -807,26 +803,34 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
                               target="_blank"
                               rel="noopener noreferrer"
                               title={`${(row.latitude as number).toFixed(4)}, ${(row.longitude as number).toFixed(4)}`}
-                              className="text-blue-400 hover:text-blue-600"
                             >
-                              📍
+                              <span className="material-symbols-outlined text-[14px]" style={{ color: "#003527" }}>location_on</span>
                             </a>
                           )}
                         </span>
                       </td>
-                      <td className="py-3 px-4 text-gray-500">{row.clockOutStr}</td>
-                      <td className="py-3 px-4 text-gray-500">{row.hoursWorked}</td>
-                      <td className="py-3 px-4">
-                        <StatusBadge late={!!row.late} />
+                      <td className="px-5 py-4 text-sm font-mono" style={{ color: "#707974" }}>{row.clockOutStr}</td>
+                      <td className="px-5 py-4 text-sm font-mono" style={{ color: "#707974" }}>{row.hoursWorked}</td>
+                      <td className="px-5 py-4">
+                        <span className="text-xs px-2.5 py-0.5 rounded-full font-mono" style={
+                          row.late ? { backgroundColor: "#ffdbd0", color: "#832600" } : { backgroundColor: "#b0f0d6", color: "#0b513d" }
+                        }>
+                          {row.late ? "Late" : "On Time"}
+                        </span>
                       </td>
                       {isAdmin && (
-                        <td className="py-3 px-4 text-right">
+                        <td className="px-5 py-4 text-right">
                           <button
                             onClick={() => handleDeleteLog(row._logId as string)}
                             disabled={deletingLog === (row._logId as string)}
-                            className="text-xs text-red-500 hover:text-red-700 transition-colors disabled:opacity-50"
+                            className="p-1 rounded transition-all disabled:opacity-50"
+                            style={{ color: "#707974" }}
+                            onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.color = "#ba1a1a"; }}
+                            onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.color = "#707974"; }}
                           >
-                            {deletingLog === (row._logId as string) ? "…" : "Delete"}
+                            <span className="material-symbols-outlined text-[16px]">
+                              {deletingLog === (row._logId as string) ? "progress_activity" : "delete"}
+                            </span>
                           </button>
                         </td>
                       )}
@@ -837,25 +841,25 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
             </table>
           </div>
 
-          {/* Show more */}
           {hasMore && (
-            <div className="p-4 border-t border-gray-100 text-center">
+            <div className="px-6 py-4 border-t flex items-center justify-between" style={{ borderColor: "rgba(191,201,195,0.2)", backgroundColor: "rgba(241,245,242,0.4)" }}>
+              <span className="text-xs" style={{ fontFamily: "var(--font-jetbrains, monospace)", color: "#707974" }}>
+                {filtered.length - displayCount} more records
+              </span>
               <button
                 onClick={() => setDisplayCount((c) => c + ITEMS_PER_PAGE)}
-                className="text-sm text-purple-700 hover:text-purple-900 font-medium"
+                className="flex items-center gap-1.5 text-xs font-bold"
+                style={{ color: "#003527" }}
               >
-                Show more ({filtered.length - displayCount} remaining)
+                <span className="material-symbols-outlined text-[16px]">expand_more</span>
+                Show more
               </button>
             </div>
           )}
         </div>
 
         {/* Leave section */}
-        <LeaveSection
-          staffUserId={id as Id<"users">}
-          isAdmin={isAdmin}
-          isOwnDashboard={isOwnDashboard}
-        />
+        <LeaveSection staffUserId={id as Id<"users">} isAdmin={isAdmin} isOwnDashboard={isOwnDashboard} />
       </div>
 
       {/* Admin: Add Entry Modal */}
@@ -864,31 +868,15 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
         onClose={() => setShowAddEntry(false)}
         title="Add Attendance Entry"
         size="sm"
-        footer={
-          <div className="flex justify-end gap-3">
-            <Button color="gray" variant="soft" onClick={() => setShowAddEntry(false)}>Cancel</Button>
-            <Button loading={addingEntry} onClick={handleAddEntry}>Add Entry</Button>
-          </div>
-        }
+        footer={<div className="flex justify-end gap-3"><Button color="gray" variant="soft" onClick={() => setShowAddEntry(false)}>Cancel</Button><Button loading={addingEntry} onClick={handleAddEntry}>Add Entry</Button></div>}
       >
-        <div className="space-y-4">
-          <p className="text-sm text-gray-500">Manually record a clock-in for {staffName}.</p>
+        <div className="space-y-4 p-1">
+          <p className="text-sm" style={{ color: "#707974" }}>Manually record a clock-in for {staffName}.</p>
           <FormField label="Date" name="entryDate">
-            <Input
-              type="date"
-              size="lg"
-              value={addEntryForm.entryDate}
-              max={todayString()}
-              onChange={(e) => setAddEntryForm({ ...addEntryForm, entryDate: e.target.value })}
-            />
+            <Input type="date" size="lg" value={addEntryForm.entryDate} max={todayString()} onChange={(e) => setAddEntryForm({ ...addEntryForm, entryDate: e.target.value })} />
           </FormField>
           <FormField label="Sign In Time (HH:mm)" name="entryTimeStr">
-            <Input
-              type="time"
-              size="lg"
-              value={addEntryForm.entryTimeStr}
-              onChange={(e) => setAddEntryForm({ ...addEntryForm, entryTimeStr: e.target.value })}
-            />
+            <Input type="time" size="lg" value={addEntryForm.entryTimeStr} onChange={(e) => setAddEntryForm({ ...addEntryForm, entryTimeStr: e.target.value })} />
           </FormField>
         </div>
       </XModal>
