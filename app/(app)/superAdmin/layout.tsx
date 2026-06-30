@@ -31,7 +31,12 @@ export default function SuperAdminLayout({
       return;
     }
     if (me && me.platformRole !== "superAdmin") {
-      router.replace("/dashboardStaff");
+      // Route to appropriate dashboard based on role
+      if (me.role === "admin") {
+        router.replace("/dashboardEmployer");
+      } else {
+        router.replace(`/dashboardStaff/${me._id}`);
+      }
     }
   }, [isAuthenticated, isLoading, me, router]);
 

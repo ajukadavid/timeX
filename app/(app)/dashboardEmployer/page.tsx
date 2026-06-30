@@ -377,6 +377,7 @@ function DashboardEmployerInner() {
         <XSummary
           totalEmployees={staffData.length}
           presentToday={dailySummary?.uniqueStaffSignedIn ?? 0}
+          onTimeToday={dailySummary?.onTime ?? 0}
           lateToday={dailySummary?.late ?? 0}
           absentToday={Math.max(
             0,

@@ -52,15 +52,6 @@ export const listStaffByOrg = query({
           ? await ctx.db.get(profile.departmentId)
           : null;
 
-        const logs = await ctx.db
-          .query("attendanceLogs")
-          .withIndex("by_staff", (q) => q.eq("staffUserId", profile.userId))
-          .collect();
-        const lastEntryTime =
-          logs.length > 0
-            ? Math.max(...logs.map((log) => log.entryTime))
-            : null;
-
         return {
           profileId: profile._id,
           userId: profile.userId,
@@ -72,7 +63,7 @@ export const listStaffByOrg = query({
           department: department?.name ?? null,
           jobTitle: profile.jobTitle,
           employmentStatus: profile.employmentStatus,
-          lastEntryTime,
+          lastEntryTime: profile.lastEntryTime ?? null,
           needsInvite: Boolean(user?.clerkId?.startsWith("legacy:")),
         };
       })
@@ -100,15 +91,6 @@ export const listStaffByEmployer = query({
           ? await ctx.db.get(profile.departmentId)
           : null;
 
-        const logs = await ctx.db
-          .query("attendanceLogs")
-          .withIndex("by_staff", (q) => q.eq("staffUserId", profile.userId))
-          .collect();
-        const lastEntryTime =
-          logs.length > 0
-            ? Math.max(...logs.map((log) => log.entryTime))
-            : null;
-
         return {
           profileId: profile._id,
           userId: profile.userId,
@@ -120,7 +102,7 @@ export const listStaffByEmployer = query({
           department: department?.name ?? null,
           jobTitle: profile.jobTitle,
           employmentStatus: profile.employmentStatus,
-          lastEntryTime,
+          lastEntryTime: profile.lastEntryTime ?? null,
           needsInvite: Boolean(user?.clerkId?.startsWith("legacy:")),
         };
       })
@@ -389,8 +371,8 @@ const staffDetailValidator = v.union(
         _creationTime: v.number(),
         userId: v.id("users"),
         employerId: v.id("users"),
-        organizationId: v.optional(v.id("organizations")), // NEW
-        orgRole: v.optional(v.union(v.literal("admin"), v.literal("staff"))), // NEW
+        organizationId: v.optional(v.id("organizations")),
+        orgRole: v.optional(v.union(v.literal("admin"), v.literal("staff"))),
         departmentId: v.optional(v.id("departments")),
         jobTitle: v.string(),
         employmentStatus: v.union(
@@ -400,6 +382,7 @@ const staffDetailValidator = v.union(
         ),
         timezone: v.optional(v.string()),
         startDate: v.optional(v.string()),
+        lastEntryTime: v.optional(v.number()),
         createdAt: v.number(),
         updatedAt: v.number(),
       }),

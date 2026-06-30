@@ -86,7 +86,8 @@ export const invitePendingStaff = action({
   }),
   handler: async (ctx, args) => {
     const me = await ctx.runQuery(api.users.getCurrentUser, {});
-    if (!me || me.role !== "admin") {
+    const canInvite = me?.platformRole === "superAdmin" || me?.role === "admin";
+    if (!me || !canInvite) {
       throw new Error("Admin access required");
     }
 

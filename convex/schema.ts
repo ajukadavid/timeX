@@ -69,6 +69,7 @@ export default defineSchema({
     ),
     timezone: v.optional(v.string()),
     startDate: v.optional(v.string()),
+    lastEntryTime: v.optional(v.number()), // denormalized: timestamp of last clock-in
     createdAt: v.number(),
     updatedAt: v.number(),
   })

@@ -5,7 +5,7 @@ import {
   mutation,
   query,
 } from "./_generated/server";
-import { resolveCurrentUser } from "./lib/auth";
+import { resolveCurrentUser, requireCurrentUser } from "./lib/auth";
 import { ROLE } from "./roles";
 
 const userDocValidator = v.object({
@@ -123,7 +123,7 @@ export const linkAuthenticatedUser = mutation({
   },
 });
 
-export const upsertFromClerk = mutation({
+export const upsertFromClerk = internalMutation({
   args: {
     clerkId: v.string(),
     email: v.string(),
@@ -190,7 +190,7 @@ export const upsertFromClerk = mutation({
   },
 });
 
-export const removeByClerkId = mutation({
+export const removeByClerkId = internalMutation({
   args: {
     clerkId: v.string(),
   },
@@ -202,12 +202,30 @@ export const removeByClerkId = mutation({
 
     if (!existing) return null;
 
+    // Cascade: remove all attendance logs for this user
+    const logs = await ctx.db
+      .query("attendanceLogs")
+      .withIndex("by_staff", (q) => q.eq("staffUserId", existing._id))
+      .collect();
+    for (const log of logs) {
+      await ctx.db.delete(log._id);
+    }
+
+    // Cascade: remove all staff profiles for this user
+    const profiles = await ctx.db
+      .query("staffProfiles")
+      .withIndex("by_user", (q) => q.eq("userId", existing._id))
+      .collect();
+    for (const profile of profiles) {
+      await ctx.db.delete(profile._id);
+    }
+
     await ctx.db.delete(existing._id);
     return existing._id;
   },
 });
 
-export const upsertLegacyUser = mutation({
+export const upsertLegacyUser = internalMutation({
   args: {
     sourceId: v.string(),
     email: v.string(),
