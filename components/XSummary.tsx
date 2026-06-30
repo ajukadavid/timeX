@@ -1,60 +1,47 @@
 interface XSummaryProps {
   totalEmployees?: number;
   presentToday?: number;
+  onTimeToday?: number;
   lateToday?: number;
   absentToday?: number;
 }
 
-export function XSummary({ totalEmployees = 0, presentToday = 0, lateToday = 0, absentToday = 0 }: XSummaryProps) {
+function StatBox({ label, value, sub }: { label: string; value: number; sub?: string }) {
+  return (
+    <div className="flex flex-col items-center min-w-[72px]">
+      <span className="text-sm text-gray-600">{label}</span>
+      <span className="font-semibold text-xl text-gray-900">{value}</span>
+      {sub && <span className="text-xs text-gray-400 mt-0.5">{sub}</span>}
+    </div>
+  );
+}
+
+export function XSummary({
+  totalEmployees = 0,
+  presentToday = 0,
+  onTimeToday = 0,
+  lateToday = 0,
+  absentToday = 0,
+}: XSummaryProps) {
   return (
     <div className="flex flex-wrap gap-4 mb-6">
-      <div className="border flex space-y-8 rounded-md flex-col border-gray-300 px-5 py-3 bg-white">
-        <span className="text-gray-500 font-medium">Overall Summary</span>
-        <div className="flex justify-center space-x-3">
-          <div className="flex flex-col">
-            <span className="text-sm text-gray-600">Total employees</span>
-            <span className="font-semibold text-xl text-gray-900">{totalEmployees}</span>
-            <div className="flex text-xs space-x-1 justify-center">
-              <span className="text-blue-500">+2</span><span className="text-gray-500">vs yesterday</span>
-            </div>
-          </div>
-          <div className="h-20 w-px bg-gray-300" />
-          <div className="flex flex-col">
-            <span className="text-sm text-gray-600">Active today</span>
-            <span className="font-semibold text-xl text-gray-900">{presentToday}</span>
-            <div className="flex text-xs space-x-1 justify-center">
-              <span className="text-red-500">-5</span><span className="text-gray-500">vs yesterday</span>
-            </div>
-          </div>
+      <div className="border flex space-y-6 rounded-md flex-col border-gray-300 px-5 py-4 bg-white">
+        <span className="text-gray-500 font-medium text-sm">Overall Summary</span>
+        <div className="flex justify-center space-x-6">
+          <StatBox label="Total employees" value={totalEmployees} />
+          <div className="h-12 w-px bg-gray-200 self-center" />
+          <StatBox label="Present today" value={presentToday} sub={`${totalEmployees > 0 ? Math.round((presentToday / totalEmployees) * 100) : 0}%`} />
         </div>
       </div>
 
-      <div className="border flex space-y-8 rounded-md flex-col border-gray-300 px-5 py-3 bg-white">
-        <span className="text-gray-500 font-medium">Attendance Summary</span>
-        <div className="flex justify-center space-x-3">
-          <div className="flex flex-col">
-            <span className="text-sm text-gray-600">On time</span>
-            <span className="font-semibold text-xl text-gray-900">{presentToday}</span>
-            <div className="flex text-xs space-x-1 justify-center">
-              <span className="text-blue-500">+2</span><span className="text-gray-500">vs yesterday</span>
-            </div>
-          </div>
-          <div className="h-20 w-px bg-gray-300" />
-          <div className="flex flex-col">
-            <span className="text-sm text-gray-600">Late</span>
-            <span className="font-semibold text-xl text-gray-900">{lateToday}</span>
-            <div className="flex text-xs space-x-1 justify-center">
-              <span className="text-yellow-500">+1</span><span className="text-gray-500">vs yesterday</span>
-            </div>
-          </div>
-          <div className="h-20 w-px bg-gray-300" />
-          <div className="flex flex-col">
-            <span className="text-sm text-gray-600">Absent</span>
-            <span className="font-semibold text-xl text-gray-900">{absentToday}</span>
-            <div className="flex text-xs space-x-1 justify-center">
-              <span className="text-red-500">-3</span><span className="text-gray-500">vs yesterday</span>
-            </div>
-          </div>
+      <div className="border flex space-y-6 rounded-md flex-col border-gray-300 px-5 py-4 bg-white">
+        <span className="text-gray-500 font-medium text-sm">Attendance Breakdown</span>
+        <div className="flex justify-center space-x-6">
+          <StatBox label="On time" value={onTimeToday} />
+          <div className="h-12 w-px bg-gray-200 self-center" />
+          <StatBox label="Late" value={lateToday} />
+          <div className="h-12 w-px bg-gray-200 self-center" />
+          <StatBox label="Absent" value={absentToday} />
         </div>
       </div>
     </div>

@@ -74,7 +74,7 @@ export const clockIn = mutation({
     const defaultSignInTime = settings?.defaultSignInTime ?? "09:00";
     const late = isLateEntry(now, defaultSignInTime);
 
-    return await ctx.db.insert("attendanceLogs", {
+    const logId = await ctx.db.insert("attendanceLogs", {
       employerId: profile.employerId,
       organizationId: profile.organizationId,
       staffUserId: user._id,
@@ -86,6 +86,11 @@ export const clockIn = mutation({
       createdAt: now,
       updatedAt: now,
     });
+
+    // Denormalize last entry time on profile to avoid N+1 in staff list queries
+    await ctx.db.patch(profile._id, { lastEntryTime: now, updatedAt: now });
+
+    return logId;
   },
 });
 

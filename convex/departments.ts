@@ -98,3 +98,59 @@ export const createDepartment = mutation({
     });
   },
 });
+
+export const updateDepartment = mutation({
+  args: {
+    departmentId: v.id("departments"),
+    name: v.string(),
+  },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    const dept = await ctx.db.get(args.departmentId);
+    if (!dept) throw new Error("Department not found");
+
+    if (dept.organizationId) {
+      await requireOrgAdmin(ctx, dept.organizationId);
+    } else {
+      await requireEmployerAdmin(ctx, dept.employerId);
+    }
+
+    await ctx.db.patch(args.departmentId, {
+      name: args.name.trim(),
+      updatedAt: Date.now(),
+    });
+    return null;
+  },
+});
+
+export const deleteDepartment = mutation({
+  args: {
+    departmentId: v.id("departments"),
+  },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    const dept = await ctx.db.get(args.departmentId);
+    if (!dept) throw new Error("Department not found");
+
+    if (dept.organizationId) {
+      await requireOrgAdmin(ctx, dept.organizationId);
+    } else {
+      await requireEmployerAdmin(ctx, dept.employerId);
+    }
+
+    // Unlink any staff profiles that reference this department
+    const profiles = await ctx.db
+      .query("staffProfiles")
+      .withIndex("by_department", (q) => q.eq("departmentId", args.departmentId))
+      .collect();
+    for (const profile of profiles) {
+      await ctx.db.patch(profile._id, {
+        departmentId: undefined,
+        updatedAt: Date.now(),
+      });
+    }
+
+    await ctx.db.delete(args.departmentId);
+    return null;
+  },
+});

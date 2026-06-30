@@ -1,6 +1,6 @@
 import { v } from "convex/values";
 import { internalMutation, internalQuery, mutation, query } from "./_generated/server";
-import { requireCurrentUser, requireOrgAdmin, requireSuperAdmin } from "./lib/auth";
+import { requireCurrentUser, requireOrgAdmin, requireSuperAdmin, resolveCurrentUser } from "./lib/auth";
 import { ROLE } from "./roles";
 
 // ─── Shared validators ─────────────────────────────────────────
@@ -104,7 +104,8 @@ export const getMyAdminOrg = query({
   args: {},
   returns: v.union(orgValidator, v.null()),
   handler: async (ctx) => {
-    const user = await requireCurrentUser(ctx);
+    const user = await resolveCurrentUser(ctx);
+    if (!user) return null;
 
     const adminProfile = await ctx.db
       .query("staffProfiles")

@@ -1,6 +1,6 @@
 import { httpRouter } from "convex/server";
 import { httpAction } from "./_generated/server";
-import { api } from "./_generated/api";
+import { internal } from "./_generated/api";
 import { Webhook } from "svix";
 
 const http = httpRouter();
@@ -63,7 +63,7 @@ http.route({
 
     if (event.type === "user.created" || event.type === "user.updated") {
       console.log("Clerk webhook received:", event.type, event.data.id);
-      await ctx.runMutation(api.users.upsertFromClerk, {
+      await ctx.runMutation(internal.users.upsertFromClerk, {
         clerkId: event.data.id,
         email: primaryEmail,
         firstName: event.data.first_name ?? undefined,
@@ -77,7 +77,7 @@ http.route({
       });
     } else if (event.type === "user.deleted") {
       console.log("Clerk webhook received:", event.type, event.data.id);
-      await ctx.runMutation(api.users.removeByClerkId, {
+      await ctx.runMutation(internal.users.removeByClerkId, {
         clerkId: event.data.id,
       });
     }
