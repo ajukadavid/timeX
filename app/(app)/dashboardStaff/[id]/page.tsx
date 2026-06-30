@@ -44,8 +44,9 @@ const chartOptions = {
     title: { display: true, text: "Staff Attendance Trends", font: { size: 16, weight: "bold" as const }, padding: 20 },
     tooltip: {
       callbacks: {
-        label: (ctx: { dataset: { label: string }; parsed: { y: number } }) =>
-          `${ctx.dataset.label}: ${ctx.parsed.y} day${ctx.parsed.y !== 1 ? "s" : ""}`,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        label: (ctx: any) =>
+          `${ctx.dataset.label ?? ""}: ${ctx.parsed.y} day${ctx.parsed.y !== 1 ? "s" : ""}`,
       },
     },
   },
@@ -54,8 +55,8 @@ const chartOptions = {
 };
 
 interface LogEntry {
-  entryDate: Date;
-  entryTime: Date;
+  entryDate: string;
+  entryTime: string;
   late?: boolean;
   status?: string;
   _originalEntryDate?: Date;
@@ -126,7 +127,8 @@ function ProfileCard({
 
   const canEdit = isAdmin || isOwnDashboard;
   const fullName = `${staff.firstName ?? ""} ${staff.lastName ?? ""}`.trim() || staff.email;
-  const initials = ((staff.firstName?.[0] ?? "") + (staff.lastName?.[0] ?? "")).toUpperCase() || staff.email[0]?.toUpperCase() ?? "?";
+  const rawInitials = ((staff.firstName?.[0] ?? "") + (staff.lastName?.[0] ?? "")).toUpperCase();
+  const initials = rawInitials || (staff.email[0]?.toUpperCase() ?? "?");
 
   return (
     <>
