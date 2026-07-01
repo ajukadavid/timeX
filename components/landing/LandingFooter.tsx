@@ -15,9 +15,9 @@ const footerSections = [
   {
     title: "Company",
     links: [
-      { label: "About Us", href: "/why-timex" },
-      { label: "Sustainability", href: "/why-timex" },
-      { label: "Careers", href: "/why-timex" },
+      { label: "About Us", href: "/why-logasiko" },
+      { label: "Sustainability", href: "/why-logasiko" },
+      { label: "Careers", href: "/why-logasiko" },
       { label: "Press", href: "/resources" },
     ],
   },

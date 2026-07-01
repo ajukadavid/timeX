@@ -44,7 +44,7 @@ function toMillis(value) {
 
 function safeEmail(email, prefix, id) {
   if (email && String(email).includes("@")) return String(email).toLowerCase();
-  return `${prefix}.${id}@legacy.timex.local`;
+  return `${prefix}.${id}@legacy.logasiko.local`;
 }
 
 function normalizeRole(role) {

@@ -50,7 +50,7 @@ export const sendLateAlertForOrg = internalAction({
 
     await sendEmail(
       to,
-      `[TimeX] Late Arrival — ${args.staffName}`,
+      `[Logasiko] Late Arrival — ${args.staffName}`,
       `
         <div style="font-family:sans-serif;max-width:500px;margin:0 auto">
           <h2 style="color:#ef4444">⏰ Late Arrival Alert</h2>
@@ -100,7 +100,7 @@ export const sendDailyDigests = internalAction({
 
       await sendEmail(
         to,
-        `[TimeX] Daily Attendance Digest — ${today}`,
+        `[Logasiko] Daily Attendance Digest — ${today}`,
         `
           <div style="font-family:sans-serif;max-width:500px;margin:0 auto">
             <h2>📋 Daily Attendance — ${org.name}</h2>

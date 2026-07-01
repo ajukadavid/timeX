@@ -6,6 +6,7 @@ const isPublicRoute = createRouteMatcher([
   "/register(.*)",
   "/platform(.*)",
   "/use-cases(.*)",
+  "/why-logasiko(.*)",
   "/why-timex(.*)",
   "/pricing(.*)",
   "/resources(.*)",

@@ -7,7 +7,7 @@ import { usePathname } from "next/navigation";
 const navLinks = [
   { href: "/platform", label: "Platform" },
   { href: "/use-cases", label: "Use Cases" },
-  { href: "/why-timex", label: "Why Logasiko" },
+  { href: "/why-logasiko", label: "Why Logasiko" },
   { href: "/pricing", label: "Pricing" },
   { href: "/resources", label: "Resources" },
 ];
