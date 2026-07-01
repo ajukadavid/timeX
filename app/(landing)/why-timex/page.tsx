@@ -1,173 +1,154 @@
-import Image from "next/image";
 import { LandingCta } from "@/components/landing/LandingCta";
-import { CheckIcon, IconWrapper, StarRating, XIcon } from "@/components/landing/MarketingIcons";
-
-const achievements = [
-  { value: "99.9%", label: "Accuracy Rate" },
-  { value: "500+", label: "Enterprise Clients" },
-  { value: "30%", label: "Cost Reduction" },
-  { value: "24/7", label: "Support" },
-];
+import {
+  MarketingCard,
+  MarketingCheckList,
+  MarketingHeading,
+  MarketingHero,
+  MarketingIconBox,
+  MarketingPage,
+  MarketingSection,
+  MarketingStat,
+} from "@/components/landing/MarketingUi";
 
 const features = [
   {
-    title: "Advanced AI Technology",
-    description: "Our proprietary AI algorithms ensure 99.9% accuracy in time tracking and attendance verification.",
-    icon: "M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z",
-    bullets: ["Machine Learning Powered", "Real-time Processing", "Continuous Learning"],
+    title: "Nature-tech design",
+    description: "A calm, focused interface that staff actually want to use — not another corporate HR portal.",
+    icon: "eco",
+    variant: "dark" as const,
+    bullets: ["Mobile-first staff portal", "Real-time reactive data", "Accessible typography"],
   },
   {
-    title: "Enterprise-Grade Security",
-    description: "Bank-level encryption and compliance with international security standards.",
-    icon: "M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z",
-    bullets: ["256-bit Encryption", "GDPR Compliant", "Regular Security Audits"],
+    title: "Premium presence tools",
+    description: "Geofencing, biometric verification, and offline sync — gated by subscription so you only pay for what you need.",
+    icon: "fingerprint",
+    variant: "mint" as const,
+    bullets: ["Geo-fenced clock-in", "WebAuthn biometrics", "Offline queue sync"],
   },
   {
-    title: "Unlimited Scalability",
-    description: "Grow your business without worrying about system limitations or performance.",
-    icon: "M13 10V3L4 14h7v7l9-11h-7z",
-    bullets: ["Cloud Infrastructure", "Auto-scaling", "Global Availability"],
+    title: "Built on Convex",
+    description: "Sub-100ms updates, automatic reactivity, and a backend that scales without DevOps overhead.",
+    icon: "bolt",
+    variant: "lime" as const,
+    bullets: ["Live dashboards", "Zero WebSocket code", "Type-safe APIs"],
   },
 ];
 
 const comparison = [
-  { feature: "AI-Powered Accuracy", timex: "check", traditional: "x" },
-  { feature: "Real-time Analytics", timex: "check", traditional: "Limited" },
-  { feature: "GPS Verification", timex: "check", traditional: "Additional Cost" },
-  { feature: "Mobile Access", timex: "check", traditional: "Limited" },
-  { feature: "24/7 Support", timex: "check", traditional: "Business Hours Only" },
+  { feature: "Real-time attendance", logasiko: true, traditional: "Delayed reports" },
+  { feature: "Geofenced clock-in", logasiko: true, traditional: false },
+  { feature: "Biometric verification", logasiko: true, traditional: false },
+  { feature: "Offline sync", logasiko: true, traditional: false },
+  { feature: "Leave management", logasiko: true, traditional: "Separate tool" },
+  { feature: "Audit log", logasiko: true, traditional: "Limited" },
 ];
 
-const testimonials = [
-  { quote: "TimeX has completely transformed how we manage our workforce. The AI-powered features and real-time analytics have given us unprecedented visibility and control.", name: "Robert Chen", role: "CEO, TechCorp Inc." },
-  { quote: "The accuracy and reliability of TimeX's attendance tracking have significantly reduced our administrative overhead. Their customer support is exceptional.", name: "Sarah Williams", role: "HR Director, Global Manufacturing" },
-  { quote: "Implementing TimeX was seamless, and the ROI was immediate. Their mobile app has made it incredibly easy for our employees to manage their time.", name: "Michael Thompson", role: "Operations Manager, Retail Chain" },
-];
-
-export default function WhyTimeXPage() {
+export default function WhyLogasikoPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
-      <section className="relative py-20 overflow-hidden">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-wrap items-center -mx-4">
-            <div className="w-full lg:w-1/2 px-4 mb-12 lg:mb-0">
-              <h1 className="text-4xl md:text-5xl font-bold leading-tight mb-6">
-                Why Choose <br />
-                <span className="text-primary">TimeX?</span>
-              </h1>
-              <p className="text-xl text-gray-600 mb-8">
-                Discover why TimeX is the preferred choice for modern workforce management, trusted by industry leaders worldwide.
+    <MarketingPage>
+      <MarketingHero
+        eyebrow="Why Logasiko"
+        title={
+          <>
+            Workforce management, <br />
+            <span style={{ color: "#ac3400" }}>reimagined</span>
+          </>
+        }
+        description="Logasiko is the nature-tech platform for teams who care about accuracy, fairness, and a staff experience that doesn't feel like punishment."
+      >
+        <div className="grid grid-cols-2 gap-4 max-w-md">
+          {[
+            { value: "99.9%", label: "Uptime" },
+            { value: "500+", label: "Teams" },
+          ].map((s) => (
+            <div key={s.label} className="p-4 rounded-xl border" style={{ backgroundColor: "#ffffff", borderColor: "rgba(191,201,195,0.3)" }}>
+              <MarketingStat value={s.value} label={s.label} />
+            </div>
+          ))}
+        </div>
+      </MarketingHero>
+
+      <MarketingSection variant="muted">
+        <MarketingHeading title="What sets us apart" description="Precision tools wrapped in a human-centric experience." />
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {features.map((f) => (
+            <MarketingCard key={f.title}>
+              <MarketingIconBox icon={f.icon} variant={f.variant} />
+              <h3 className="text-xl font-bold mt-6 mb-3" style={{ color: "#003527" }}>
+                {f.title}
+              </h3>
+              <p className="mb-5" style={{ color: "#404944" }}>
+                {f.description}
               </p>
-              <div className="grid grid-cols-2 gap-6 mb-8">
-                {achievements.map((a) => (
-                  <div key={a.label} className="p-4 bg-white rounded-lg shadow-sm">
-                    <p className="text-3xl font-bold text-primary">{a.value}</p>
-                    <p className="text-gray-600">{a.label}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div className="w-full lg:w-1/2 px-4">
-              <Image src="/hero_art.svg" alt="Why TimeX" width={600} height={400} className="w-full h-auto" />
-            </div>
-          </div>
+              <MarketingCheckList items={f.bullets} />
+            </MarketingCard>
+          ))}
         </div>
-      </section>
+      </MarketingSection>
 
-      <section className="py-20 bg-white">
-        <div className="container mx-auto px-4">
-          <div className="text-center max-w-3xl mx-auto mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">What Sets Us Apart</h2>
-            <p className="text-xl text-gray-600">TimeX combines cutting-edge technology with user-friendly design to deliver unmatched value.</p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {features.map((f) => (
-              <div key={f.title} className="feature-card">
-                <IconWrapper>
-                  <svg className="w-12 h-12 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={f.icon} />
-                  </svg>
-                </IconWrapper>
-                <h3 className="text-xl font-semibold mb-3 mt-6">{f.title}</h3>
-                <p className="text-gray-600">{f.description}</p>
-                <ul className="mt-4 space-y-2">
-                  {f.bullets.map((b) => (
-                    <li key={b} className="flex items-center text-gray-600">
-                      <CheckIcon className="w-5 h-5 text-green-500 mr-2 shrink-0" />
-                      {b}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="py-20 bg-gray-50">
-        <div className="container mx-auto px-4">
-          <div className="text-center max-w-3xl mx-auto mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">TimeX vs. Traditional Solutions</h2>
-            <p className="text-xl text-gray-600">See how TimeX outperforms traditional workforce management solutions.</p>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full bg-white rounded-xl shadow-sm">
-              <thead>
-                <tr className="border-b">
-                  <th className="p-6 text-left">Features</th>
-                  <th className="p-6 text-center text-primary">TimeX</th>
-                  <th className="p-6 text-center text-gray-500">Traditional Solutions</th>
+      <MarketingSection variant="white">
+        <MarketingHeading title="Logasiko vs. traditional tools" description="See how we compare to legacy punch clocks and spreadsheet workflows." />
+        <div className="overflow-x-auto rounded-2xl border" style={{ borderColor: "rgba(191,201,195,0.3)" }}>
+          <table className="w-full text-left" style={{ backgroundColor: "#ffffff" }}>
+            <thead>
+              <tr style={{ backgroundColor: "#f1f5f2", borderBottom: "1px solid rgba(191,201,195,0.3)" }}>
+                <th className="p-5 text-left text-xs font-mono uppercase tracking-wider" style={{ color: "#707974" }}>
+                  Feature
+                </th>
+                <th className="p-5 text-center text-xs font-mono uppercase tracking-wider" style={{ color: "#003527" }}>
+                  Logasiko
+                </th>
+                <th className="p-5 text-center text-xs font-mono uppercase tracking-wider" style={{ color: "#707974" }}>
+                  Traditional
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {comparison.map((row) => (
+                <tr key={row.feature} style={{ borderBottom: "1px solid rgba(191,201,195,0.15)" }}>
+                  <td className="p-5 font-semibold text-sm" style={{ color: "#181d1b" }}>
+                    {row.feature}
+                  </td>
+                  <td className="p-5 text-center">
+                    {row.logasiko === true ? (
+                      <span className="material-symbols-outlined text-[22px]" style={{ color: "#003527", fontVariationSettings: "'FILL' 1" }}>
+                        check_circle
+                      </span>
+                    ) : (
+                      <span className="text-sm" style={{ color: "#404944" }}>
+                        {String(row.logasiko)}
+                      </span>
+                    )}
+                  </td>
+                  <td className="p-5 text-center">
+                    {row.traditional === false ? (
+                      <span className="material-symbols-outlined text-[22px]" style={{ color: "#bfc9c3" }}>
+                        cancel
+                      </span>
+                    ) : (
+                      <span className="text-sm" style={{ color: "#707974" }}>
+                        {String(row.traditional)}
+                      </span>
+                    )}
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {comparison.map((row) => (
-                  <tr key={row.feature} className="border-b last:border-0">
-                    <td className="p-6">{row.feature}</td>
-                    <td className="p-6 text-center">
-                      {row.timex === "check" ? <CheckIcon className="w-6 h-6 text-green-500 mx-auto" /> : row.timex}
-                    </td>
-                    <td className="p-6 text-center">
-                      {row.traditional === "x" ? <XIcon /> : row.traditional}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+              ))}
+            </tbody>
+          </table>
         </div>
-      </section>
+      </MarketingSection>
 
-      <section className="py-20 bg-white">
-        <div className="container mx-auto px-4">
-          <div className="text-center max-w-3xl mx-auto mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">What Our Clients Say</h2>
-            <p className="text-xl text-gray-600">Hear from industry leaders who have transformed their operations with TimeX.</p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {testimonials.map((t) => (
-              <div key={t.name} className="feature-card">
-                <div className="mb-6">
-                  <StarRating />
-                </div>
-                <blockquote className="text-gray-600 mb-6">&ldquo;{t.quote}&rdquo;</blockquote>
-                <div className="flex items-center">
-                  <Image src="/review.svg" alt={t.name} width={48} height={48} className="rounded-full mr-4" />
-                  <div>
-                    <p className="font-semibold">{t.name}</p>
-                    <p className="text-gray-600">{t.role}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+      <MarketingSection>
+        <MarketingHeading title="Trusted by forward-thinking teams" />
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-12">
+          <MarketingStat value="30%" label="Admin time saved" />
+          <MarketingStat value="1,500+" label="Organisations" />
+          <MarketingStat value="<100ms" label="Update latency" />
+          <MarketingStat value="14-day" label="Free trial" />
         </div>
-      </section>
+      </MarketingSection>
 
-      <LandingCta
-        title="Ready to Experience the TimeX Difference?"
-        subtitle="Join thousands of companies already optimizing their workforce with TimeX"
-        secondaryLabel="Schedule Demo"
-      />
-    </div>
+      <LandingCta title="Ready to experience the Logasiko difference?" />
+    </MarketingPage>
   );
 }
