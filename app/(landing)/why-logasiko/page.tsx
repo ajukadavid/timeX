@@ -12,25 +12,11 @@ import {
 
 const features = [
   {
-    title: "Nature-tech design",
-    description: "A calm, focused interface that staff actually want to use — not another corporate HR portal.",
-    icon: "eco",
-    variant: "dark" as const,
-    bullets: ["Mobile-first staff portal", "Real-time reactive data", "Accessible typography"],
-  },
-  {
     title: "Premium presence tools",
     description: "Geofencing, biometric verification, and offline sync — gated by subscription so you only pay for what you need.",
     icon: "fingerprint",
     variant: "mint" as const,
     bullets: ["Geo-fenced clock-in", "WebAuthn biometrics", "Offline queue sync"],
-  },
-  {
-    title: "Built on Convex",
-    description: "Sub-100ms updates, automatic reactivity, and a backend that scales without DevOps overhead.",
-    icon: "bolt",
-    variant: "lime" as const,
-    bullets: ["Live dashboards", "Zero WebSocket code", "Type-safe APIs"],
   },
 ];
 
@@ -70,7 +56,7 @@ export default function WhyLogasikoPage() {
 
       <MarketingSection variant="muted">
         <MarketingHeading title="What sets us apart" description="Precision tools wrapped in a human-centric experience." />
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 max-w-xl mx-auto gap-6">
           {features.map((f) => (
             <MarketingCard key={f.title}>
               <MarketingIconBox icon={f.icon} variant={f.variant} />
@@ -143,7 +129,7 @@ export default function WhyLogasikoPage() {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-12">
           <MarketingStat value="30%" label="Admin time saved" />
           <MarketingStat value="1,500+" label="Organisations" />
-          <MarketingStat value="<100ms" label="Update latency" />
+          <MarketingStat value="24/7" label="Support available" />
           <MarketingStat value="14-day" label="Free trial" />
         </div>
       </MarketingSection>

@@ -23,7 +23,7 @@ export default defineSchema({
     organizationName: v.optional(v.string()),
     isActive: v.boolean(),
     lastLoginAt: v.optional(v.number()),
-    // Platform-level super admin (the TimeX operator)
+    // Platform-level super admin (the Logasiko operator)
     platformRole: v.optional(v.literal("superAdmin")),
     createdAt: v.number(),
     updatedAt: v.number(),

@@ -58,7 +58,7 @@ http.route({
 
     const primaryEmail =
       event.data.email_addresses?.[0]?.email_address ||
-      `${event.data.id}@users.timex.local`;
+      `${event.data.id}@users.logasiko.local`;
     const role = event.data.public_metadata?.role;
 
     if (event.type === "user.created" || event.type === "user.updated") {

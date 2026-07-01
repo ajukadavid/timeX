@@ -38,7 +38,7 @@ function toRole(role) {
 
 function safeEmail(email, fallbackPrefix, id) {
   if (email && String(email).includes("@")) return String(email).toLowerCase();
-  return `${fallbackPrefix}.${id}@legacy.timex.local`;
+  return `${fallbackPrefix}.${id}@legacy.logasiko.local`;
 }
 
 async function main() {
