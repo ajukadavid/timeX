@@ -808,6 +808,35 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
     );
   }
 
+  if (staffData.profile === null) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-6" style={{ backgroundColor: "#f6faf7" }}>
+        <div className="max-w-md w-full bg-white rounded-2xl shadow-sm border p-8 text-center" style={{ borderColor: "rgba(191,201,195,0.3)" }}>
+          <div className="w-16 h-16 rounded-full mx-auto mb-6 flex items-center justify-center" style={{ backgroundColor: "#ebefec" }}>
+            <span className="material-symbols-outlined text-[32px]" style={{ color: "#003527" }}>hourglass_empty</span>
+          </div>
+          <h2 className="text-2xl font-bold mb-3" style={{ color: "#003527", fontFamily: "Hanken Grotesk, sans-serif" }}>
+            {isOwnDashboard ? "Waiting for Employer" : "No Organization"}
+          </h2>
+          <p className="text-sm mb-6 leading-relaxed" style={{ color: "#707974", fontFamily: "Hanken Grotesk, sans-serif" }}>
+            {isOwnDashboard 
+              ? "Welcome to TimeX! You haven't been added to an organization yet. Please wait for your admin to invite you, or contact your employer for access." 
+              : "This user has not been added to an organization yet."}
+          </p>
+          {isOwnDashboard && (
+            <button 
+              onClick={() => window.location.reload()}
+              className="w-full py-3 px-4 rounded-xl font-bold transition-all text-sm hover:opacity-90"
+              style={{ backgroundColor: "#003527", color: "#ffffff" }}
+            >
+              Refresh Status
+            </button>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   const displayedLogs = filtered.slice(0, displayCount);
   const hasMore = displayCount < filtered.length;
 

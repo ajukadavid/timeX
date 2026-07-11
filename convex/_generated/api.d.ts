@@ -12,6 +12,7 @@ import type * as attendance from "../attendance.js";
 import type * as audit from "../audit.js";
 import type * as biometric from "../biometric.js";
 import type * as crons from "../crons.js";
+import type * as debugUser from "../debugUser.js";
 import type * as departments from "../departments.js";
 import type * as emails from "../emails.js";
 import type * as http from "../http.js";
@@ -40,6 +41,7 @@ declare const fullApi: ApiFromModules<{
   audit: typeof audit;
   biometric: typeof biometric;
   crons: typeof crons;
+  debugUser: typeof debugUser;
   departments: typeof departments;
   emails: typeof emails;
   http: typeof http;

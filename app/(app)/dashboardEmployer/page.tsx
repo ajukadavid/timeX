@@ -609,7 +609,7 @@ function DashboardEmployerInner() {
         footer={
           <div className="flex justify-end gap-3">
             <Button color="gray" variant="soft" onClick={() => setShowAddModal(false)}>Cancel</Button>
-            <Button loading={loading} onClick={handleCreate}>Create Employee</Button>
+            <Button loading={loading} onClick={handleCreate} style={{ backgroundColor: "#003527", color: "#ffffff" }}>Create Employee</Button>
           </div>
         }
       >
@@ -645,11 +645,11 @@ function DashboardEmployerInner() {
           <FormField label="Email" name="inviteEmail">
             <Input type="email" placeholder="staff@company.com" size="lg" value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)} />
           </FormField>
-          <Button loading={loading} onClick={handleInviteOne} className="w-full">Send Invitation</Button>
+          <Button loading={loading} onClick={handleInviteOne} className="w-full" style={{ backgroundColor: "#003527", color: "#ffffff" }}>Send Invitation</Button>
           {pendingInviteCount > 0 && (
             <div className="border-t pt-6">
               <p className="text-sm text-gray-600 mb-3">{pendingInviteCount} staff member{pendingInviteCount !== 1 ? "s" : ""} haven&apos;t been invited yet.</p>
-              <Button loading={loading} variant="outline" onClick={handleInviteAll} className="w-full">Invite All Pending Staff</Button>
+              <Button loading={loading} variant="outline" onClick={handleInviteAll} className="w-full" style={{ borderColor: "#003527", color: "#003527" }}>Invite All Pending Staff</Button>
             </div>
           )}
         </div>
