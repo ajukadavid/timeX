@@ -173,49 +173,4 @@ export default defineSchema({
   })
     .index("by_user", ["userId"])
     .index("by_credential", ["credentialId"]),
-
-  // Raw legacy collections (MongoDB migration audit).
-  employers: defineTable({
-    mongoId: v.optional(v.string()),
-    clerkId: v.optional(v.string()),
-    email: v.string(),
-    companyName: v.optional(v.string()),
-    createdAt: v.optional(v.number()),
-  })
-    .index("by_clerk_id", ["clerkId"])
-    .index("by_email", ["email"]),
-
-  staffs: defineTable({
-    mongoId: v.optional(v.string()),
-    clerkId: v.optional(v.string()),
-    employerId: v.optional(v.string()),
-    email: v.string(),
-    firstName: v.optional(v.string()),
-    lastName: v.optional(v.string()),
-    role: v.optional(v.string()),
-    createdAt: v.optional(v.number()),
-  })
-    .index("by_clerk_id", ["clerkId"])
-    .index("by_employer", ["employerId"]),
-
-  employees: defineTable({
-    mongoId: v.optional(v.string()),
-    staffId: v.optional(v.string()),
-    employerId: v.optional(v.string()),
-    department: v.optional(v.string()),
-    position: v.optional(v.string()),
-    salary: v.optional(v.number()),
-    startDate: v.optional(v.string()),
-  }).index("by_employer", ["employerId"]),
-
-  stafflogs: defineTable({
-    mongoId: v.optional(v.string()),
-    staffId: v.optional(v.string()),
-    employerId: v.optional(v.string()),
-    action: v.optional(v.string()),
-    timestamp: v.optional(v.number()),
-    details: v.optional(v.string()),
-  })
-    .index("by_staff", ["staffId"])
-    .index("by_employer", ["employerId"]),
 });

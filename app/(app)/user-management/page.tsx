@@ -620,7 +620,7 @@ export default function UserManagementPage() {
 
       {/* Modals */}
       <XModal open={showCreateModal} onClose={() => { setShowCreateModal(false); setDeptName(""); }} title="Create Department"
-        footer={<div className="flex justify-end gap-3"><Button color="gray" variant="soft" onClick={() => setShowCreateModal(false)}>Cancel</Button><Button size="lg" color="primary" loading={loading} onClick={handleCreateDepartment}>Create</Button></div>}
+        footer={<div className="flex justify-end gap-3"><Button color="gray" variant="soft" onClick={() => setShowCreateModal(false)} style={{ backgroundColor: "#ebefec", color: "#404944" }}>Cancel</Button><Button size="lg" color="primary" loading={loading} onClick={handleCreateDepartment} style={{ backgroundColor: "#003527", color: "#ffffff" }}>Create</Button></div>}
       >
         <FormField label="Department Name" name="deptName">
           <Input placeholder="e.g. Engineering, Marketing…" size="lg" value={deptName} onChange={(e) => setDeptName(e.target.value)} onKeyDown={(e) => e.key === "Enter" && handleCreateDepartment()} />
@@ -628,7 +628,7 @@ export default function UserManagementPage() {
       </XModal>
 
       <XModal open={showRenameModal} onClose={() => setShowRenameModal(false)} title={`Rename "${selectedDept?.name}"`}
-        footer={<div className="flex justify-end gap-3"><Button color="gray" variant="soft" onClick={() => setShowRenameModal(false)}>Cancel</Button><Button size="lg" color="primary" loading={loading} onClick={handleRename}>Save</Button></div>}
+        footer={<div className="flex justify-end gap-3"><Button color="gray" variant="soft" onClick={() => setShowRenameModal(false)} style={{ backgroundColor: "#ebefec", color: "#404944" }}>Cancel</Button><Button size="lg" color="primary" loading={loading} onClick={handleRename} style={{ backgroundColor: "#003527", color: "#ffffff" }}>Save</Button></div>}
       >
         <FormField label="New name" name="renameName">
           <Input size="lg" value={renameName} onChange={(e) => setRenameName(e.target.value)} onKeyDown={(e) => e.key === "Enter" && handleRename()} />
@@ -636,7 +636,7 @@ export default function UserManagementPage() {
       </XModal>
 
       <XModal open={showDeleteConfirm} onClose={() => setShowDeleteConfirm(false)} title="Delete Department"
-        footer={<div className="flex justify-end gap-3"><Button color="gray" variant="soft" onClick={() => setShowDeleteConfirm(false)}>Cancel</Button><Button size="lg" color="red" loading={loading} onClick={handleDelete}>Delete</Button></div>}
+        footer={<div className="flex justify-end gap-3"><Button color="gray" variant="soft" onClick={() => setShowDeleteConfirm(false)} style={{ backgroundColor: "#ebefec", color: "#404944" }}>Cancel</Button><Button size="lg" color="red" loading={loading} onClick={handleDelete} style={{ backgroundColor: "#ba1a1a", color: "#ffffff" }}>Delete</Button></div>}
       >
         <p className="text-gray-700 p-2">
           Are you sure you want to delete <strong>{selectedDept?.name}</strong>? Staff currently assigned to this department will be unassigned.
@@ -644,7 +644,7 @@ export default function UserManagementPage() {
       </XModal>
 
       <XModal open={showDeptTimeModal} onClose={() => setShowDeptTimeModal(false)} title={`Sign-in Time — ${selectedDept?.name}`}
-        footer={<div className="flex justify-end gap-3"><Button color="gray" variant="soft" onClick={() => setShowDeptTimeModal(false)}>Cancel</Button><Button size="lg" color="primary" loading={loading} onClick={handleSaveDeptTime}>Save</Button></div>}
+        footer={<div className="flex justify-end gap-3"><Button color="gray" variant="soft" onClick={() => setShowDeptTimeModal(false)} style={{ backgroundColor: "#ebefec", color: "#404944" }}>Cancel</Button><Button size="lg" color="primary" loading={loading} onClick={handleSaveDeptTime} style={{ backgroundColor: "#003527", color: "#ffffff" }}>Save</Button></div>}
       >
         <div className="space-y-4 p-2">
           <p className="text-sm text-gray-500">Set a custom sign-in deadline for this department. Leave blank to use the org default.</p>

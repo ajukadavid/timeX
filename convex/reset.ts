@@ -6,19 +6,18 @@ const WIPE_CONFIRM = "WIPE_ALL_APPLICATION_DATA";
 
 const TABLES_TO_WIPE: TableNames[] = [
   "attendanceLogs",
+  "auditLogs",
+  "leaveRequests",
   "staffProfiles",
   "departments",
   "employerSettings",
+  "webAuthnCredentials",
   "organizations",
   "users",
-  "employers",
-  "staffs",
-  "employees",
-  "stafflogs",
 ];
 
 /**
- * Deletes all application data (users, staff, attendance, legacy archives).
+ * Deletes all application data (users, staff, attendance, orgs).
  * Run only on prod when starting fresh:
  *   npx convex run reset:wipeApplicationData '{"confirm":"WIPE_ALL_APPLICATION_DATA"}' --prod
  */

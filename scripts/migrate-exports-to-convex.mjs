@@ -58,7 +58,6 @@ async function run() {
   console.log("Starting export -> Convex migration...");
 
   const departments = readJson("departments.json");
-  const employees = readJson("employees.json");
   const employers = readJson("employers.json");
   const stafflogs = readJson("stafflogs.json");
   const staffs = readJson("staffs.json");
@@ -68,18 +67,10 @@ async function run() {
   const departmentMap = new Map(); // mongo dept id -> convex departments _id
   const staffProfileMap = new Map(); // mongo staff id -> convex staffProfiles _id
 
-  // 1) Employers: raw + normalized users(admin)
+  // 1) Employers -> normalized users (admin)
   for (const doc of employers) {
     const mongoId = getMongoId(doc._id);
     const email = safeEmail(doc.email, "employer", mongoId);
-
-    await client.mutation(api.migrations.insertEmployer, {
-      mongoId,
-      clerkId: doc.clerkId || undefined,
-      email,
-      companyName: doc.companyName || undefined,
-      createdAt: toMillis(doc.createdAt),
-    });
 
     const employerUserId = await client.mutation(api.users.upsertLegacyUser, {
       sourceId: mongoId,
@@ -94,24 +85,12 @@ async function run() {
     });
     employerMap.set(mongoId, employerUserId);
   }
-  console.log(`Migrated employers: ${employers.length}`);
+  console.log(`Migrated admin users from employers export: ${employers.length}`);
 
-  // 2) Staffs: raw + normalized users(staff/manager)
+  // 2) Staffs -> normalized users (staff/manager)
   for (const doc of staffs) {
     const mongoId = getMongoId(doc._id);
     const email = safeEmail(doc.email, "staff", mongoId);
-    const mongoEmployerId = getMongoId(doc.employer || doc.employerId);
-
-    await client.mutation(api.migrations.insertStaff, {
-      mongoId,
-      clerkId: doc.clerkId || undefined,
-      employerId: mongoEmployerId || undefined,
-      email,
-      firstName: doc.firstName || undefined,
-      lastName: doc.lastName || undefined,
-      role: doc.role || undefined,
-      createdAt: toMillis(doc.createdAt),
-    });
 
     const staffUserId = await client.mutation(api.users.upsertLegacyUser, {
       sourceId: mongoId,
@@ -126,9 +105,9 @@ async function run() {
 
     staffUserMap.set(mongoId, staffUserId);
   }
-  console.log(`Migrated staffs: ${staffs.length}`);
+  console.log(`Migrated staff users from staffs export: ${staffs.length}`);
 
-  // 3) Departments: normalized only (needs convex employerId)
+  // 3) Departments (needs convex employerId)
   for (const doc of departments) {
     const mongoId = getMongoId(doc._id);
     const mongoEmployerId = getMongoId(doc.employer || doc.employerId);
@@ -142,9 +121,9 @@ async function run() {
     });
     departmentMap.set(mongoId, departmentId);
   }
-  console.log(`Migrated departments (normalized): ${departmentMap.size}`);
+  console.log(`Migrated departments: ${departmentMap.size}`);
 
-  // 4) Staff profiles: normalized linkage
+  // 4) Staff profiles
   for (const doc of staffs) {
     const mongoStaffId = getMongoId(doc._id);
     const mongoEmployerId = getMongoId(doc.employer || doc.employerId);
@@ -163,36 +142,14 @@ async function run() {
     });
     staffProfileMap.set(mongoStaffId, profileId);
   }
-  console.log(`Migrated staffProfiles (normalized): ${staffProfileMap.size}`);
+  console.log(`Migrated staffProfiles: ${staffProfileMap.size}`);
 
-  // 5) Employees: raw archive table
-  for (const doc of employees) {
-    await client.mutation(api.migrations.insertEmployee, {
-      mongoId: getMongoId(doc._id) || undefined,
-      staffId: getMongoId(doc.staffId || doc.staff) || undefined,
-      employerId: getMongoId(doc.employerId || doc.employer) || undefined,
-      department: doc.department || undefined,
-      position: doc.position || undefined,
-      salary: typeof doc.salary === "number" ? doc.salary : undefined,
-      startDate: doc.startDate || undefined,
-    });
-  }
-  console.log(`Migrated employees (raw): ${employees.length}`);
-
-  // 6) Stafflogs: raw + normalized attendance (best effort)
+  // 5) Stafflogs export -> normalized attendance (best effort)
+  let attendanceImported = 0;
   for (const doc of stafflogs) {
     const staffMongoId = getMongoId(doc.staffId || doc.staff);
     const employerMongoId = getMongoId(doc.employerId || doc.employer);
     const timestamp = toMillis(doc.timestamp || doc.entryTime || doc.createdAt);
-
-    await client.mutation(api.migrations.insertStafflog, {
-      mongoId: getMongoId(doc._id) || undefined,
-      staffId: staffMongoId || undefined,
-      employerId: employerMongoId || undefined,
-      action: doc.action || undefined,
-      timestamp,
-      details: doc.details || undefined,
-    });
 
     const staffUserId = staffUserMap.get(staffMongoId);
     const employerId = employerMap.get(employerMongoId);
@@ -212,10 +169,11 @@ async function run() {
       entryTime: timestamp,
       late,
       source: "import",
-      notes: doc.details || doc.action || "Imported from Mongo stafflogs",
+      notes: doc.details || doc.action || "Imported from export stafflogs",
     });
+    attendanceImported++;
   }
-  console.log(`Migrated stafflogs (raw): ${stafflogs.length}`);
+  console.log(`Migrated attendance from stafflogs export: ${attendanceImported}/${stafflogs.length}`);
 
   console.log("Migration complete.");
 }
