@@ -243,8 +243,8 @@ function ProfileCard({
         size="lg"
         footer={
           <div className="flex justify-end gap-3">
-            <Button color="gray" variant="soft" onClick={() => setShowEdit(false)}>Cancel</Button>
-            <Button loading={saving} onClick={handleSave}>Save Changes</Button>
+            <Button color="gray" variant="soft" onClick={() => setShowEdit(false)} style={{ backgroundColor: "#ebefec", color: "#404944" }}>Cancel</Button>
+            <Button loading={saving} onClick={handleSave} style={{ backgroundColor: "#003527", color: "#ffffff" }}>Save Changes</Button>
           </div>
         }
       >
@@ -443,8 +443,8 @@ function LeaveSection({
         size="md"
         footer={
           <div className="flex justify-end gap-3">
-            <Button color="gray" variant="soft" onClick={() => setShowRequest(false)}>Cancel</Button>
-            <Button loading={submitting} onClick={handleRequestLeave}>Submit Request</Button>
+            <Button color="gray" variant="soft" onClick={() => setShowRequest(false)} style={{ backgroundColor: "#ebefec", color: "#404944" }}>Cancel</Button>
+            <Button loading={submitting} onClick={handleRequestLeave} style={{ backgroundColor: "#003527", color: "#ffffff" }}>Submit Request</Button>
           </div>
         }
       >
@@ -489,9 +489,9 @@ function LeaveSection({
         size="sm"
         footer={
           <div className="flex justify-end gap-3">
-            <Button color="gray" variant="soft" onClick={() => setShowReview(null)}>Cancel</Button>
-            <Button color="red" loading={submitting} onClick={() => handleReview("rejected")}>Reject</Button>
-            <Button loading={submitting} onClick={() => handleReview("approved")}>Approve</Button>
+            <Button color="gray" variant="soft" onClick={() => setShowReview(null)} style={{ backgroundColor: "#ebefec", color: "#404944" }}>Cancel</Button>
+            <Button color="red" loading={submitting} onClick={() => handleReview("rejected")} style={{ backgroundColor: "#ba1a1a", color: "#ffffff" }}>Reject</Button>
+            <Button loading={submitting} onClick={() => handleReview("approved")} style={{ backgroundColor: "#003527", color: "#ffffff" }}>Approve</Button>
           </div>
         }
       >
@@ -1451,8 +1451,8 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
         size="sm"
         footer={
           <div className="flex justify-end gap-3">
-            <Button color="gray" variant="soft" onClick={() => setShowAddEntry(false)}>Cancel</Button>
-            <Button loading={addingEntry} onClick={handleAddEntry}>Add Entry</Button>
+            <Button color="gray" variant="soft" onClick={() => setShowAddEntry(false)} style={{ backgroundColor: "#ebefec", color: "#404944" }}>Cancel</Button>
+            <Button loading={addingEntry} onClick={handleAddEntry} style={{ backgroundColor: "#003527", color: "#ffffff" }}>Add Entry</Button>
           </div>
         }
       >

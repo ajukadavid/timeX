@@ -248,9 +248,9 @@ export default function LeaveRequestsPage() {
         size="md"
         footer={
           <div className="flex justify-end gap-3">
-            <Button color="gray" variant="soft" onClick={() => setReviewingId(null)}>Cancel</Button>
-            <Button color="red" loading={submitting} onClick={() => handleReview("rejected")}>Reject</Button>
-            <Button loading={submitting} onClick={() => handleReview("approved")}>Approve</Button>
+            <Button color="gray" variant="soft" onClick={() => setReviewingId(null)} style={{ backgroundColor: "#ebefec", color: "#404944" }}>Cancel</Button>
+            <Button color="red" loading={submitting} onClick={() => handleReview("rejected")} style={{ backgroundColor: "#ba1a1a", color: "#ffffff" }}>Reject</Button>
+            <Button loading={submitting} onClick={() => handleReview("approved")} style={{ backgroundColor: "#003527", color: "#ffffff" }}>Approve</Button>
           </div>
         }
       >
